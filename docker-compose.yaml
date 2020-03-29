@@ -89,7 +89,7 @@ services:
           --db-host postgres \
           -vv
         sleep 3
-        bev-subscriber subscribe \
+        simple-supply-subscriber subscribe \
           --db-host postgres \
           -C tcp://validator:4004 \
           -vv
