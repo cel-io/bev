@@ -25,11 +25,11 @@ services:
     container_name: simple-supply-shell
     volumes:
       - .:/project/sawtooth-simple-supply
-      - /project/sawtooth-simple-supply/curator_app/node_modules
+      - /project/sawtooth-simple-supply/volby/node_modules
     command: |
       bash -c "
         simple-supply-protogen
-        cd curator_app/
+        cd volby/
         npm run build
         cd ../
         tail -f /dev/null
@@ -168,12 +168,12 @@ services:
     ports:
       - '8080:8080'
 
-  curator-app:
-    build: ./curator_app
+  volby:
+    build: ./volby
     image: simple-supply-curator-app
-    container_name: curator-app
+    container_name: volby
     volumes:
-      - ./curator_app/public/:/usr/local/apache2/htdocs/
+      - ./volby/public/:/usr/local/apache2/htdocs/
     expose:
       - 80
     ports:
