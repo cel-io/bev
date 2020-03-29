@@ -36,10 +36,10 @@ RUN pip3 install \
     psycopg2-binary
 
 
-WORKDIR /project/sawtooth-simple-supply
+WORKDIR /project/bev
 
-ENV PATH $PATH:/project/sawtooth-simple-supply/bin
+ENV PATH $PATH:/project/bev/bin
 
 EXPOSE 8000/tcp
 
-CMD ['simple-supply-rest-api']
+CMD ['bev-rest-api']

@@ -17,32 +17,32 @@ version: '2.1'
 
 services:
 
-  simple-supply-shell:
+  bev-shell:
     build:
       context: ../..
       dockerfile: ./shell/Dockerfile
     image: sawtooth-simple-supply-shell
-    container_name: simple-supply-shell-test
+    container_name: bev-shell-test
     volumes:
-      - ../..:/project/sawtooth-simple-supply
+      - ../..:/project/bev
     command: |
       bash -c "
         simple-supply-protogen
         tail -f /dev/null
       "
 
-  simple-supply-tp:
+  bev-tp:
     build:
         context: ../..
         dockerfile: ./processor/Dockerfile
     image: sawtooth-simple-supply-tp
-    container_name: simple-supply-tp-test
+    container_name: bev-tp-test
     volumes:
-      - '../..:/project/sawtooth-simple-supply'
+      - '../..:/project/bev'
     command: |
       bash -c "
         sleep 1
-        simple-supply-tp -v -C tcp://validator:4004
+        bev-tp -v -C tcp://validator:4004
       "
 
   settings-tp:
@@ -69,18 +69,18 @@ services:
 
   rest-api:
     image: hyperledger/sawtooth-rest-api:1.0
-    entrypoint: sawtooth-rest-api --connect tcp://validator:4004 --bind rest-api:8008
+    entrypoint: bev-rest-api --connect tcp://validator:4004 --bind rest-api:8008
 
   unit-tests:
     build:
       context: ../..
       dockerfile: ./shell/Dockerfile
     volumes:
-      - ../..:/project/sawtooth-simple-supply
+      - ../..:/project/bev
     environment:
-      PYTHONPATH: /project/sawtooth-simple-supply/rest_api:/project/sawtooth-simple-supply/addressing:/project/sawtooth-simple-supply/protobuf
+      PYTHONPATH: /project/bev/rest_api:/project/bev/addressing:/project/bev/protobuf
     command: |
       bash -c "
-        cd tests/simple_supply_tests
+        cd tests/bev_tests
         python3 -m nose2 -v unit_tests
       "
