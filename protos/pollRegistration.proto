@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message PollRegistration{
+    string record_id = 1;
+    string id = 2;
+    string id_user = 3;
+    string name = 4;
+}
+
+message RecordContainer {
+    repeated PollBook entries = 1;
+}

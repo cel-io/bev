@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+message Election{
+    string record_id = 1;
+    string id = 2;
+    string name = 3;
+    string description = 4;
+    uint64 startTimestamp = 5;
+    uint64 endTimestamp = 6;
+
+    bool canChangeVote = 7;
+    bool canShowRealtime = 8;
+    bool canShowResults = 9;
+
+    string id_admin = 10;
+    repeated string id_voting_options = 11;
+    repeated string id_vote = 12;
+    repeated Voter poolBook = 13;
+}
+
+message RecordContainer {
+    repeated Election entries = 1;
+}
