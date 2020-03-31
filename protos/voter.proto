@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+message Voter{
+    string record_id = 1;
+    string id = 2;
+    uint64 created_at = 3;
+
+    repeated string id_votes = 4;
+    repeated string id_elections = 5;
+
+    oneof admin{
+        Admin admin = 6;
+    }
+}
+
+message Admin{
+    repeated string id_owned_elections = 1;
+
+    oneof super_admin{
+        SuperAdmin superAdmin = 2;
+    }
+}
+
+message SuperAdmin{
+
+}
+
+message RecordContainer {
+    repeated User entries = 1;
+}
