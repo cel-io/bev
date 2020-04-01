@@ -17,12 +17,11 @@ message Admin{
     repeated string id_owned_elections = 1;
 
     oneof super_admin{
-        SuperAdmin superAdmin = 2;
+        SuperAdmin super_admin = 2;
     }
 }
 
 message SuperAdmin{
-
 }
 
 message RecordContainer {
