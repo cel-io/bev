@@ -7,6 +7,6 @@ message PollRegistration{
     string name = 4;
 }
 
-message RecordContainer {
-    repeated PollBook entries = 1;
+message PollRegistrationContainer {
+    repeated PollRegistration entries = 1;
 }

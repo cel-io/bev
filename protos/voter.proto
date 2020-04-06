@@ -9,7 +9,7 @@ message Voter{
     repeated string id_elections = 5;
 
     oneof admin{
-        Admin admin = 6;
+        Admin admin_obj = 6;
     }
 }
 
@@ -17,13 +17,13 @@ message Admin{
     repeated string id_owned_elections = 1;
 
     oneof super_admin{
-        SuperAdmin super_admin = 2;
+        SuperAdmin super_admin_obj = 2;
     }
 }
 
 message SuperAdmin{
 }
 
-message RecordContainer {
-    repeated User entries = 1;
+message VoterContainer {
+    repeated Voter entries = 1;
 }

@@ -5,19 +5,19 @@ message Election{
     string id = 2;
     string name = 3;
     string description = 4;
-    uint64 startTimestamp = 5;
-    uint64 endTimestamp = 6;
+    uint64 start_timestamp = 5;
+    uint64 end_timestamp = 6;
 
-    bool canChangeVote = 7;
-    bool canShowRealtime = 8;
-    bool canShowResults = 9;
+    bool can_change_vote = 7;
+    bool can_show_realtime = 8;
+    bool can_show_results = 9;
 
     string id_admin = 10;
     repeated string id_voting_options = 11;
     repeated string id_vote = 12;
-    repeated Voter pollBook = 13;
+    repeated string poll_book = 13;
 }
 
-message RecordContainer {
+message ElectionContainer {
     repeated Election entries = 1;
 }

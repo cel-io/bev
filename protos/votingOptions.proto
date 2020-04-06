@@ -9,6 +9,6 @@ message VotingOption{
     repeated string id_votes = 5;
 }
 
-message RecordContainer {
+message VotingOptionsContainer {
     repeated VotingOption entries = 1;
 }
