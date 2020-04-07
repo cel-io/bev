@@ -3,18 +3,24 @@ window.Vue = require('vue')
 import Vue from 'vue'
 
 import Home from './components/home'
-import CreateElection from './components/home'
+import MainLayout from './components/mainLayout'
+import CreateElection from './components/createElection'
 
 import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
 Vue.use(Buefy)
+import 'bulma-spacing/css/bulma-spacing.min.css'
 
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 const routes = [
-    {path: '/', component: Home, name: 'home'}, //redirecionar para Dashboard se nao existir autenticação
-    {path: '/newelection', component: CreateElection, name: 'createElection'}
+    {path: '/home', component: Home, name: 'home'}, //redirecionar para Dashboard se nao existir autenticação
+    {path: '/', component: MainLayout,
+        children: [
+            {path: 'newelection', component: CreateElection, name: 'createElection'}
+        ]
+    }
 ]
 
 const router = new VueRouter({

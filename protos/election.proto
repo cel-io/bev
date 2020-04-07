@@ -8,9 +8,15 @@ message Election{
     uint64 start_timestamp = 5;
     uint64 end_timestamp = 6;
 
-    bool can_change_vote = 7;
-    bool can_show_realtime = 8;
-    bool can_show_results = 9;
+    enum ResultsPermission {
+        PRIVATE = 0;
+        VOTERS_ONLY = 1;
+        PUBLIC = 2;
+    }
+
+    ResultsPermission results_permission = 7 [default = VOTERS_ONLY];
+    bool can_change_vote = 8;
+    bool can_show_realtime = 9;
 
     string id_admin = 10;
     repeated string id_voting_options = 11;
