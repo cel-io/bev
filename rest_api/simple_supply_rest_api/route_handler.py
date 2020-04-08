@@ -1,17 +1,3 @@
-# Copyright 2018 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ------------------------------------------------------------------------------
 import datetime
 from json.decoder import JSONDecodeError
 import logging
@@ -27,7 +13,6 @@ from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiNotFound
 from simple_supply_rest_api.errors import ApiUnauthorized
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -36,6 +21,51 @@ class RouteHandler(object):
         self._loop = loop
         self._messenger = messenger
         self._database = database
+
+    async def create_election(self, request):
+        body = await decode_request(request)
+        required_fields = ['id', 'name', 'description', 'start_timestamp', 'end_timestamp',
+                           'results_permission', 'can_change_vote', 'can_show_realtime',
+                           'id_admin', 'id_vote', 'id_voting_options']
+        validate_fields(required_fields, body)
+
+        private_key = await self._authorize(request)
+
+        await self._messenger.send_create_election_transaction(
+            private_key=private_key,
+            id=body.get('id'),
+            name=body.get('name'),
+            description=body.get('description'),
+            start_timestamp=body.get('start_timestamp'),
+            end_timestamp=body.get('end_timestamp'),
+            results_permission=body.get('results_permission'),
+            can_change_vote=body.get('can_change_vote'),
+            can_show_realtime=body.get('can_show_realtime'),
+            id_admin=body.get('id_admin'),
+            id_vote=body.get('id_vote'),
+            id_voting_options=body.get('id_voting_options'))
+
+        await self._database.create_election_entry(
+            id,
+            name,
+            description,
+            start_timestamp,
+            end_timestamp,
+            results_permission,
+            can_change_vote,
+            can_show_realtime,
+            id_admin, id_vote,
+            id_voting_options)
+
+        return json_response({'data': 'Create election transaction submitted'})
+
+    async def list_elections(self, _request):
+        election_list = await self._database.fetch_all_election_resources()
+        return json_response(election_list)
+
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
 
     async def authenticate(self, request):
         body = await decode_request(request)
@@ -217,7 +247,7 @@ def hash_password(password):
 
 def get_time():
     dts = datetime.datetime.utcnow()
-    return round(time.mktime(dts.timetuple()) + dts.microsecond/1e6)
+    return round(time.mktime(dts.timetuple()) + dts.microsecond / 1e6)
 
 
 def generate_auth_token(secret_key, public_key):

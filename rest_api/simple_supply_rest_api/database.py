@@ -1,25 +1,9 @@
-# Copyright 2018 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ------------------------------------------------------------------------------
-
 import asyncio
 import logging
 
 import aiopg
 import psycopg2
 from psycopg2.extras import RealDictCursor
-
 
 LATEST_BLOCK_NUM = """
 SELECT max(block_num) FROM blocks
@@ -30,6 +14,7 @@ LOGGER = logging.getLogger(__name__)
 class Database(object):
     """Manages connection to the postgres database and makes async queries
     """
+
     def __init__(self, host, port, name, user, password, loop):
         self._dsn = 'dbname={} user={} password={} host={} port={}'.format(
             name, user, password, host, port)
@@ -70,6 +55,38 @@ class Database(object):
         """Closes connection to the database
         """
         self._conn.close()
+
+    async def create_election_entry(self, id, name, description, start_timestamp, end_timestamp, results_permission,
+                                    can_change_vote,can_show_realtime, id_admin, id_vote, id_voting_options):
+        insert = """
+        INSERT INTO elections (
+            id, name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
+            can_show_realtime, id_admin, id_vote, id_voting_options)
+        )
+        VALUES ('{}', '{}', '{}','{}','{}','{}', '{}', '{}', '{}', '{}', '{}');
+        """.format(id, name, description, start_timestamp, end_timestamp, results_permission,
+                   can_change_vote, can_show_realtime, id_admin, id_vote, id_voting_options)
+
+        async with self._conn.cursor() as cursor:
+            await cursor.execute(insert)
+
+        self._conn.commit()
+
+    async def fetch_all_election_resources(self):
+        fetch = """
+        SELECT  name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
+        can_show_realtime FROM elections
+        WHERE ({0}) >= start_block_num
+        AND ({0}) < end_block_num;
+        """.format(LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchall()
+
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
 
     async def create_auth_entry(self,
                                 public_key,

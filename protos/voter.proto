@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 message Voter{
-    string record_id = 1;
     string id = 2;
     uint64 created_at = 3;
 

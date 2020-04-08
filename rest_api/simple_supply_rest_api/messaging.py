@@ -1,30 +1,15 @@
-# Copyright 2018 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ------------------------------------------------------------------------------
-
 from sawtooth_rest_api.messaging import Connection
 from sawtooth_rest_api.protobuf import client_batch_submit_pb2
 from sawtooth_rest_api.protobuf import validator_pb2
-
-from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
+from sawtooth_signing import create_context
 from sawtooth_signing import secp256k1
-
 from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiInternalError
 from simple_supply_rest_api.transaction_creation import \
     make_create_agent_transaction
+from simple_supply_rest_api.transaction_creation import \
+    make_create_election_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_create_record_transaction
 from simple_supply_rest_api.transaction_creation import \
@@ -51,6 +36,38 @@ class Messenger(object):
         private_key = self._context.new_random_private_key()
         public_key = self._context.get_public_key(private_key)
         return public_key.as_hex(), private_key.as_hex()
+
+    async def send_create_election_transaction(self, private_key, id, name,
+                                               description,
+                                               start_timestamp,
+                                               end_timestamp,
+                                               results_permission,
+                                               can_change_vote,
+                                               can_show_realtime,
+                                               id_admin, id_vote,
+                                               id_voting_options):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_create_election_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            id=id,
+            name=name,
+            description=description,
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
+            results_permission=results_permission,
+            can_change_vote=can_change_vote,
+            can_show_realtime=can_show_realtime,
+            id_admin=id_admin,
+            id_vote=id_vote,
+            id_voting_options=id_voting_options)
+        await self._send_and_wait_for_commit(batch)
+
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
 
     async def send_create_agent_transaction(self,
                                             private_key,

@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 message Vote{
-    string record_id = 1;
     string id = 2;
     uint64 timestamp = 3;
     string id_voter = 4;

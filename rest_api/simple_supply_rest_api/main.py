@@ -1,17 +1,3 @@
-# Copyright 2018 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ------------------------------------------------------------------------------
 
 import argparse
 import asyncio
@@ -27,7 +13,6 @@ from aiohttp import web
 from simple_supply_rest_api.route_handler import RouteHandler
 from simple_supply_rest_api.database import Database
 from simple_supply_rest_api.messaging import Messenger
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,6 +76,9 @@ def start_rest_api(host, port, messenger, database):
 
     handler = RouteHandler(loop, messenger, database)
 
+    app.router.add_post('/elections', handler.create_election)
+    app.router.add_get('/elections', handler.list_elections)
+
     app.router.add_post('/authentication', handler.authenticate)
 
     app.router.add_post('/agents', handler.create_agent)
@@ -150,3 +138,4 @@ def main():
     finally:
         database.disconnect()
         messenger.close_validator_connection()
+

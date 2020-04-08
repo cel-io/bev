@@ -74,13 +74,30 @@ CREATE TABLE IF NOT EXISTS record_owners (
 );
 """
 
-
 CREATE_AGENT_STMTS = """
 CREATE TABLE IF NOT EXISTS agents (
     id               bigserial PRIMARY KEY,
     public_key       varchar,
     name             varchar,
     timestamp        bigint,
+    start_block_num  bigint,
+    end_block_num    bigint
+);
+"""
+
+CREATE_ELECTION_STMTS = """
+CREATE TABLE IF NOT EXISTS elections (
+    id               bigserial PRIMARY KEY,
+    name             varchar,
+    description      varchar,
+    start_timestamp  bigint,
+    end_timestamp    bigint,
+    results_permission  bigint,
+    can_change_vote     bigint, 
+    can_show_realtime   bigint, 
+    id_admin            bigint, 
+    id_vote             bigint, 
+    id_voting_options   bigint,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -144,6 +161,9 @@ class Database(object):
             LOGGER.debug('Creating table: agents')
             cursor.execute(CREATE_AGENT_STMTS)
 
+            LOGGER.debug('Creating table: elections')
+            cursor.execute(CREATE_ELECTION_STMTS)
+
         self._conn.commit()
 
     def disconnect(self):
@@ -162,6 +182,14 @@ class Database(object):
     def drop_fork(self, block_num):
         """Deletes all resources from a particular block_num
         """
+        delete_elections = """
+               DELETE FROM elections WHERE start_block_num >= {}
+               """.format(block_num)
+        update_elections = """
+               UPDATE elections SET end_block_num = null
+               WHERE end_block_num >= {}
+               """.format(block_num)
+
         delete_agents = """
         DELETE FROM agents WHERE start_block_num >= {}
         """.format(block_num)
@@ -191,6 +219,8 @@ class Database(object):
         """.format(block_num)
 
         with self._conn.cursor() as cursor:
+            cursor.execute(delete_elections)
+            cursor.execute(update_elections)
             cursor.execute(delete_agents)
             cursor.execute(update_agents)
             cursor.execute(delete_record_locations)
@@ -236,6 +266,41 @@ class Database(object):
 
         with self._conn.cursor() as cursor:
             cursor.execute(insert)
+
+    def insert_election(self, election_dict):
+        update_election = """
+           UPDATE elections SET end_block_num = {}
+           WHERE end_block_num = {} AND record_id = '{}'
+           """.format(
+            election_dict['id'],
+            election_dict['start_block_num'],
+            election_dict['end_block_num'])
+
+        insert_election = """
+           INSERT INTO elections (
+           id, name, description, start_timestamp, end_timestamp, results_permission,
+           can_change_vote, can_show_realtime, id_admin, id_vote, id_voting_options,
+           start_block_num,
+           end_block_num)
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           """.format(
+            election_dict['id'],
+            election_dict['name'],
+            election_dict['description'],
+            election_dict['start_timestamp'],
+            election_dict['end_timestamp'],
+            election_dict['results_permission'],
+            election_dict['can_change_vote'],
+            election_dict['can_show_realtime'],
+            election_dict['id_admin'],
+            election_dict['id_vote'],
+            election_dict['id_voting_options'],
+            election_dict['start_block_num'],
+            election_dict['end_block_num'])
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(update_election)
+            cursor.execute(insert_election)
 
     def insert_agent(self, agent_dict):
         update_agent = """

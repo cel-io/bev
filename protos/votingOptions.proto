@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 message VotingOption{
-    string record_id = 1;
     string id = 2;
     string name = 3;
     string description = 4;
