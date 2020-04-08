@@ -1,68 +1,48 @@
 <template>
     <div>
-        <nav class="navbar" role="navigation" aria-label="main navigation">
-          <div class="navbar-brand">
-            <a class="navbar-item" router-link="/">
-                VOLBY
-            </a>
+        <b-navbar :shadow="true" :spaced="true" class="has-margin-bottom-20">
+            <template slot="brand">
+                <b-navbar-item tag="router-link" :to="{ path: '/' }">
+                    <!--<img
+                    src="https://raw.githubusercontent.com/buefy/buefy/dev/static/img/buefy-logo.png"
+                    alt="Lightweight UI components for Vue.js based on Bulma"
+                    > -->
+                    VOLBY
+                </b-navbar-item>
+            </template>
+            <template slot="start">
+                <b-navbar-item href="#">
+                    Home
+                </b-navbar-item>
+                <b-navbar-item href="#">
+                    Documentation
+                </b-navbar-item>
+                <b-navbar-dropdown label="Info">
+                    <b-navbar-item href="#">
+                        About
+                    </b-navbar-item>
+                    <b-navbar-item href="#">
+                        Contact
+                    </b-navbar-item>
+                </b-navbar-dropdown>
+            </template>
 
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-              <span aria-hidden="true"></span>
-              <span aria-hidden="true"></span>
-              <span aria-hidden="true"></span>
-            </a>
-          </div>
-
-          <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-start">
-              <a class="navbar-item">
-                Home
-              </a>
-
-              <a class="navbar-item">
-                Documentation
-              </a>
-
-              <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">
-                  More
-                </a>
-
-                <div class="navbar-dropdown">
-                  <a class="navbar-item">
-                    About
-                  </a>
-                  <a class="navbar-item">
-                    Jobs
-                  </a>
-                  <a class="navbar-item">
-                    Contact
-                  </a>
-                  <hr class="navbar-divider">
-                  <a class="navbar-item">
-                    Report an issue
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div class="navbar-end">
-              <div class="navbar-item">
-                <div class="buttons">
-                  <a class="button is-primary">
-                    <strong>Sign up</strong>
-                  </a>
-                  <a class="button is-light">
-                    Log in
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </nav>
+            <template slot="end">
+                <b-navbar-item tag="div">
+                    <div class="buttons">
+                        <a class="button is-primary">
+                            <strong>Sign up</strong>
+                        </a>
+                        <a class="button is-light">
+                            Log in
+                        </a>
+                    </div>
+                </b-navbar-item>
+            </template>
+        </b-navbar>
         <div class="container">
             <h1 class="title">
-              {{title}}
+                {{title}}
             </h1>
             <router-view @title="onTitle"></router-view>
         </div>

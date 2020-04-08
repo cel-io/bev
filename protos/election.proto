@@ -21,7 +21,7 @@ message Election{
     string id_admin = 10;
     repeated string id_voting_options = 11;
     repeated string id_vote = 12;
-    repeated string poll_book = 13;
+    repeated string id_poll_registration = 13;
 }
 
 message ElectionContainer {

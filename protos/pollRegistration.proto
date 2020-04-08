@@ -1,9 +1,9 @@
 syntax = "proto3";
 
 message PollRegistration{
-    string id = 2;
-    string id_user = 3;
-    string name = 4;
+    string id = 1;
+    string id_user = 2;
+    string name = 3;
 }
 
 message PollRegistrationContainer {
