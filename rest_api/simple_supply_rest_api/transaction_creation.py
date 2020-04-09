@@ -1,4 +1,3 @@
-
 import hashlib
 
 from sawtooth_rest_api.protobuf import batch_pb2
@@ -9,24 +8,22 @@ from simple_supply_addressing import addresser
 from simple_supply_protobuf import payload_pb2
 
 
-def make_create_election_transaction(transaction_signer, batch_signer,
-                                      id, name, description, start_timestamp,
-                                      end_timestamp, can_change_vote,
-                                      can_show_realtime, can_show_results,
-                                      id_admin, id_vote, id_voting_options):
+def make_create_election_transaction(transaction_signer, batch_signer, id, name, description, start_timestamp,
+                                     end_timestamp, results_permission, can_show_realtime, can_change_vote,
+                                     id_admin, id_vote, id_voting_options):
     """Make a CreateElectionAction transaction and wrap it in a batch
 
     Args:
         transaction_signer (sawtooth_signing.Signer): The transaction key pair
         batch_signer (sawtooth_signing.Signer): The batch key pair
-        id (int): Unique ID of the election
+        id (str): Unique ID of the election
         name (str): Name of the election
         description (str): Description of the election
         start_timestamp (int): Unix UTC timestamp of when the election start
         end_timestamp (int): Unix UTC timestamp of when the election end
-        can_change_vote (bool): Defines if its possible to change the voting option of the election
+        results_permission (int): Defines if its possible to change the voting option of the election
         can_show_realtime (bool): Defines if the results of the election will be show realtime
-        can_show_results  (bool): Defines if the results of the election will be presented
+        can_change_vote  (bool): Defines if the results of the election will be presented
         id_admin (int):  Unique ID of the administrator
         id_vote (int): Unique ID of the vote
         id_voting_options (int): Unique ID of the choices in the election
@@ -36,21 +33,28 @@ def make_create_election_transaction(transaction_signer, batch_signer,
         batch_pb2.Batch: The transaction wrapped in a batch
     """
 
-    inputs = [
-        addresser.get_election_address(id)
-    ]
+    election_address = addresser.get_election_address(id)
 
-    outputs = [addresser.get_election_address(id)]
+    inputs = [election_address]
+
+    outputs = [election_address]
 
     action = payload_pb2.CreateElectionAction(
         id=id,
-        latitude=latitude,
-        longitude=longitude)
+        name=name,
+        description=description,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+        results_permission=results_permission,
+        can_change_vote=can_change_vote,
+        can_show_realtime=can_show_realtime,
+        id_admin=id_admin,
+        id_vote=id_vote,
+        id_voting_options=id_voting_options)
 
     payload = payload_pb2.SimpleSupplyPayload(
-        action=payload_pb2.SimpleSupplyPayload.CREATE_RECORD,
-        create_record=action,
-        timestamp=timestamp)
+        action=payload_pb2.SimpleSupplyPayload.CREATE_ELECTION,
+        create_record=action)
     payload_bytes = payload.SerializeToString()
 
     return _make_batch(
@@ -243,7 +247,6 @@ def _make_batch(payload_bytes,
                 outputs,
                 transaction_signer,
                 batch_signer):
-
     transaction_header = transaction_pb2.TransactionHeader(
         family_name=addresser.FAMILY_NAME,
         family_version=addresser.FAMILY_VERSION,

@@ -30,6 +30,11 @@ class SimpleSupplyPayload(object):
 
     @property
     def data(self):
+        if self._transaction.HasField('create_election') and \
+            self._transaction.action == \
+                payload_pb2.SimpleSupplyPayload.CREATE_ELECTION:
+            return self._transaction.create_election
+
         if self._transaction.HasField('create_agent') and \
             self._transaction.action == \
                 payload_pb2.SimpleSupplyPayload.CREATE_AGENT:
