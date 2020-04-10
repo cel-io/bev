@@ -75,8 +75,36 @@ class SimpleSupplyHandler(TransactionHandler):
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
+        elif payload.action == payload_pb2.SimpleSupplyPayload.CREATE_ELECTION:
+            _create_election(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
         else:
             raise InvalidTransaction('Unhandled action')
+
+
+def _create_election(state, public_key,payload):
+    if state.get_agent(public_key) is None:
+        raise InvalidTransaction('Agent with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.set_election(
+        public_key=public_key,
+        election_id=payload.data.election_id,
+        name=payload.data.name,
+        description=payload.data.description,
+        start_timestamp=payload.data.start_timestamp,
+        end_timestamp=payload.data.end_timestamp,
+        results_permission=payload.data.results_permission,
+        can_change_vote=payload.data.can_change_vote,
+        can_show_realtime=payload.data.can_show_realtime,
+        id_admin=payload.data.id_admin,
+        id_vote=payload.data.id_vote,
+        id_voting_options=payload.data.id_voting_options,
+        id_poll_registration=payload.data.id_poll_registration,
+        timestamp=payload.timestamp
+    )
 
 
 def _create_agent(state, public_key, payload):

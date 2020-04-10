@@ -1,12 +1,12 @@
 syntax = "proto3";
 
 message Vote{
-    string id = 2;
-    uint64 timestamp = 3;
-    string id_voter = 4;
+    string vote_id = 1;
+    uint64 timestamp = 2;
+    string id_voter = 3;
 
-    string id_election = 5;
-    repeated string id_option = 6;
+    string id_election = 4;
+    repeated string id_option = 5;
 }
 
 message VoteContainer {

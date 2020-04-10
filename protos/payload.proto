@@ -64,7 +64,7 @@ message TransferRecordAction {
 }
 
 message CreateElectionAction {
-    string id = 1;
+    string election_id = 1;
     string name = 2;
     string description = 3;
     uint64 start_timestamp = 4;
@@ -83,4 +83,5 @@ message CreateElectionAction {
     string id_admin = 9;
     repeated string id_voting_options = 10;
     repeated string id_vote = 11;
+    repeated string id_poll_registration = 12;
 }

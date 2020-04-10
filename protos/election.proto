@@ -1,12 +1,11 @@
 syntax = "proto3";
 
 message Election{
-    string record_id = 1;
-    string id = 2;
-    string name = 3;
-    string description = 4;
-    uint64 start_timestamp = 5;
-    uint64 end_timestamp = 6;
+    string election_id = 1;
+    string name = 2;
+    string description = 3;
+    uint64 start_timestamp = 4;
+    uint64 end_timestamp = 5;
 
     enum ResultsPermission {
         PRIVATE = 0;
@@ -14,14 +13,16 @@ message Election{
         PUBLIC = 2;
     }
 
-    ResultsPermission results_permission = 7 [default = VOTERS_ONLY];
-    bool can_change_vote = 8;
-    bool can_show_realtime = 9;
+    ResultsPermission results_permission = 6;
+    bool can_change_vote = 7;
+    bool can_show_realtime = 8;
 
-    string id_admin = 10;
-    repeated string id_voting_options = 11;
-    repeated string id_vote = 12;
-    repeated string id_poll_registration = 13;
+    string id_admin = 9;
+    repeated string id_voting_options = 10;
+    repeated string id_vote = 11;
+    repeated string id_poll_registration = 12;
+
+    uint64 timestamp = 13;
 }
 
 message ElectionContainer {

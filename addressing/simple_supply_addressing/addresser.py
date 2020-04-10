@@ -3,7 +3,7 @@ import enum
 import hashlib
 
 
-FAMILY_NAME = 'simple_supply'
+FAMILY_NAME = 'bev'
 FAMILY_VERSION = '0.1'
 NAMESPACE = hashlib.sha512(FAMILY_NAME.encode('utf-8')).hexdigest()[:6]
 AGENT_PREFIX = '00'
@@ -20,9 +20,9 @@ class AddressSpace(enum.IntEnum):
     OTHER_FAMILY = 100
 
 
-def get_election_address(id):
+def get_election_address(election_id):
     return NAMESPACE + ELECTION_PREFIX + hashlib.sha512(
-        id.encode('utf-8')).hexdigest()[:62]
+        election_id.encode('utf-8')).hexdigest()[:62]
 
 
 def get_agent_address(public_key):

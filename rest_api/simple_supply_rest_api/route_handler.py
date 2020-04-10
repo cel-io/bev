@@ -13,6 +13,8 @@ from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiNotFound
 from simple_supply_rest_api.errors import ApiUnauthorized
 
+import uuid
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -24,16 +26,16 @@ class RouteHandler(object):
 
     async def create_election(self, request):
         body = await decode_request(request)
-        required_fields = ['id', 'name', 'description', 'start_timestamp', 'end_timestamp',
+        required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
                            'results_permission', 'can_change_vote', 'can_show_realtime',
-                           'id_admin', 'id_vote', 'id_voting_options']
+                           'id_admin', 'id_vote', 'id_voting_options', 'id_poll_registration']
         validate_fields(required_fields, body)
 
         private_key = await self._authorize(request)
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
-            id=body.get('id'),
+            election_id=uuid.uuid1().hex,
             name=body.get('name'),
             description=body.get('description'),
             start_timestamp=body.get('start_timestamp'),
@@ -43,19 +45,10 @@ class RouteHandler(object):
             can_show_realtime=body.get('can_show_realtime'),
             id_admin=body.get('id_admin'),
             id_vote=body.get('id_vote'),
-            id_voting_options=body.get('id_voting_options'))
-
-        await self._database.create_election_entry(
-            id,
-            name,
-            description,
-            start_timestamp,
-            end_timestamp,
-            results_permission,
-            can_change_vote,
-            can_show_realtime,
-            id_admin, id_vote,
-            id_voting_options)
+            id_voting_options=body.get('id_voting_options'),
+            id_poll_registration=body.get('id_poll_registration'),
+            timestamp=get_time()
+        )
 
         return json_response({'data': 'Create election transaction submitted'})
 

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 message PollRegistration{
-    string id = 1;
+    string poll_registration_id = 1;
     string id_user = 2;
     string name = 3;
 }

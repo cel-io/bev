@@ -88,16 +88,18 @@ CREATE TABLE IF NOT EXISTS agents (
 CREATE_ELECTION_STMTS = """
 CREATE TABLE IF NOT EXISTS elections (
     id               bigserial PRIMARY KEY,
+    election_id      varchar
     name             varchar,
     description      varchar,
     start_timestamp  bigint,
     end_timestamp    bigint,
-    results_permission  bigint,
-    can_change_vote     bigint, 
-    can_show_realtime   bigint, 
+    results_permission  tinyint,
+    can_change_vote     smallint, 
+    can_show_realtime   smallint, 
     id_admin            bigint, 
     id_vote             bigint, 
     id_voting_options   bigint,
+    id_poll_registration bigint,
     start_block_num  bigint,
     end_block_num    bigint
 );

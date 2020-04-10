@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 message VotingOption{
-    string id = 2;
-    string name = 3;
-    string description = 4;
+    string voting_option_id = 1;
+    string name = 2;
+    string description = 3;
 
-    repeated string id_votes = 5;
+    repeated string id_votes = 4;
 }
 
 message VotingOptionsContainer {

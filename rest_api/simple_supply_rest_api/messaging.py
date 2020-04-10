@@ -37,22 +37,25 @@ class Messenger(object):
         public_key = self._context.get_public_key(private_key)
         return public_key.as_hex(), private_key.as_hex()
 
-    async def send_create_election_transaction(self, private_key, id, name,
+    async def send_create_election_transaction(self, private_key, election_id, name,
                                                description,
                                                start_timestamp,
                                                end_timestamp,
                                                results_permission,
                                                can_change_vote,
                                                can_show_realtime,
-                                               id_admin, id_vote,
-                                               id_voting_options):
+                                               id_admin,
+                                               id_vote,
+                                               id_voting_options,
+                                               id_poll_registration,
+                                               timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
 
         batch = make_create_election_transaction(
             transaction_signer=transaction_signer,
             batch_signer=self._batch_signer,
-            id=id,
+            election_id=election_id,
             name=name,
             description=description,
             start_timestamp=start_timestamp,
@@ -62,7 +65,9 @@ class Messenger(object):
             can_show_realtime=can_show_realtime,
             id_admin=id_admin,
             id_vote=id_vote,
-            id_voting_options=id_voting_options)
+            id_voting_options=id_voting_options,
+            id_poll_registration=id_poll_registration,
+            timestamp=timestamp)
         await self._send_and_wait_for_commit(batch)
 
     # ------------------------------------------------------------
