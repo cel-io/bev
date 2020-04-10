@@ -86,6 +86,8 @@ def _apply_state_changes(database, events, block_num, block_id):
             _apply_agent_change(database, block_num, resources)
         elif data_type == AddressSpace.RECORD:
             _apply_record_change(database, block_num, resources)
+        elif data_type == AddressSpace.ELECTION:
+            _apply_election_change(database, block_num, resources)
         else:
             LOGGER.warning('Unsupported data type: %s', data_type)
 
@@ -115,3 +117,10 @@ def _apply_record_change(database, block_num, records):
         record['start_block_num'] = block_num
         record['end_block_num'] = MAX_BLOCK_NUMBER
         database.insert_record(record)
+
+
+def _apply_election_change(database, block_num, elections):
+    for election in elections:
+        election['start_block_num'] = block_num
+        election['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_election(election)

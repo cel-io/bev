@@ -56,26 +56,71 @@ class Database(object):
         """
         self._conn.close()
 
-    async def create_election_entry(self, id, name, description, start_timestamp, end_timestamp, results_permission,
-                                    can_change_vote,can_show_realtime, id_admin, id_vote, id_voting_options):
+    async def create_election_entry(self,
+                                    election_id,
+                                    name,
+                                    description,
+                                    start_timestamp,
+                                    end_timestamp,
+                                    results_permission,
+                                    can_change_vote,
+                                    can_show_realtime,
+                                    id_admin,
+                                    id_vote,
+                                    id_voting_options,
+                                    id_poll_registration):
         insert = """
         INSERT INTO elections (
-            id, name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
-            can_show_realtime, id_admin, id_vote, id_voting_options)
+            election_id, 
+            name, 
+            description, 
+            start_timestamp, 
+            end_timestamp, 
+            results_permission, 
+            can_change_vote, 
+            can_show_realtime, 
+            id_admin, 
+            id_vote, 
+            id_voting_options,
+            id_poll_registration)
         )
-        VALUES ('{}', '{}', '{}','{}','{}','{}', '{}', '{}', '{}', '{}', '{}');
-        """.format(id, name, description, start_timestamp, end_timestamp, results_permission,
-                   can_change_vote, can_show_realtime, id_admin, id_vote, id_voting_options)
+        VALUES ('{}', '{}', '{}','{}','{}','{}', '{}', '{}', '{}', '{}', '{}', '{}');
+        """.format(
+            election_id,
+            name,
+            description,
+            start_timestamp,
+            end_timestamp,
+            results_permission,
+            can_change_vote,
+            can_show_realtime,
+            id_admin,
+            id_vote,
+            id_voting_options,
+            id_poll_registration)
 
         async with self._conn.cursor() as cursor:
             await cursor.execute(insert)
 
         self._conn.commit()
 
+    async def fetch_election_resources(self, election_id):
+        fetch_election = """
+                SELECT election_id FROM records
+                WHERE election_id='{0}'
+                AND ({1}) >= start_block_num
+                AND ({1}) < end_block_num;
+                """.format(election_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch_election)
+            return await cursor.fetchall()
+
     async def fetch_all_election_resources(self):
         fetch = """
-        SELECT  name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
-        can_show_realtime FROM elections
+        SELECT election_id, name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
+            can_show_realtime, id_admin, id_vote, id_voting_options, timestamp 
+        FROM elections
         WHERE ({0}) >= start_block_num
         AND ({0}) < end_block_num;
         """.format(LATEST_BLOCK_NUM)

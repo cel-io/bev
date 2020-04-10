@@ -41,6 +41,7 @@ def make_create_election_transaction(transaction_signer,
         id_vote (str): Unique IDs of the vote
         id_voting_options (str): Unique IDs of the choices in the election
         id_poll_registration (str): Unique IDs of the poll registrations
+        timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
         batch_pb2.Batch: The transaction wrapped in a batch

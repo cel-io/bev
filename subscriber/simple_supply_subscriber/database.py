@@ -88,18 +88,19 @@ CREATE TABLE IF NOT EXISTS agents (
 CREATE_ELECTION_STMTS = """
 CREATE TABLE IF NOT EXISTS elections (
     id               bigserial PRIMARY KEY,
-    election_id      varchar
+    election_id      varchar,
     name             varchar,
     description      varchar,
     start_timestamp  bigint,
     end_timestamp    bigint,
-    results_permission  tinyint,
-    can_change_vote     smallint, 
-    can_show_realtime   smallint, 
+    results_permission  varchar,
+    can_change_vote     varchar, 
+    can_show_realtime   varchar, 
     id_admin            bigint, 
     id_vote             bigint, 
-    id_voting_options   bigint,
+    id_voting_options   list,
     id_poll_registration bigint,
+    timestamp        bigint,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -272,21 +273,32 @@ class Database(object):
     def insert_election(self, election_dict):
         update_election = """
            UPDATE elections SET end_block_num = {}
-           WHERE end_block_num = {} AND record_id = '{}'
+           WHERE end_block_num = {} AND election_id = '{}'
            """.format(
-            election_dict['id'],
             election_dict['start_block_num'],
-            election_dict['end_block_num'])
+            election_dict['end_block_num'],
+            election_dict['election_id'],)
 
         insert_election = """
            INSERT INTO elections (
-           id, name, description, start_timestamp, end_timestamp, results_permission,
-           can_change_vote, can_show_realtime, id_admin, id_vote, id_voting_options,
+           election_id, 
+           name, 
+           description, 
+           start_timestamp, 
+           end_timestamp, 
+           results_permission,
+           can_change_vote, 
+           can_show_realtime, 
+           id_admin, 
+           id_vote, 
+           id_voting_options,
+           id_poll_registration,
+           timestamp,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
-            election_dict['id'],
+            election_dict['election_id'],
             election_dict['name'],
             election_dict['description'],
             election_dict['start_timestamp'],
@@ -295,8 +307,10 @@ class Database(object):
             election_dict['can_change_vote'],
             election_dict['can_show_realtime'],
             election_dict['id_admin'],
-            election_dict['id_vote'],
-            election_dict['id_voting_options'],
+            election_dict['id_vote'][-1],
+            election_dict['id_voting_options'][-1],
+            election_dict['id_poll_registration'][-1],
+            election_dict['timestamp'],
             election_dict['start_block_num'],
             election_dict['end_block_num'])
 
