@@ -85,6 +85,15 @@ CREATE TABLE IF NOT EXISTS agents (
 );
 """
 
+CREATE_TYPES_STMTS = """
+DO $$ BEGIN
+    CREATE TYPE results_permission_type AS ENUM('PRIVATE', 'VOTERS_ONLY', 'PUBLIC');
+    CREATE TYPE voter_type AS ENUM('VOTER', 'ADMIN', 'SUPERADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+"""
+
 CREATE_ELECTION_STMTS = """
 CREATE TABLE IF NOT EXISTS elections (
     id               bigserial PRIMARY KEY,
@@ -93,14 +102,44 @@ CREATE TABLE IF NOT EXISTS elections (
     description      varchar,
     start_timestamp  bigint,
     end_timestamp    bigint,
-    results_permission  varchar,
-    can_change_vote     varchar, 
-    can_show_realtime   varchar, 
-    id_admin            bigint, 
-    id_vote             bigint, 
-    id_voting_options   list,
-    id_poll_registration bigint,
+    results_permission  results_permission_type,
+    can_change_vote     boolean, 
+    can_show_realtime   boolean, 
+    admin_id            smallint, 
     timestamp        bigint,
+    start_block_num  bigint,
+    end_block_num    bigint
+);
+"""
+
+CREATE_VOTING_OPTION_STMTS = """
+CREATE TABLE IF NOT EXISTS voting_options (
+    id               bigserial PRIMARY KEY,
+    voting_option_id varchar,
+    name             varchar,
+    description      varchar,
+    election_id      varchar,
+    start_block_num  bigint,
+    end_block_num    bigint
+);
+"""
+
+CREATE_VOTER_STMTS = """
+CREATE TABLE IF NOT EXISTS voters (
+    id               bigserial PRIMARY KEY,
+    voter_id         varchar,
+    type             voter_type,
+    start_block_num  bigint,
+    end_block_num    bigint
+);
+"""
+
+CREATE_POLL_REGISTRATION_STMTS = """
+CREATE TABLE IF NOT EXISTS poll_registrations (
+    id               bigserial PRIMARY KEY,
+    user_id             varchar,
+    name                varchar,
+    election_id         varchar,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -164,8 +203,20 @@ class Database(object):
             LOGGER.debug('Creating table: agents')
             cursor.execute(CREATE_AGENT_STMTS)
 
+            LOGGER.debug('Creating types')
+            cursor.execute(CREATE_TYPES_STMTS)
+
             LOGGER.debug('Creating table: elections')
             cursor.execute(CREATE_ELECTION_STMTS)
+
+            LOGGER.debug('Creating table: voting_options')
+            cursor.execute(CREATE_VOTING_OPTION_STMTS)
+
+            LOGGER.debug('Creating table: voters')
+            cursor.execute(CREATE_VOTER_STMTS)
+
+            LOGGER.debug('Creating table: poll_registrations')
+            cursor.execute(CREATE_POLL_REGISTRATION_STMTS)
 
         self._conn.commit()
 
@@ -289,14 +340,11 @@ class Database(object):
            results_permission,
            can_change_vote, 
            can_show_realtime, 
-           id_admin, 
-           id_vote, 
-           id_voting_options,
-           id_poll_registration,
+           admin_id, 
            timestamp,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             election_dict['election_id'],
             election_dict['name'],
@@ -306,10 +354,7 @@ class Database(object):
             election_dict['results_permission'],
             election_dict['can_change_vote'],
             election_dict['can_show_realtime'],
-            election_dict['id_admin'],
-            election_dict['id_vote'][-1],
-            election_dict['id_voting_options'][-1],
-            election_dict['id_poll_registration'][-1],
+            election_dict['admin_id'],
             election_dict['timestamp'],
             election_dict['start_block_num'],
             election_dict['end_block_num'])
@@ -317,6 +362,37 @@ class Database(object):
         with self._conn.cursor() as cursor:
             cursor.execute(update_election)
             cursor.execute(insert_election)
+
+
+    def insert_voting_option(self, voting_option_dict):
+        update_voting_option = """
+           UPDATE voting_options SET end_block_num = {}
+           WHERE end_block_num = {} AND voting_option_id = '{}'
+           """.format(
+            voting_option_dict['start_block_num'],
+            voting_option_dict['end_block_num'],
+            voting_option_dict['voting_option_id'],)
+
+        insert_voting_option = """
+           INSERT INTO voting_options (
+           voting_option_id, 
+           name, 
+           description, 
+           election_id,
+           start_block_num,
+           end_block_num)
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}');
+           """.format(
+            voting_option_dict['voting_option_id'],
+            voting_option_dict['name'],
+            voting_option_dict['description'],
+            voting_option_dict['election_id'],
+            voting_option_dict['start_block_num'],
+            voting_option_dict['end_block_num'])
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(update_voting_option)
+            cursor.execute(insert_voting_option)
 
     def insert_agent(self, agent_dict):
         update_agent = """

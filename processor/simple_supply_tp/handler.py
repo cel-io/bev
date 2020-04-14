@@ -23,7 +23,7 @@ from simple_supply_addressing import addresser
 
 from simple_supply_protobuf import payload_pb2
 
-from simple_supply_tp.payload import SimpleSupplyPayload
+from simple_supply_tp.payload import BevPayload
 from simple_supply_tp.state import SimpleSupplyState
 
 
@@ -50,33 +50,38 @@ class SimpleSupplyHandler(TransactionHandler):
 
     def apply(self, transaction, context):
         header = transaction.header
-        payload = SimpleSupplyPayload(transaction.payload)
+        payload = BevPayload(transaction.payload)
         state = SimpleSupplyState(context)
 
         _validate_timestamp(payload.timestamp)
 
-        if payload.action == payload_pb2.SimpleSupplyPayload.CREATE_AGENT:
+        if payload.action == payload_pb2.BevPayload.CREATE_AGENT:
             _create_agent(
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
-        elif payload.action == payload_pb2.SimpleSupplyPayload.CREATE_RECORD:
+        elif payload.action == payload_pb2.BevPayload.CREATE_RECORD:
             _create_record(
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
-        elif payload.action == payload_pb2.SimpleSupplyPayload.TRANSFER_RECORD:
+        elif payload.action == payload_pb2.BevPayload.TRANSFER_RECORD:
             _transfer_record(
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
-        elif payload.action == payload_pb2.SimpleSupplyPayload.UPDATE_RECORD:
+        elif payload.action == payload_pb2.BevPayload.UPDATE_RECORD:
             _update_record(
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
-        elif payload.action == payload_pb2.SimpleSupplyPayload.CREATE_ELECTION:
+        elif payload.action == payload_pb2.BevPayload.CREATE_ELECTION:
             _create_election(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
+        elif payload.action == payload_pb2.BevPayload.CREATE_VOTING_OPTION:
+            _create_voting_option(
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
@@ -84,13 +89,12 @@ class SimpleSupplyHandler(TransactionHandler):
             raise InvalidTransaction('Unhandled action')
 
 
-def _create_election(state, public_key,payload):
+def _create_election(state, public_key, payload):
     if state.get_agent(public_key) is None:
         raise InvalidTransaction('Agent with the public key {} does '
                                  'not exist'.format(public_key))
 
     state.set_election(
-        public_key=public_key,
         election_id=payload.data.election_id,
         name=payload.data.name,
         description=payload.data.description,
@@ -99,11 +103,21 @@ def _create_election(state, public_key,payload):
         results_permission=payload.data.results_permission,
         can_change_vote=payload.data.can_change_vote,
         can_show_realtime=payload.data.can_show_realtime,
-        id_admin=payload.data.id_admin,
-        id_vote=payload.data.id_vote,
-        id_voting_options=payload.data.id_voting_options,
-        id_poll_registration=payload.data.id_poll_registration,
+        admin_id=payload.data.admin_id,
         timestamp=payload.timestamp
+    )
+
+
+def _create_voting_option(state, public_key, payload):
+    if state.get_agent(public_key) is None:
+        raise InvalidTransaction('Agent with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.set_voting_option(
+        voting_option_id=payload.data.voting_option_id,
+        name=payload.data.name,
+        description=payload.data.description,
+        election_id=payload.data.election_id
     )
 
 

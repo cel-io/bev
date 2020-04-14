@@ -11,6 +11,8 @@ from simple_supply_rest_api.transaction_creation import \
 from simple_supply_rest_api.transaction_creation import \
     make_create_election_transaction
 from simple_supply_rest_api.transaction_creation import \
+    make_create_voting_option_transaction
+from simple_supply_rest_api.transaction_creation import \
     make_create_record_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_transfer_record_transaction
@@ -37,17 +39,17 @@ class Messenger(object):
         public_key = self._context.get_public_key(private_key)
         return public_key.as_hex(), private_key.as_hex()
 
-    async def send_create_election_transaction(self, private_key, election_id, name,
+    async def send_create_election_transaction(self,
+                                               private_key,
+                                               election_id,
+                                               name,
                                                description,
                                                start_timestamp,
                                                end_timestamp,
                                                results_permission,
                                                can_change_vote,
                                                can_show_realtime,
-                                               id_admin,
-                                               id_vote,
-                                               id_voting_options,
-                                               id_poll_registration,
+                                               admin_id,
                                                timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
@@ -63,11 +65,30 @@ class Messenger(object):
             results_permission=results_permission,
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
-            id_admin=id_admin,
-            id_vote=id_vote,
-            id_voting_options=id_voting_options,
-            id_poll_registration=id_poll_registration,
+            admin_id=admin_id,
             timestamp=timestamp)
+        await self._send_and_wait_for_commit(batch)
+
+    async def send_create_voting_option_transaction(self,
+                                                    private_key,
+                                                    voting_option_id,
+                                                    name,
+                                                    description,
+                                                    election_id,
+                                                    timestamp):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_create_voting_option_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            voting_option_id=voting_option_id,
+            name=name,
+            description=description,
+            election_id=election_id,
+            timestamp=timestamp
+        )
+
         await self._send_and_wait_for_commit(batch)
 
     # ------------------------------------------------------------

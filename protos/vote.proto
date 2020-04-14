@@ -3,10 +3,10 @@ syntax = "proto3";
 message Vote{
     string vote_id = 1;
     uint64 timestamp = 2;
-    string id_voter = 3;
+    string voter_id = 3;
 
-    string id_election = 4;
-    repeated string id_option = 5;
+    string election_id = 4;
+    repeated string voting_option_id = 5;
 }
 
 message VoteContainer {

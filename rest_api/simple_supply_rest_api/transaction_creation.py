@@ -13,16 +13,14 @@ import time
 def make_create_election_transaction(transaction_signer,
                                      batch_signer,
                                      election_id,
-                                     name, description,
+                                     name,
+                                     description,
                                      start_timestamp,
                                      end_timestamp,
                                      results_permission,
                                      can_show_realtime,
                                      can_change_vote,
-                                     id_admin,
-                                     id_vote,
-                                     id_voting_options,
-                                     id_poll_registration,
+                                     admin_id,
                                      timestamp):
     """Make a CreateElectionAction transaction and wrap it in a batch
 
@@ -37,10 +35,7 @@ def make_create_election_transaction(transaction_signer,
         results_permission (int): Defines if its possible to change the voting option of the election
         can_show_realtime (bool): Defines if the results of the election will be show realtime
         can_change_vote  (bool): Defines if the results of the election will be presented
-        id_admin (int):  Unique ID of the administrator
-        id_vote (str): Unique IDs of the vote
-        id_voting_options (str): Unique IDs of the choices in the election
-        id_poll_registration (str): Unique IDs of the poll registrations
+        admin_id (str):  Unique ID of the administrator
         timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
@@ -64,14 +59,62 @@ def make_create_election_transaction(transaction_signer,
         results_permission=results_permission,
         can_change_vote=can_change_vote,
         can_show_realtime=can_show_realtime,
-        id_admin=id_admin,
-        id_vote=id_vote,
-        id_voting_options=id_voting_options,
-        id_poll_registration=id_poll_registration)
+        admin_id=admin_id)
 
-    payload = payload_pb2.SimpleSupplyPayload(
-        action=payload_pb2.SimpleSupplyPayload.CREATE_ELECTION,
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.CREATE_ELECTION,
         create_election=action,
+        timestamp=timestamp
+    )
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
+def make_create_voting_option_transaction(transaction_signer,
+                                          batch_signer,
+                                          voting_option_id,
+                                          name,
+                                          description,
+                                          election_id,
+                                          timestamp):
+    """Make a CreateVotingOptionAction transaction and wrap it in a batch
+
+    Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        voting_option_id (str): Unique ID of the voting option
+        name (str): Name of the voting option
+        description (str): Description of the voting option
+        election_id (str):  Unique ID of the election
+        timestamp (int): Unix UTC timestamp of when the election is created
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_agent_address(
+            transaction_signer.get_public_key().as_hex()),
+        addresser.get_voting_option_address(voting_option_id)
+    ]
+
+    outputs = [addresser.get_voting_option_address(voting_option_id)]
+
+    action = payload_pb2.CreateVotingOptionAction(
+        voting_option_id=voting_option_id,
+        name=name,
+        description=description,
+        election_id=election_id)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.CREATE_VOTING_OPTION,
+        create_voting_option=action,
         timestamp=timestamp
     )
     payload_bytes = payload.SerializeToString()
@@ -110,8 +153,8 @@ def make_create_agent_transaction(transaction_signer,
 
     action = payload_pb2.CreateAgentAction(name=name)
 
-    payload = payload_pb2.SimpleSupplyPayload(
-        action=payload_pb2.SimpleSupplyPayload.CREATE_AGENT,
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.CREATE_AGENT,
         create_agent=action,
         timestamp=timestamp)
     payload_bytes = payload.SerializeToString()
@@ -157,8 +200,8 @@ def make_create_record_transaction(transaction_signer,
         latitude=latitude,
         longitude=longitude)
 
-    payload = payload_pb2.SimpleSupplyPayload(
-        action=payload_pb2.SimpleSupplyPayload.CREATE_RECORD,
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.CREATE_RECORD,
         create_record=action,
         timestamp=timestamp)
     payload_bytes = payload.SerializeToString()
@@ -201,8 +244,8 @@ def make_transfer_record_transaction(transaction_signer,
         record_id=record_id,
         receiving_agent=receiving_agent)
 
-    payload = payload_pb2.SimpleSupplyPayload(
-        action=payload_pb2.SimpleSupplyPayload.TRANSFER_RECORD,
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.TRANSFER_RECORD,
         transfer_record=action,
         timestamp=timestamp)
     payload_bytes = payload.SerializeToString()
@@ -247,8 +290,8 @@ def make_update_record_transaction(transaction_signer,
         latitude=latitude,
         longitude=longitude)
 
-    payload = payload_pb2.SimpleSupplyPayload(
-        action=payload_pb2.SimpleSupplyPayload.UPDATE_RECORD,
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.UPDATE_RECORD,
         update_record=action,
         timestamp=timestamp)
     payload_bytes = payload.SerializeToString()

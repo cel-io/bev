@@ -18,12 +18,14 @@ from simple_supply_addressing.addresser import get_address_type
 from simple_supply_protobuf.agent_pb2 import AgentContainer
 from simple_supply_protobuf.record_pb2 import RecordContainer
 from simple_supply_protobuf.election_pb2 import ElectionContainer
+from simple_supply_protobuf.votingOption_pb2 import VotingOptionContainer
 
 
 CONTAINERS = {
     AddressSpace.AGENT: AgentContainer,
     AddressSpace.RECORD: RecordContainer,
-    AddressSpace.ELECTION: ElectionContainer
+    AddressSpace.ELECTION: ElectionContainer,
+    AddressSpace.VOTING_OPTION: VotingOptionContainer
 }
 
 

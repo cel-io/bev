@@ -5,9 +5,9 @@ message VotingOption{
     string name = 2;
     string description = 3;
 
-    repeated string id_votes = 4;
+    string election_id = 4;
 }
 
-message VotingOptionsContainer {
+message VotingOptionContainer {
     repeated VotingOption entries = 1;
 }

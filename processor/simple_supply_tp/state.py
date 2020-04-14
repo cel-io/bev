@@ -18,6 +18,7 @@ from simple_supply_addressing import addresser
 from simple_supply_protobuf import agent_pb2
 from simple_supply_protobuf import record_pb2
 from simple_supply_protobuf import election_pb2
+from simple_supply_protobuf import votingOption_pb2
 
 
 class SimpleSupplyState(object):
@@ -92,7 +93,6 @@ class SimpleSupplyState(object):
         return None
 
     def set_election(self,
-                     public_key,
                      election_id,
                      name,
                      description,
@@ -101,15 +101,11 @@ class SimpleSupplyState(object):
                      results_permission,
                      can_change_vote,
                      can_show_realtime,
-                     id_admin,
-                     id_vote,
-                     id_voting_options,
-                     id_poll_registration,
+                     admin_id,
                      timestamp):
         """Creates a new election in state
 
             Args:
-                public_key (str): The public key of the admin creating the record
                 election_id (str): Unique ID of the election
                 name (str): Name of the election
                 description (str): Description of the election
@@ -118,10 +114,7 @@ class SimpleSupplyState(object):
                 results_permission (int): Defines if its possible to change the voting option of the election
                 can_show_realtime (bool): Defines if the results of the election will be show realtime
                 can_change_vote  (bool): Defines if the results of the election will be presented
-                id_admin (int):  Unique ID of the administrator
-                id_vote (str): Unique IDs of the vote
-                id_voting_options (str): Unique IDs of the choices in the election
-                id_poll_registration (str): Unique IDs of the poll registrations
+                admin_id (int):  Unique ID of the administrator
                 timestamp (int): Timestamp
         """
         address = addresser.get_election_address(election_id)
@@ -135,10 +128,7 @@ class SimpleSupplyState(object):
             results_permission=results_permission,
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
-            id_admin=id_admin,
-            id_vote=id_vote,
-            id_voting_options=id_voting_options,
-            id_poll_registration=id_poll_registration,
+            admin_id=admin_id,
             timestamp=timestamp)
 
         container = election_pb2.ElectionContainer()
@@ -154,6 +144,39 @@ class SimpleSupplyState(object):
         updated_state[address] = data
         self._context.set_state(updated_state, timeout=self._timeout)
 
+    def set_voting_option(self,
+                          voting_option_id,
+                          name,
+                          description,
+                          election_id):
+        """Creates a new election in state
+
+            Args:
+                voting_option_id (str): Unique ID of the voting option
+                name (str): Name of the voting option
+                description (str): Description of the voting option
+                election_id (str): Unique ID of the election
+        """
+        address = addresser.get_voting_option_address(voting_option_id)
+
+        voting_option = votingOption_pb2.VotingOption(
+            voting_option_id=voting_option_id,
+            name=name,
+            description=description,
+            election_id=election_id)
+
+        container = votingOption_pb2.VotingOptionContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+
+        container.entries.extend([voting_option])
+        data = container.SerializeToString()
+
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
 
     def set_record(self,
                    public_key,

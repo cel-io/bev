@@ -28,14 +28,16 @@ class RouteHandler(object):
         body = await decode_request(request)
         required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
                            'results_permission', 'can_change_vote', 'can_show_realtime',
-                           'id_admin', 'id_vote', 'id_voting_options', 'id_poll_registration']
+                           'voting_options', 'poll_book']
         validate_fields(required_fields, body)
 
         private_key = await self._authorize(request)
+        election_id = uuid.uuid1().hex
+
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
-            election_id=uuid.uuid1().hex,
+            election_id=election_id,
             name=body.get('name'),
             description=body.get('description'),
             start_timestamp=body.get('start_timestamp'),
@@ -43,12 +45,19 @@ class RouteHandler(object):
             results_permission=body.get('results_permission'),
             can_change_vote=body.get('can_change_vote'),
             can_show_realtime=body.get('can_show_realtime'),
-            id_admin=body.get('id_admin'),
-            id_vote=body.get('id_vote'),
-            id_voting_options=body.get('id_voting_options'),
-            id_poll_registration=body.get('id_poll_registration'),
+            admin_id="1",
             timestamp=get_time()
         )
+
+        for voting_option in body.get('voting_options'):
+            await self._messenger.send_create_voting_option_transaction(
+                private_key=private_key,
+                voting_option_id=uuid.uuid1().hex,
+                name=voting_option.get('name'),
+                description=voting_option.get('description'),
+                election_id=election_id,
+                timestamp=get_time()
+            )
 
         return json_response({'data': 'Create election transaction submitted'})
 

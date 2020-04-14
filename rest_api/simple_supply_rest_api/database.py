@@ -56,54 +56,6 @@ class Database(object):
         """
         self._conn.close()
 
-    async def create_election_entry(self,
-                                    election_id,
-                                    name,
-                                    description,
-                                    start_timestamp,
-                                    end_timestamp,
-                                    results_permission,
-                                    can_change_vote,
-                                    can_show_realtime,
-                                    id_admin,
-                                    id_vote,
-                                    id_voting_options,
-                                    id_poll_registration):
-        insert = """
-        INSERT INTO elections (
-            election_id, 
-            name, 
-            description, 
-            start_timestamp, 
-            end_timestamp, 
-            results_permission, 
-            can_change_vote, 
-            can_show_realtime, 
-            id_admin, 
-            id_vote, 
-            id_voting_options,
-            id_poll_registration)
-        )
-        VALUES ('{}', '{}', '{}','{}','{}','{}', '{}', '{}', '{}', '{}', '{}', '{}');
-        """.format(
-            election_id,
-            name,
-            description,
-            start_timestamp,
-            end_timestamp,
-            results_permission,
-            can_change_vote,
-            can_show_realtime,
-            id_admin,
-            id_vote,
-            id_voting_options,
-            id_poll_registration)
-
-        async with self._conn.cursor() as cursor:
-            await cursor.execute(insert)
-
-        self._conn.commit()
-
     async def fetch_election_resources(self, election_id):
         fetch_election = """
                 SELECT election_id FROM records
@@ -119,7 +71,7 @@ class Database(object):
     async def fetch_all_election_resources(self):
         fetch = """
         SELECT election_id, name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
-            can_show_realtime, id_admin, id_vote, id_voting_options, timestamp 
+            can_show_realtime, admin_id, id_vote, id_voting_options, timestamp 
         FROM elections
         WHERE ({0}) >= start_block_num
         AND ({0}) < end_block_num;
