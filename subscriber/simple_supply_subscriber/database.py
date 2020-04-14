@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS elections (
     can_show_realtime   varchar, 
     id_admin            bigint, 
     id_vote             bigint, 
-    id_voting_options   list,
+    id_voting_options   bigint,
     id_poll_registration bigint,
     timestamp        bigint,
     start_block_num  bigint,
