@@ -13,6 +13,9 @@
   "dependencies": {
     "buefy": "^0.8.15",
     "bulma-spacing": "^1.0.2",
+    "lodash": "^4.17.15",
+    "mithril": "^2.0.4",
+    "vee-validate": "^3.2.5",
     "vue": "^2.5.11",
     "vue-router": "^3.1.6"
   },
