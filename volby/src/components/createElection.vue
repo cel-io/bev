@@ -39,9 +39,9 @@
                                         <ValidationProvider rules="required" name="Results Exposure" v-slot="{ errors, valid }">
                                             <b-field label="Results Exposure" :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
                                                 <b-select v-model="resultsPermission" expanded>
-                                                    <option value="0">Private</option>
-                                                    <option value="1">Voters Only</option>
-                                                    <option value="2">Public</option>
+                                                    <option value="PRIVATE">Private</option>
+                                                    <option value="VOTERS_ONLY">Voters Only</option>
+                                                    <option value="PUBLIC">Public</option>
                                                 </b-select>
                                             </b-field>
                                         </ValidationProvider>
@@ -167,7 +167,7 @@ export default{
             showWeekNumber: false,
             format: '24',
             enableSeconds: false,
-            resultsPermission: "1",
+            resultsPermission: "VOTERS_ONLY",
             canChangeVote: true,
             canShowRealtime: true,
             votingOptions: [
@@ -208,22 +208,19 @@ export default{
             return timestamp/1000;
         },
         submit(){
+            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njg5NzI4OSwiZXhwIjoxNTg2OTAwODg5fQ.eyJwdWJsaWNfa2V5IjoiMDJhY2NlZTliNTM0OTA2NTA5YThhYzY1OWZmNTZmZGI2MGM0NjBiMmViN2Y3YTUyMDYwOTc3NjRjNTI3NzA1MDFjIn0.PWYDuTCZIfJZIgkbaV6AOFxTPBFuj9PVUPZGg1SlgV-nxWtUZdoAwKMaxyuD6bv6CDlUH7195QYy6YMZs2XK_g"
+            axios.defaults.headers.common.Authorization = "Bearer " + token;
+
             axios.post('api/elections', {
-                "name" : "teste",
-                "description" : "teste",
-                "start_timestamp" : 1586459186,
-                "end_timestamp" : 1586559186,
-                "results_permission" : "VOTERS_ONLY",
-                "can_change_vote" : true,
-                "can_show_realtime" : true,
-                "voting_options" : [
-                    {"name": "BE", "description": "Bloco de Esquerda"},
-                    {"name": "PS", "description": "Partido Socialista"}
-                ],
-                "poll_book": [
-                    {"voter_id": "2170880", "name": "Bernardo Figueiredo"},
-                    {"voter_id": "2171098", "name": "Célio Mendes"}
-                ]
+                "name" : this.name,
+                "description" : this.description,
+                "start_timestamp" :this.toTimestamp(this.startDate),
+                "end_timestamp" : this.toTimestamp(this.startDate),
+                "results_permission" : this.resultsPermission,
+                "can_change_vote" : this.canChangeVote,
+                "can_show_realtime" :this.canShowRealtime,
+                "voting_options" :this.votingOptions,
+                "poll_book":this.pollBook
             })
             .then(response => {
                 this.$router.push("home")
