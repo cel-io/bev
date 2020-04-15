@@ -1,239 +1,254 @@
 <template>
     <div>
-        <ValidationObserver v-slot="{ handleSubmit }">
-            <section>
-                <div class="card box has-padding-bottom-40 has-margin-bottom-40">
-                    <div class="card-content">
-                        <b-tabs v-model="activeTab">
+        <section>
+            <div class="card box has-padding-bottom-40 has-margin-bottom-40">
+                <div class="card-content">
+                    <validation-observer ref="observer" v-slot="{ handleSubmit }">
+                    <b-tabs v-model="activeTab">
                             <b-tab-item label="Informations">
-                                <ValidationProvider rules="required|alpha_spaces" name="Name" v-slot="{ errors, valid }">
-                                    <b-field label="Name" :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                <validation-provider rules="required|alpha_spaces" name="Name" v-slot="validationContext">
+                                    <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                         <b-input v-model="name"></b-input>
                                     </b-field>
-                                </ValidationProvider>
-                                <ValidationProvider rules="required|alpha_spaces" name="Description" v-slot="{ errors, valid }">
-                                    <b-field label="Description" :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                </validation-provider>
+                                <validation-provider rules="required|alpha_spaces" name="Description" v-slot="validationContext" slim>
+                                    <b-field label="Description" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                         <b-input v-model="description" maxlength="200" type="textarea"></b-input>
                                     </b-field>
-                                </ValidationProvider>
+                                </validation-provider>
                                 <div class="columns">
                                     <div class="column">
-                                        <ValidationProvider rules="required" name="Start Date" v-slot="{ errors, valid }">
-                                            <b-field label="Start Date" expanded :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                        <validation-provider rules="required" name="Start Date" v-slot="validationContext">
+                                            <b-field label="Start Date" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-datetimepicker rounded v-model="startDate" placeholder="Click to select..." icon="calendar-today" :datepicker="{ showWeekNumber }" :timepicker="{ enableSeconds, hourFormat: format }" :min-datetime="dateNow" :max-datetime="endDate" horizontal-time-picker>
                                                 </b-datetimepicker>
                                             </b-field>
-                                        </ValidationProvider>
+                                        </validation-provider>
                                     </div>
                                     <div class="column">
-                                        <ValidationProvider rules="required" name="End Date" v-slot="{ errors, valid }">
-                                            <b-field label="End Date" expanded :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                        <validation-provider rules="required" name="End Date" v-slot="validationContext">
+                                            <b-field label="End Date" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-datetimepicker rounded v-model="endDate" placeholder="Click to select..." icon="calendar-today" :datepicker="{ showWeekNumber }" :timepicker="{ enableSeconds, hourFormat: format }" :min-datetime="startDate ? startDate : dateNow" horizontal-time-picker>
                                                 </b-datetimepicker>
                                             </b-field>
-                                        </ValidationProvider>
+                                        </validation-provider>
                                     </div>
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <ValidationProvider rules="required" name="Results Exposure" v-slot="{ errors, valid }">
-                                            <b-field label="Results Exposure" :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                        <validation-provider rules="required" name="Results Exposure" v-slot="validationContext">
+                                            <b-field label="Results Exposure" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-select v-model="resultsPermission" expanded>
                                                     <option value="PRIVATE">Private</option>
                                                     <option value="VOTERS_ONLY">Voters Only</option>
                                                     <option value="PUBLIC">Public</option>
                                                 </b-select>
                                             </b-field>
-                                        </ValidationProvider>
+                                        </validation-provider>
                                     </div>
                                     <div class="column">
-                                        {{resultsPermission == '0' ? 'Only the administrator can view the results.' : (resultsPermission == '1' ? 'Only the administrator and the voters can view the results.' : 'Everyone can view the results.' )}}
+                                        {{resultsPermission == 'PRIVATE' ? 'Only the administrator can view the results.' : (resultsPermission == 'VOTERS_ONLY' ? 'Only the administrator and the voters can view the results.' : 'Everyone can view the results.' )}}
                                     </div>
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <ValidationProvider rules="required" name="Can change Vote" v-slot="{ errors, valid }">
-                                            <b-field label="Mutable Votes" :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                        <validation-provider rules="required" name="Can change Vote" v-slot="validationContext">
+                                            <b-field label="Mutable Votes" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-switch v-model="canChangeVote">
                                                     {{canChangeVote ? 'Voters can change their vote multiple times after their initial choice' : "Voters can't change their vote after their initial choice"}}
                                                 </b-switch>
                                             </b-field>
-                                        </ValidationProvider>
+                                        </validation-provider>
                                     </div>
                                     <div class="column">
-                                        <ValidationProvider rules="required" name="Realtime Results Exposure" v-slot="{ errors, valid }">
-                                            <b-field label="Realtime Results Exposure" :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
+                                        <validation-provider rules="required" name="Realtime Results Exposure" v-slot="validationContext">
+                                            <b-field label="Realtime Results Exposure" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-switch v-model="canShowRealtime">
                                                     {{canShowRealtime ? 'Results can be viewed in real time' : "Results can't be viewed in real time"}}
                                                 </b-switch>
                                             </b-field>
-                                        </ValidationProvider>
+                                        </validation-provider>
                                     </div>
                                 </div>
+                                <hr />
+                                <b-field class="is-pulled-right">
+                                    <b-button rounded @click="nextTab()" icon-right="arrow-right">Next</b-button>
+                                </b-field>
                             </b-tab-item>
                             <b-tab-item label="Voting Options">
                                 <div class="has-margin-bottom-20">
                                     <b-tag type="is-info">NOTE</b-tag> <b>Blank</b> and <b>Null</b> votes are default options.</div>
-                                <div class="card box" v-for="(votingOption, index) in votingOptions" :key="index">
-                                    <div class="card-content">
-                                        <div class="columns">
-                                            <div class="column is-one-third">
-                                                <ValidationProvider rules="required|alpha_spaces|required_if:votingOption.description,''" name="Voting Name" v-slot="{ errors, valid }">
-                                                    <b-field label="Name" expanded :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
-                                                        <b-input v-model="votingOption.name"></b-input>
-                                                    </b-field>
-                                                </ValidationProvider>
-                                            </div>
-                                            <div class="column">
-                                                <ValidationProvider rules="alpha_spaces" name="Voting Description" v-slot="{ errors, valid }">
-                                                    <b-field label="Description" expanded :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
-                                                        <b-input v-model="votingOption.description"></b-input>
-                                                    </b-field>
-                                                </ValidationProvider>
-                                            </div>
-                                            <div v-if="votingOptions.length > 1" class="column is-narrow" style="margin-top: auto;" rounded>
-                                                <b-button @click="removeVotingOption(index)" type="is-danger" icon-right="delete" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="columns">
-                                    <div class="column">
-                                        <b-button @click="addVotingOption" class="is-pulled-right" icon-right="plus" type="is-info" rounded></b-button>
-                                    </div>
-                                </div>
-                            </b-tab-item>
-                            <b-tab-item label="Poll Book">
-                                <div class="card box" v-for="(voter, index) in pollBook" :key="index">
-                                    <div class="card-content">
-                                        <div class="columns">
-                                            <div class="column is-one-third">
-                                                <ValidationProvider rules="required|digits:9" name="Citizen ID" v-slot="{ errors, valid }">
-                                                    <b-field label="Citizen ID" expanded :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
-                                                        <b-input v-model="voter.id"></b-input>
-                                                    </b-field>
-                                                </ValidationProvider>
-                                            </div>
-                                            <div class="column">
-                                                <ValidationProvider rules="required|alpha_spaces" name="Voting Description" v-slot="{ errors, valid }">
-                                                    <b-field label="Name" expanded :type="{ 'is-danger': errors[0], 'is-success': valid }" :message="errors">
-                                                        <b-input v-model="voter.name"></b-input>
-                                                    </b-field>
-                                                </ValidationProvider>
-                                            </div>
-                                            <div v-if="pollBook.length > 1" class="column is-narrow" style="margin-top: auto;" rounded>
-                                                <b-button @click="removeVoter(index)" type="is-danger" icon-right="delete" />
+                                    <div class="card box" v-for="(votingOption, index) in votingOptions" :key="index">
+                                        <div class="card-content">
+                                            <div class="columns">
+                                                <div class="column is-one-third">
+                                                    <validation-provider rules="required|alpha_spaces|required_if:votingOption.description,''" name="Voting Name" v-slot="validationContext">
+                                                        <b-field label="Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                            <b-input v-model="votingOption.name"></b-input>
+                                                        </b-field>
+                                                    </validation-provider>
+                                                </div>
+                                                <div class="column">
+                                                    <validation-provider rules="alpha_spaces" name="Voting Description" v-slot="validationContext">
+                                                        <b-field label="Description" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                            <b-input v-model="votingOption.description"></b-input>
+                                                        </b-field>
+                                                    </validation-provider>
+                                                </div>
+                                                <div v-if="votingOptions.length > 1" class="column is-narrow" style="margin-top: auto;" rounded>
+                                                    <b-button @click="removeVotingOption(index)" type="is-danger" icon-right="delete" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="columns">
-                                    <div class="column">
-                                        <b-button @click="addVoter" class="is-pulled-right" icon-right="plus" type="is-info" rounded></b-button>
+                                    <div class="columns">
+                                        <div class="column">
+                                            <b-button @click="addVotingOption" class="is-pulled-right" icon-right="plus" type="is-info" rounded></b-button>
+                                        </div>
                                     </div>
-                                </div>
-                            </b-tab-item>
-                        </b-tabs>
-                        <hr />
-                        <b-field>
-                            <b-button type="is-primary" class="is-pulled-right" rounded @click.prevent="handleSubmit(submit)">Submit</b-button>
-                        </b-field>
+                                    <hr />
+                                    <b-field class="is-pulled-left">
+                                        <b-button rounded @click="prevTab()" icon-left="arrow-left">Previous</b-button>
+                                    </b-field>
+                                    <b-field class="is-pulled-right">
+                                        <b-button rounded @click="nextTab()" icon-right="arrow-right">Next</b-button>
+                                    </b-field>
+                                </b-tab-item>
+                                <b-tab-item label="Poll Book">
+                                    <div class="card box" v-for="(voter, index) in pollBook" :key="index">
+                                        <div class="card-content">
+                                            <div class="columns">
+                                                <div class="column is-one-third">
+                                                    <validation-provider rules="required|digits:9" name="Citizen ID" v-slot="validationContext">
+                                                        <b-field label="Citizen ID" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                            <b-input v-model="voter.id"></b-input>
+                                                        </b-field>
+                                                    </validation-provider>
+                                                </div>
+                                                <div class="column">
+                                                    <validation-provider rules="required|alpha_spaces" name="Voting Description" v-slot="validationContext">
+                                                        <b-field label="Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                            <b-input v-model="voter.name"></b-input>
+                                                        </b-field>
+                                                    </validation-provider>
+                                                </div>
+                                                <div v-if="pollBook.length > 1" class="column is-narrow" style="margin-top: auto;" rounded>
+                                                    <b-button @click="removeVoter(index)" type="is-danger" icon-right="delete" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="columns">
+                                        <div class="column">
+                                            <b-button @click="addVoter" class="is-pulled-right" icon-right="plus" type="is-info" rounded></b-button>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                    <b-field class="is-pulled-left">
+                                        <b-button rounded @click="prevTab()" icon-left="arrow-left">Previous</b-button>
+                                    </b-field>
+                                    <b-field class="is-pulled-right">
+                                        <b-button type="is-primary" rounded @click.prevent="handleSubmit(submit)">Submit</b-button>
+                                    </b-field>
+                                </b-tab-item>
+                            </b-tabs>
+
+                        </validation-observer>
                     </div>
                 </div>
             </section>
-        </ValidationObserver>
-    </div>
-</template>
-<script>
-import {
-    ValidationProvider,
-    ValidationObserver
-} from 'vee-validate/dist/vee-validate.full';
-
-export default{
-    components: {
-        ValidationObserver,
-        ValidationProvider
-    },
-    data(){
-        return{
-            title: "New Election",
-            activeTab: 0,
-            name: "",
-            description: "",
-            dateNow: new Date(),
-            startDate: null,
-            endDate: null,
-            showWeekNumber: false,
-            format: '24',
-            enableSeconds: false,
-            resultsPermission: "VOTERS_ONLY",
-            canChangeVote: true,
-            canShowRealtime: true,
-            votingOptions: [
-                {
+        </div>
+    </template>
+    <script>
+    export default{
+        data(){
+            return{
+                title: "New Election",
+                activeTab: 0,
+                name: "",
+                description: "",
+                dateNow: new Date(),
+                startDate: null,
+                endDate: null,
+                showWeekNumber: false,
+                format: '24',
+                enableSeconds: false,
+                resultsPermission: "VOTERS_ONLY",
+                canChangeVote: true,
+                canShowRealtime: true,
+                votingOptions: [
+                    {
+                        name: "",
+                        description: ""
+                    }
+                ],
+                pollBook: [
+                    {
+                        id: "",
+                        name: ""
+                    }
+                ]
+            }
+        },
+        methods: {
+            prevTab(){
+                this.activeTab--
+            },
+            nextTab(){
+                this.activeTab++
+            },
+            getValidationState({ dirty, validated, valid = null }) {
+                return dirty || validated ? (valid ? "" : "is-danger") : "";
+            },
+            addVotingOption(){
+                this.votingOptions.push({
                     name: "",
                     description: ""
-                }
-            ],
-            pollBook: [
-                {
+                })
+            },
+            removeVotingOption(index){
+                this.votingOptions.splice(index,1)
+            },
+            addVoter(){
+                this.pollBook.push({
                     id: "",
                     name: ""
-                }
-            ]
-        }
-    },
-    methods: {
-        addVotingOption(){
-            this.votingOptions.push({
-                name: "",
-                description: ""
-            })
-        },
-        removeVotingOption(index){
-            this.votingOptions.splice(index,1)
-        },
-        addVoter(){
-            this.pollBook.push({
-                id: "",
-                name: ""
-            })
-        },
-        removeVoter(index){
-            this.pollBook.splice(index,1)
-        },
-        toTimestamp(date){
-            var timestamp = Date.parse(date);
-            return timestamp/1000;
-        },
-        submit(){
-            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njg5NzI4OSwiZXhwIjoxNTg2OTAwODg5fQ.eyJwdWJsaWNfa2V5IjoiMDJhY2NlZTliNTM0OTA2NTA5YThhYzY1OWZmNTZmZGI2MGM0NjBiMmViN2Y3YTUyMDYwOTc3NjRjNTI3NzA1MDFjIn0.PWYDuTCZIfJZIgkbaV6AOFxTPBFuj9PVUPZGg1SlgV-nxWtUZdoAwKMaxyuD6bv6CDlUH7195QYy6YMZs2XK_g"
-            axios.defaults.headers.common.Authorization = "Bearer " + token;
+                })
+            },
+            removeVoter(index){
+                this.pollBook.splice(index,1)
+            },
+            toTimestamp(date){
+                var timestamp = Date.parse(date);
+                return timestamp/1000;
+            },
+            submit(){
+                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njg5NzI4OSwiZXhwIjoxNTg2OTAwODg5fQ.eyJwdWJsaWNfa2V5IjoiMDJhY2NlZTliNTM0OTA2NTA5YThhYzY1OWZmNTZmZGI2MGM0NjBiMmViN2Y3YTUyMDYwOTc3NjRjNTI3NzA1MDFjIn0.PWYDuTCZIfJZIgkbaV6AOFxTPBFuj9PVUPZGg1SlgV-nxWtUZdoAwKMaxyuD6bv6CDlUH7195QYy6YMZs2XK_g"
+                axios.defaults.headers.common.Authorization = "Bearer " + token;
 
-            axios.post('api/elections', {
-                "name" : this.name,
-                "description" : this.description,
-                "start_timestamp" :this.toTimestamp(this.startDate),
-                "end_timestamp" : this.toTimestamp(this.startDate),
-                "results_permission" : this.resultsPermission,
-                "can_change_vote" : this.canChangeVote,
-                "can_show_realtime" :this.canShowRealtime,
-                "voting_options" :this.votingOptions,
-                "poll_book":this.pollBook
-            })
-            .then(response => {
-                this.$router.push("home")
-                console.log("Eleição criada")
-            })
-            .catch(error => {
-                console.log(error)
-            })
-        }
-    },
-    created() {
-        this.$emit('title',this.title);
+                axios.post('api/elections', {
+                    "name" : this.name,
+                    "description" : this.description,
+                    "start_timestamp" :this.toTimestamp(this.startDate),
+                    "end_timestamp" : this.toTimestamp(this.startDate),
+                    "results_permission" : this.resultsPermission,
+                    "can_change_vote" : this.canChangeVote,
+                    "can_show_realtime" :this.canShowRealtime,
+                    "voting_options" :this.votingOptions,
+                    "poll_book":this.pollBook
+                })
+                .then(response => {
+                    this.$router.push("home")
+                    console.log("Eleição criada")
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            }
+        },
+        created() {
+            this.$emit('title',this.title);
 
+        }
     }
-}
-</script>
+    </script>
