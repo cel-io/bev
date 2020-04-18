@@ -1,59 +1,24 @@
 <template>
-  <div>
-    <img src="dist/logo.png">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
-  </div>
+    <div class="is-full-height">
+        <div class="columns is-centered is-full-height is-vcentered">
+            <div class="column is-half has-text-centered">
+                <img class="image is-256x256 is-horizontal-center" src="img/icon.png"/>
+                <h1 id="home_title">Volby</h1>
+                <h4>Blockchain-Enabled E-Voting</h4>
+                <div class="columns has-margin-top-40">
+                    <div class="column">
+                        <b-button tag="router-link" to="login" type="is-volby" size="is-large" rounded expanded outlined>Login</b-button>
+                    </div>
+                    <div class="column">
+                        <b-button tag="router-link" to="register" type="is-volby" size="is-large" rounded expanded outlined>Register</b-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
-
 <script>
 export default {
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
-    }
-  }
+
 }
 </script>
-
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-h1, h2 {
-  font-weight: normal;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
-}
-</style>

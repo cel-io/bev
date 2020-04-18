@@ -223,7 +223,7 @@
                 return timestamp/1000;
             },
             submit(){
-                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njg5NzI4OSwiZXhwIjoxNTg2OTAwODg5fQ.eyJwdWJsaWNfa2V5IjoiMDJhY2NlZTliNTM0OTA2NTA5YThhYzY1OWZmNTZmZGI2MGM0NjBiMmViN2Y3YTUyMDYwOTc3NjRjNTI3NzA1MDFjIn0.PWYDuTCZIfJZIgkbaV6AOFxTPBFuj9PVUPZGg1SlgV-nxWtUZdoAwKMaxyuD6bv6CDlUH7195QYy6YMZs2XK_g"
+                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njk3MTQyNiwiZXhwIjoxNTg2OTc1MDI2fQ.eyJwdWJsaWNfa2V5IjoiMDJhNzRiZTI1NTcxYTg4ZTJkNDRlZDAwZWVkYjg2NDdmOWE3MTc3ZjUxOTY2M2I5YTUwYTBjYzZjZDQ0MGM0YzI5In0.AyXCyXHXJcMtHCLJNTy-RxiMBMsG31g4UrkKBAACz0nHyPCGVWsvDrIiO02IV2TmJTz1UOGdBOfELAgmKe43WQ"
                 axios.defaults.headers.common.Authorization = "Bearer " + token;
 
                 axios.post('api/elections', {

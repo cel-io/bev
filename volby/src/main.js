@@ -7,6 +7,8 @@ window.Vue = require('vue')
 import Vue from 'vue'
 
 import Home from './components/home'
+import Login from './components/login'
+import Register from './components/register'
 import MainLayout from './components/mainLayout'
 import CreateElection from './components/createElection'
 
@@ -29,8 +31,10 @@ import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 const routes = [
-    {path: '/home', component: Home, name: 'home'}, //redirecionar para Dashboard se nao existir autenticação
-    {path: '/', component: MainLayout,
+    {path: '/home', component: Home, name: 'home'},
+    {path: '/login', component: Login, name: 'login'},
+    {path: '/register', component: Register, name: 'register'},
+    {path: '/',component: MainLayout, redirect: 'newelection',
         children: [
             {path: 'newelection', component: CreateElection, name: 'createElection'}
         ]
