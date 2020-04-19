@@ -10,10 +10,10 @@ import Home from './components/home'
 import Login from './components/login'
 import Register from './components/register'
 import MainLayout from './components/mainLayout'
+import Dashboard from './components/dashboard'
 import CreateElection from './components/createElection'
 
 import Buefy from 'buefy'
-import 'buefy/dist/buefy.css'
 Vue.use(Buefy)
 import 'bulma-spacing/css/bulma-spacing.min.css'
 
@@ -36,6 +36,7 @@ const routes = [
     {path: '/register', component: Register, name: 'register'},
     {path: '/',component: MainLayout, redirect: 'newelection',
         children: [
+            {path: 'dashboard', component: Dashboard, name: 'dashboard'},
             {path: 'newelection', component: CreateElection, name: 'createElection'}
         ]
     }

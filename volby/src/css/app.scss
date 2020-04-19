@@ -1,5 +1,7 @@
 @import "~bulma/sass/utilities/_all";
 
+$primary: $cyan;
+
 $volby: #de4937;
 $volby-invert: findColorInvert($volby);
 
@@ -8,7 +10,7 @@ $colors: (
     "black": ($black, $white),
     "light": ($light, $light-invert),
     "dark": ($dark, $dark-invert),
-    "primary": ($primary, $primary-invert),
+    "primary": ($info, $info-invert),
     "info": ($info, $info-invert),
     "success": ($success, $success-invert),
     "warning": ($warning, $warning-invert),
@@ -25,6 +27,11 @@ body,
     height: 100%;
 }
 
+.is-real-fluid{
+    margin-left: 32px;
+    margin-right: 32px;
+}
+
 .is-256x256{
     max-width: 256px;
     max-height: 256px;
@@ -38,6 +45,10 @@ body,
 #home_title{
     font-size: 60pt;
     font-weight: bold;
+}
+
+#home_subtitle{
+    font-size: 28pt;
 }
 
 .is-full-height{

@@ -82,7 +82,21 @@ message CreateElectionAction {
     bool can_change_vote = 7;
     bool can_show_realtime = 8;
 
-    string admin_id = 9;
+    bool can_choose_multiple_options=9;
+
+    enum MultipleOptionsCriteria{
+        NONE=0;
+        AT_LEAST=1;
+        EQUAL_TO=2;
+        AT_MOST=3;
+        BETWEEN=4;
+    }
+
+    MultipleOptionsCriteria multiple_options_criteria=10;
+    uint32 multiple_options_value_min=11;
+    uint32 multiple_options_value_max=12;
+
+    string admin_id = 13;
 }
 
 message CreateVotingOptionAction{

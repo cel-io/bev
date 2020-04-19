@@ -101,6 +101,10 @@ class SimpleSupplyState(object):
                      results_permission,
                      can_change_vote,
                      can_show_realtime,
+                     can_choose_multiple_options,
+                     multiple_options_criteria,
+                     multiple_options_value_min,
+                     multiple_options_value_max,
                      admin_id,
                      timestamp):
         """Creates a new election in state
@@ -111,9 +115,13 @@ class SimpleSupplyState(object):
                 description (str): Description of the election
                 start_timestamp (int): Unix UTC timestamp of when the election start
                 end_timestamp (int): Unix UTC timestamp of when the election end
-                results_permission (int): Defines if its possible to change the voting option of the election
+                results_permission (string): Defines if its possible to change the voting option of the election
                 can_show_realtime (bool): Defines if the results of the election will be show realtime
                 can_change_vote  (bool): Defines if the results of the election will be presented
+                can_choose_multiple_options  (bool): Defines if the voters can choose multiple options
+                multiple_options_criteria (string): Multiple option choosing criteria
+                multiple_options_value_min (int): Defines how many options can be chosen based ona criteria
+                multiple_options_value_max (int): Defines the maximum amount of options when the criteria is BETWEEN
                 admin_id (int):  Unique ID of the administrator
                 timestamp (int): Timestamp
         """
@@ -128,6 +136,10 @@ class SimpleSupplyState(object):
             results_permission=results_permission,
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
+            can_choose_multiple_options=can_choose_multiple_options,
+            multiple_options_criteria=multiple_options_criteria,
+            multiple_options_value_min=multiple_options_value_min,
+            multiple_options_value_max=multiple_options_value_max,
             admin_id=admin_id,
             timestamp=timestamp)
 
