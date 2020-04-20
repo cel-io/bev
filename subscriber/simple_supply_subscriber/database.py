@@ -88,7 +88,18 @@ CREATE TABLE IF NOT EXISTS agents (
 CREATE_TYPES_STMTS = """
 DO $$ BEGIN
     CREATE TYPE results_permission_type AS ENUM('PRIVATE', 'VOTERS_ONLY', 'PUBLIC');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
     CREATE TYPE voter_type AS ENUM('VOTER', 'ADMIN', 'SUPERADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE multiple_options_criteria_type AS ENUM('NONE', 'AT_LEAST', 'EQUAL_TO', 'AT_MOST', 'BETWEEN');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -96,19 +107,23 @@ END $$;
 
 CREATE_ELECTION_STMTS = """
 CREATE TABLE IF NOT EXISTS elections (
-    id               bigserial PRIMARY KEY,
-    election_id      varchar,
-    name             varchar,
-    description      varchar,
-    start_timestamp  bigint,
-    end_timestamp    bigint,
-    results_permission  results_permission_type,
-    can_change_vote     boolean, 
-    can_show_realtime   boolean, 
-    admin_id            smallint, 
-    timestamp        bigint,
-    start_block_num  bigint,
-    end_block_num    bigint
+    id                          bigserial PRIMARY KEY,
+    election_id                 varchar,
+    name                        varchar,
+    description                 varchar,
+    start_timestamp             bigint,
+    end_timestamp               bigint,
+    results_permission          results_permission_type,
+    can_change_vote             boolean,
+    can_show_realtime           boolean,
+    can_choose_multiple_options boolean,
+    multiple_options_criteria   multiple_options_criteria_type,
+    multiple_options_value_min  int,
+    multiple_options_value_max  int,
+    admin_id                    smallint,
+    timestamp                   bigint,
+    start_block_num             bigint,
+    end_block_num               bigint
 );
 """
 
@@ -339,7 +354,11 @@ class Database(object):
            end_timestamp, 
            results_permission,
            can_change_vote, 
-           can_show_realtime, 
+           can_show_realtime,
+           can_choose_multiple_options,
+           multiple_options_criteria,
+           multiple_options_value_min,
+           multiple_options_value_max,
            admin_id, 
            timestamp,
            start_block_num,
@@ -354,6 +373,10 @@ class Database(object):
             election_dict['results_permission'],
             election_dict['can_change_vote'],
             election_dict['can_show_realtime'],
+            election_dict['can_choose_multiple_options'],
+            election_dict['multiple_options_criteria'],
+            election_dict['multiple_options_value_min'],
+            election_dict['multiple_options_value_max'],
             election_dict['admin_id'],
             election_dict['timestamp'],
             election_dict['start_block_num'],

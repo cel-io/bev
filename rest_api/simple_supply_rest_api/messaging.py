@@ -51,6 +51,10 @@ class Messenger(object):
                                                results_permission,
                                                can_change_vote,
                                                can_show_realtime,
+                                               can_choose_multiple_options,
+                                               multiple_options_criteria,
+                                               multiple_options_value_min,
+                                               multiple_options_value_max,
                                                admin_id,
                                                timestamp):
         transaction_signer = self._crypto_factory.new_signer(
@@ -67,9 +71,14 @@ class Messenger(object):
             results_permission=results_permission,
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
+            can_choose_multiple_options=can_choose_multiple_options,
+            multiple_options_criteria=multiple_options_criteria,
+            multiple_options_value_min=multiple_options_value_min,
+            multiple_options_value_max=multiple_options_value_max,
             admin_id=admin_id,
             timestamp=timestamp)
         await self._send_and_wait_for_commit(batch)
+
 
     async def send_create_voting_option_transaction(self,
                                                     private_key,

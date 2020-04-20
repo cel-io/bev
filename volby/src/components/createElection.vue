@@ -1,21 +1,27 @@
 <template>
     <div>
         <section>
-            <div class="card box has-padding-bottom-40 has-margin-bottom-40">
-                <div class="card-content">
+            <div class="card box has-margin-bottom-40">
+                <div class="card-content has-padding-bottom-0">
                     <validation-observer ref="observer" v-slot="{ handleSubmit }">
                     <b-tabs v-model="activeTab">
                             <b-tab-item label="Informations">
-                                <validation-provider rules="required|alpha_spaces" name="Name" v-slot="validationContext">
-                                    <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                        <b-input v-model="name"></b-input>
-                                    </b-field>
-                                </validation-provider>
-                                <validation-provider rules="required|alpha_spaces" name="Description" v-slot="validationContext" slim>
-                                    <b-field label="Description" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                        <b-input v-model="description" maxlength="200" type="textarea"></b-input>
-                                    </b-field>
-                                </validation-provider>
+                                <div class="columns">
+                                    <div class="column">
+                                        <validation-provider rules="required|alpha_spaces" name="Name" v-slot="validationContext">
+                                            <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <b-input v-model="name"></b-input>
+                                            </b-field>
+                                        </validation-provider>
+                                    </div>
+                                </div>
+                                <div class="columns">
+                                    <div class="column">
+                                        <b-field label="Description">
+                                            <b-input v-model="description" maxlength="200" type="textarea"></b-input>
+                                        </b-field>
+                                    </div>
+                                </div>
                                 <div class="columns">
                                     <div class="column">
                                         <validation-provider rules="required" name="Start Date" v-slot="validationContext">
@@ -34,7 +40,7 @@
                                         </validation-provider>
                                     </div>
                                 </div>
-                                <div class="columns">
+                                <div class="columns is-vcentered">
                                     <div class="column">
                                         <validation-provider rules="required" name="Results Exposure" v-slot="validationContext">
                                             <b-field label="Results Exposure" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
@@ -52,7 +58,7 @@
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <validation-provider rules="required" name="Can change Vote" v-slot="validationContext">
+                                        <validation-provider rules="required" name="Mutable Votes" v-slot="validationContext">
                                             <b-field label="Mutable Votes" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-switch v-model="canChangeVote">
                                                     {{canChangeVote ? 'Voters can change their vote multiple times after their initial choice' : "Voters can't change their vote after their initial choice"}}
@@ -70,14 +76,61 @@
                                         </validation-provider>
                                     </div>
                                 </div>
+                                <div class="columns">
+                                    <div class="column">
+                                        <validation-provider rules="required" name="Multiple Options" v-slot="validationContext">
+                                            <b-field label="Multiple Options" expanded>
+                                                <b-switch v-model="canChooseMultipleOptions" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    {{canChooseMultipleOptions ? 'Voters can choose multiple options based on a defined criteria' : "Voters can only choose one option"}}
+                                                </b-switch>
+                                            </b-field>
+                                        </validation-provider>
+                                    </div>
+                                    <div class="column">
+                                        <div class="columns" v-if="canChooseMultipleOptions">
+                                            <div class="column">
+                                                <validation-provider rules="required_if:canChooseMultipleOptions,true" name="Criteria" v-slot="validationContext">
+                                                    <b-field label="Criteria" expanded>
+                                                        <b-select v-model="multipleOptionsCriteria" @input="criteriaChange" :type="getValidationState(validationContext)" :message="validationContext.errors[0]" expanded>
+                                                            <option value="AT_MOST">At most</option>
+                                                            <option value="EQUAL_TO">Equal to</option>
+                                                            <option value="AT_LEAST">At least</option>
+                                                            <option value="BETWEEN">Between</option>
+                                                        </b-select>
+                                                    </b-field>
+                                                </validation-provider>
+                                            </div>
+                                            <div class="column">
+                                                <validation-provider :rules="{required: canChooseMultipleOptions, min_value: 2, max_value: multipleOptionsCriteria != 'BETWEEN' ? Infinity : multipleOptionsValueMax}" :name="multipleOptionsCriteria != 'BETWEEN' ? 'Criteria Value' : 'Criteria Min. Value'" v-slot="validationContext">
+                                                    <b-field :label="multipleOptionsCriteria != 'BETWEEN' ? 'Criteria Value' : 'Criteria Min. Value'" :type="getValidationState(validationContext)" :message="validationContext.errors[0]" expanded>
+                                                        <b-numberinput expanded v-model="multipleOptionsValueMin" controls-position="compact"></b-numberinput>
+                                                    </b-field>
+                                                </validation-provider>
+                                            </div>
+                                            <template v-if="multipleOptionsCriteria == 'BETWEEN'">
+                                                <div class="column">
+                                                    <validation-provider :rules="{required: canChooseMultipleOptions, min_value: multipleOptionsCriteria != 'BETWEEN' ? -Infinity : multipleOptionsValueMin}" :name="multipleOptionsCriteria != 'BETWEEN' ? 'Criteria Value' : 'Criteria Min. Value'" v-slot="validationContext">
+                                                        <b-field label="Criteria Max. Value" :type="getValidationState(validationContext)" :message="validationContext.errors[0]" expanded>
+                                                            <b-numberinput expanded v-model="multipleOptionsValueMax" controls-position="compact"></b-numberinput>
+                                                        </b-field>
+                                                    </validation-provider>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        </b-field>
+                                    </div>
+                                </div>
                                 <hr />
                                 <b-field class="is-pulled-right">
                                     <b-button rounded @click="nextTab()" icon-right="arrow-right">Next</b-button>
                                 </b-field>
                             </b-tab-item>
-                            <b-tab-item label="Voting Options">
+                            <b-tab-item label="Ballot">
                                 <div class="has-margin-bottom-20">
                                     <b-tag type="is-info">NOTE</b-tag> <b>Blank</b> and <b>Null</b> votes are default options.</div>
+                                    <b-message :closable="false" v-if="canChooseMultipleOptions" title="Multiple Options" type="is-info" has-icon>
+                                    There must be <b>at least {{multipleOptionsCriteria != 'BETWEEN' ? multipleOptionsValueMin : multipleOptionsValueMax }} voting options</b> to comply with the <b>multiple options criteria</b> chosen in the 'Informations' section.
+                                    </b-message>
                                     <div class="card box" v-for="(votingOption, index) in votingOptions" :key="index">
                                         <div class="card-content">
                                             <div class="columns">
@@ -176,6 +229,10 @@
                 resultsPermission: "VOTERS_ONLY",
                 canChangeVote: true,
                 canShowRealtime: true,
+                canChooseMultipleOptions: false,
+                multipleOptionsCriteria: 'EQUAL_TO', //AT_MOST, EQUAL_TO, AT_LEAST, BETWEEN
+                multipleOptionsValueMin: 2,
+                multipleOptionsValueMax: 4,
                 votingOptions: [
                     {
                         name: "",
@@ -196,6 +253,10 @@
             },
             nextTab(){
                 this.activeTab++
+            },
+            criteriaChange(){
+                if(this.multipleOptionsCriteria == 'BETWEEN')
+                    this.multipleOptionsValueMax = this.multipleOptionsValueMin + 2
             },
             getValidationState({ dirty, validated, valid = null }) {
                 return dirty || validated ? (valid ? "" : "is-danger") : "";
@@ -223,19 +284,42 @@
                 return timestamp/1000;
             },
             submit(){
-                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4NzI0NDA1MCwiZXhwIjoxNTg3MjQ3NjUwfQ.eyJwdWJsaWNfa2V5IjoiMDNmMDlmYzQ5NWYxZTAxYTYwM2RiM2M0YTczODYwMDA5N2Q5ZDAyNDI5MzA0YjQ2ZTlkYjMwZmQ0OWE0Njg0MDQ3In0.a4eXdwfuOP2jghLVFkOc5HO5xC6mr0jrse7054j26LZKUmP1zCsyA9Ha9yyt5rpX7wfG0OfuPFDSmuJK6n9tHg"
+                if(this.canChooseMultipleOptions && this.multipleOptionsCriteria != 'BETWEEN' && this.votingOptions.length < this.multipleOptionsValueMin){
+                    this.activeTab = 1
+                    this.$buefy.toast.open({
+                        duration: 5000,
+                        message: 'Please, create at least <b>' + this.multipleOptionsValueMin + ' voting options</b> or change the defined criteria',
+                        type: 'is-danger'
+                    })
+                    return
+                }else if(this.canChooseMultipleOptions && this.multipleOptionsCriteria == 'BETWEEN' && this.votingOptions.length < this.multipleOptionsValueMax){
+                    this.activeTab = 1
+                    this.$buefy.toast.open({
+                        duration: 5000,
+                        message: 'Please, create at least <b>' + this.multipleOptionsValueMax + ' voting options</b> or change the defined criteria',
+                        type: 'is-danger'
+                    })
+                    return
+                }
+
+
+                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njk3MTQyNiwiZXhwIjoxNTg2OTc1MDI2fQ.eyJwdWJsaWNfa2V5IjoiMDJhNzRiZTI1NTcxYTg4ZTJkNDRlZDAwZWVkYjg2NDdmOWE3MTc3ZjUxOTY2M2I5YTUwYTBjYzZjZDQ0MGM0YzI5In0.AyXCyXHXJcMtHCLJNTy-RxiMBMsG31g4UrkKBAACz0nHyPCGVWsvDrIiO02IV2TmJTz1UOGdBOfELAgmKe43WQ"
                 axios.defaults.headers.common.Authorization = "Bearer " + token;
 
                 axios.post('api/elections', {
-                    "name" : this.name,
-                    "description" : this.description,
-                    "start_timestamp" :this.toTimestamp(this.startDate),
-                    "end_timestamp" : this.toTimestamp(this.startDate),
-                    "results_permission" : this.resultsPermission,
-                    "can_change_vote" : this.canChangeVote,
-                    "can_show_realtime" :this.canShowRealtime,
-                    "voting_options" :this.votingOptions,
-                    "poll_book":this.pollBook
+                    "name": this.name,
+                    "description": this.description,
+                    "start_timestamp": this.toTimestamp(this.startDate),
+                    "end_timestamp": this.toTimestamp(this.startDate),
+                    "results_permission": this.resultsPermission,
+                    "can_change_vote": this.canChangeVote,
+                    "can_show_realtime": this.canShowRealtime,
+                    "voting_options": this.votingOptions,
+                    "poll_book": this.pollBook,
+                    "can_choose_multiple_options": this.canChooseMultipleOptions,
+                    "multiple_options_criteria": this.canChooseMultipleOptions ? this.multipleOptionsCriteria : "",
+                    "multiple_options_value_min": this.canChooseMultipleOptions ? this.multipleOptionsValueMin : 0,
+                    "multiple_options_value_max": this.canChooseMultipleOptions && this.multipleOptionsCriteria == 'BETWEEN' ? this.multipleOptionsValueMax : 0
                 })
                 .then(response => {
                     this.$router.push("home")
