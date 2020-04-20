@@ -127,6 +127,54 @@ def make_create_voting_option_transaction(transaction_signer,
         batch_signer=batch_signer)
 
 
+def make_create_poll_registration_transaction(transaction_signer,
+                                              batch_signer,
+                                              voter_id,
+                                              name,
+                                              election_id,
+                                              timestamp):
+    """Make a CreatePollRegistrationAction transaction and wrap it in a batch
+
+    Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        voter_id (str): Unique ID of the voter
+        name (str): Name of the voter
+        election_id (str):  Unique ID of the election
+        timestamp (int): Unix UTC timestamp of when the election is created
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_agent_address(
+            transaction_signer.get_public_key().as_hex()),
+        addresser.get_poll_registration_address(voter_id)
+    ]
+
+    outputs = [addresser.get_poll_registration_address(voter_id)]
+
+    action = payload_pb2.CreatePollRegistrationAction(
+        voter_id=voter_id,
+        name=name,
+        election_id=election_id)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.CREATE_POLL_REGISTRATION,
+        create_poll_registration=action,
+        timestamp=timestamp
+    )
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
 def make_create_agent_transaction(transaction_signer,
                                   batch_signer,
                                   name,

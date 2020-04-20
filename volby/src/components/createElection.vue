@@ -119,15 +119,15 @@
                                         <div class="card-content">
                                             <div class="columns">
                                                 <div class="column is-one-third">
-                                                    <validation-provider rules="required|digits:9" name="Citizen ID" v-slot="validationContext">
-                                                        <b-field label="Citizen ID" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    <validation-provider rules="required|email" name="Voter Email" v-slot="validationContext">
+                                                        <b-field label="Voter Email" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                             <b-input v-model="voter.id"></b-input>
                                                         </b-field>
                                                     </validation-provider>
                                                 </div>
                                                 <div class="column">
-                                                    <validation-provider rules="required|alpha_spaces" name="Voting Description" v-slot="validationContext">
-                                                        <b-field label="Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    <validation-provider rules="required|alpha_spaces" name="Voter Name" v-slot="validationContext">
+                                                        <b-field label="Voter Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                             <b-input v-model="voter.name"></b-input>
                                                         </b-field>
                                                     </validation-provider>
@@ -223,7 +223,7 @@
                 return timestamp/1000;
             },
             submit(){
-                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njg5NzI4OSwiZXhwIjoxNTg2OTAwODg5fQ.eyJwdWJsaWNfa2V5IjoiMDJhY2NlZTliNTM0OTA2NTA5YThhYzY1OWZmNTZmZGI2MGM0NjBiMmViN2Y3YTUyMDYwOTc3NjRjNTI3NzA1MDFjIn0.PWYDuTCZIfJZIgkbaV6AOFxTPBFuj9PVUPZGg1SlgV-nxWtUZdoAwKMaxyuD6bv6CDlUH7195QYy6YMZs2XK_g"
+                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4NzI0NDA1MCwiZXhwIjoxNTg3MjQ3NjUwfQ.eyJwdWJsaWNfa2V5IjoiMDNmMDlmYzQ5NWYxZTAxYTYwM2RiM2M0YTczODYwMDA5N2Q5ZDAyNDI5MzA0YjQ2ZTlkYjMwZmQ0OWE0Njg0MDQ3In0.a4eXdwfuOP2jghLVFkOc5HO5xC6mr0jrse7054j26LZKUmP1zCsyA9Ha9yyt5rpX7wfG0OfuPFDSmuJK6n9tHg"
                 axios.defaults.headers.common.Authorization = "Bearer " + token;
 
                 axios.post('api/elections', {
@@ -248,7 +248,6 @@
         },
         created() {
             this.$emit('title',this.title);
-
         }
     }
     </script>

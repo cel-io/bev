@@ -30,7 +30,7 @@ services:
       bash -c "
         simple-supply-protogen
         cd volby/
-        npm run build
+        npm run dev
         cd ../
         tail -f /dev/null
       "

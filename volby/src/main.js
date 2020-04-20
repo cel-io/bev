@@ -15,7 +15,7 @@ import 'buefy/dist/buefy.css'
 Vue.use(Buefy)
 import 'bulma-spacing/css/bulma-spacing.min.css'
 
-import {ValidationObserver, ValidationProvider, extend, localize} from "vee-validate";
+import {ValidationObserver, ValidationProvider, Validator, extend, localize} from "vee-validate";
 import en from "vee-validate/dist/locale/en.json";
 import * as rules from "vee-validate/dist/rules";
 Object.keys(rules).forEach(rule => {

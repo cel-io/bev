@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS voters (
 CREATE_POLL_REGISTRATION_STMTS = """
 CREATE TABLE IF NOT EXISTS poll_registrations (
     id               bigserial PRIMARY KEY,
-    user_id             varchar,
+    voter_id             varchar,
     name                varchar,
     election_id         varchar,
     start_block_num  bigint,
@@ -363,7 +363,6 @@ class Database(object):
             cursor.execute(update_election)
             cursor.execute(insert_election)
 
-
     def insert_voting_option(self, voting_option_dict):
         update_voting_option = """
            UPDATE voting_options SET end_block_num = {}
@@ -393,6 +392,34 @@ class Database(object):
         with self._conn.cursor() as cursor:
             cursor.execute(update_voting_option)
             cursor.execute(insert_voting_option)
+
+    def insert_poll_registration(self, poll_registration_dict):
+        update_poll_registration = """
+           UPDATE poll_registrations SET end_block_num = {}
+           WHERE end_block_num = {} AND voter_id = '{}'
+           """.format(
+            poll_registration_dict['start_block_num'],
+            poll_registration_dict['end_block_num'],
+            poll_registration_dict['voter_id'],)
+
+        insert_poll_registration = """
+           INSERT INTO poll_registrations (
+           voter_id, 
+           name, 
+           election_id,
+           start_block_num,
+           end_block_num)
+           VALUES ('{}', '{}', '{}', '{}', '{}');
+           """.format(
+            poll_registration_dict['voter_id'],
+            poll_registration_dict['name'],
+            poll_registration_dict['election_id'],
+            poll_registration_dict['start_block_num'],
+            poll_registration_dict['end_block_num'])
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(update_poll_registration)
+            cursor.execute(insert_poll_registration)
 
     def insert_agent(self, agent_dict):
         update_agent = """

@@ -18,6 +18,8 @@ from simple_supply_rest_api.transaction_creation import \
     make_transfer_record_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_update_record_transaction
+from simple_supply_rest_api.transaction_creation import \
+    make_create_poll_registration_transaction
 
 
 class Messenger(object):
@@ -85,6 +87,26 @@ class Messenger(object):
             voting_option_id=voting_option_id,
             name=name,
             description=description,
+            election_id=election_id,
+            timestamp=timestamp
+        )
+
+        await self._send_and_wait_for_commit(batch)
+
+    async def send_create_poll_registration_transaction(self,
+                                                        private_key,
+                                                        voter_id,
+                                                        name,
+                                                        election_id,
+                                                        timestamp):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_create_poll_registration_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            voter_id=voter_id,
+            name=name,
             election_id=election_id,
             timestamp=timestamp
         )

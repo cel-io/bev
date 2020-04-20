@@ -34,7 +34,6 @@ class RouteHandler(object):
         private_key = await self._authorize(request)
         election_id = uuid.uuid1().hex
 
-
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
             election_id=election_id,
@@ -55,6 +54,15 @@ class RouteHandler(object):
                 voting_option_id=uuid.uuid1().hex,
                 name=voting_option.get('name'),
                 description=voting_option.get('description'),
+                election_id=election_id,
+                timestamp=get_time()
+            )
+
+        for poll_book in body.get('poll_book'):
+            await self._messenger.send_create_poll_registration_transaction(
+                private_key=private_key,
+                voter_id=poll_book.get('id'),
+                name=poll_book.get('name'),
                 election_id=election_id,
                 timestamp=get_time()
             )
