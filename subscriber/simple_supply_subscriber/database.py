@@ -363,7 +363,7 @@ class Database(object):
            timestamp,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             election_dict['election_id'],
             election_dict['name'],

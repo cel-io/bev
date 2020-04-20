@@ -303,7 +303,7 @@
                 }
 
 
-                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4Njk3MTQyNiwiZXhwIjoxNTg2OTc1MDI2fQ.eyJwdWJsaWNfa2V5IjoiMDJhNzRiZTI1NTcxYTg4ZTJkNDRlZDAwZWVkYjg2NDdmOWE3MTc3ZjUxOTY2M2I5YTUwYTBjYzZjZDQ0MGM0YzI5In0.AyXCyXHXJcMtHCLJNTy-RxiMBMsG31g4UrkKBAACz0nHyPCGVWsvDrIiO02IV2TmJTz1UOGdBOfELAgmKe43WQ"
+                let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4NzQxMzUzMywiZXhwIjoxNTg3NDE3MTMzfQ.eyJwdWJsaWNfa2V5IjoiMDNmMzNjNmEzYzExYzczYjFjYTQ3MWQ0ODVkZmM3OTkxMjEzMGIwNTVjMWM1MTZkMGFhNWYwMDVmMTRjOWJiODM5In0.rMr7tiCRSYYv0DO1ImzCjeH29arhO5p2Welir_SNLm1nr0fINBGB9bWvi7VCVo27JiCUTesXETD5SjtjWL7D1w"
                 axios.defaults.headers.common.Authorization = "Bearer " + token;
 
                 axios.post('api/elections', {

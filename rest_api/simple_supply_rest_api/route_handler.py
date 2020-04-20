@@ -39,7 +39,7 @@ class RouteHandler(object):
         multiple_options_value_max=body.get('multiple_options_value_max')
 
         if body.get('can_choose_multiple_options') is False:
-            multiple_options_criteria='NULL'
+            multiple_options_criteria='NONE'
             multiple_options_value_min=0
             multiple_options_value_max=0
 
