@@ -135,15 +135,15 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider rules="required|alpha_spaces|required_if:votingOption.description,''" name="Voting Name" v-slot="validationContext">
-                                                    <b-field label="Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <validation-provider rules="required|alpha_spaces|required_if:votingOption.description,''" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
+                                                    <b-field :label="(index + 1) + '. Option Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.name"></b-input>
                                                     </b-field>
                                                 </validation-provider>
                                             </div>
                                             <div class="column">
-                                                <validation-provider rules="alpha_spaces" name="Voting Description" v-slot="validationContext">
-                                                    <b-field label="Description" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <validation-provider rules="alpha_spaces" :name="(index + 1) + '1. Option Description'" v-slot="validationContext">
+                                                    <b-field :label="(index + 1) + '. Option Description'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.description"></b-input>
                                                     </b-field>
                                                 </validation-provider>
@@ -176,15 +176,15 @@
                                                     required: true,
                                                     email: true,
                                                     unique: pollBook
-                                                    }" name="Voter Email" v-slot="validationContext">
-                                                    <b-field label="Voter Email" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    }" :name="(index + 1) + '. Voter Email'" v-slot="validationContext">
+                                                    <b-field :label="(index + 1) + '. Voter Email'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="voter.id"></b-input>
                                                     </b-field>
                                                 </validation-provider>
                                             </div>
                                             <div class="column">
-                                                <validation-provider rules="required|alpha_spaces" name="Voter Name" v-slot="validationContext">
-                                                    <b-field label="Voter Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <validation-provider rules="required|alpha_spaces" :name="(index + 1) + '. Voter Name '" v-slot="validationContext">
+                                                    <b-field :label="(index + 1) + '. Voter Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="voter.name"></b-input>
                                                     </b-field>
                                                 </validation-provider>
