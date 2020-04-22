@@ -86,6 +86,30 @@ class RouteHandler(object):
         election_list = await self._database.fetch_all_election_resources()
         return json_response(election_list)
 
+    async def create_voter(self, request):
+        body = await decode_request(request)
+        required_fields = ['voter_id', 'name', 'type', 'password']
+        validate_fields(required_fields, body)
+
+        public_key, private_key = self._messenger.get_new_key_pair()
+
+        await self._messenger.send_create_voter_transaction(
+            private_key=private_key,
+            voter_id=body.get('voter_id'),
+            public_key=public_key,
+            name=body.get('name'),
+            created_at=get_time(),
+            type=body.get('type'))
+
+        encrypted_private_key = encrypt_private_key(request.app['aes_key'], public_key, private_key)
+        hashed_password = hash_password(body.get('password'))
+
+        await self._database.create_auth_entry(public_key, encrypted_private_key, hashed_password)
+
+        token = generate_auth_token(request.app['secret_key'], public_key)
+
+        return json_response({'authorization': token})
+
     # ------------------------------------------------------------
     # ------------------------------------------------------------
     # ------------------------------------------------------------

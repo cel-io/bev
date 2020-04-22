@@ -142,3 +142,10 @@ def _apply_poll_registration_change(database, block_num, poll_books):
         pollBook['start_block_num'] = block_num
         pollBook['end_block_num'] = MAX_BLOCK_NUMBER
         database.insert_poll_registration(pollBook)
+
+
+def _apply_voter_change(database, block_num, poll_books):
+    for voter in voters:
+        voter['start_block_num'] = block_num
+        voter['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_voter(voter)

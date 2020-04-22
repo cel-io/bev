@@ -20,14 +20,15 @@ from simple_supply_protobuf.record_pb2 import RecordContainer
 from simple_supply_protobuf.election_pb2 import ElectionContainer
 from simple_supply_protobuf.votingOption_pb2 import VotingOptionContainer
 from simple_supply_protobuf.pollRegistration_pb2 import PollRegistrationContainer
-
+from simple_supply_protobuf.voter_pb2 import VoterContainer
 
 CONTAINERS = {
     AddressSpace.AGENT: AgentContainer,
     AddressSpace.RECORD: RecordContainer,
     AddressSpace.ELECTION: ElectionContainer,
     AddressSpace.VOTING_OPTION: VotingOptionContainer,
-    AddressSpace.POLL_REGISTRATION: PollRegistrationContainer
+    AddressSpace.POLL_REGISTRATION: PollRegistrationContainer,
+    AddressSpace.VOTER: VoterContainer
 }
 
 

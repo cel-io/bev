@@ -11,6 +11,7 @@ message BevPayload{
         CREATE_ELECTION = 4;
         CREATE_VOTING_OPTION = 5;
         CREATE_POLL_REGISTRATION = 6;
+        CREATE_VOTER = 7;
     }
 
     // Whether the payload contains a create agent, create record,
@@ -26,9 +27,10 @@ message BevPayload{
     CreateElectionAction create_election = 6;
     CreateVotingOptionAction create_voting_option = 7;
     CreatePollRegistrationAction create_poll_registration = 8;
+    CreateVoterAction create_voter = 9;
 
     // Approximately when transaction was submitted, as a Unix UTC timestamp
-    uint64 timestamp = 9;
+    uint64 timestamp = 10;
 }
 
 
@@ -114,4 +116,20 @@ message CreatePollRegistrationAction{
     string name = 2;
 
     string election_id = 3;
+}
+
+message CreateVoterAction{
+    string voter_id = 1;
+    string public_key = 2;
+    string name = 3;
+    uint64 created_at = 4;
+
+
+    enum Type {
+        VOTER = 0;
+        ADMIN = 1;
+        SUPERADMIN = 2;
+    }
+
+    Type type = 5;
 }

@@ -90,6 +90,11 @@ class SimpleSupplyHandler(TransactionHandler):
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
+        elif payload.action == payload_pb2.BevPayload.CREATE_VOTER:
+            _create_voter(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
         else:
             raise InvalidTransaction('Unhandled action')
 
@@ -140,6 +145,18 @@ def _create_poll_registration(state, public_key, payload):
         name=payload.data.name,
         election_id=payload.data.election_id
     )
+
+
+def _create_voter(state, public_key, payload):
+    if state.get_voter(public_key):
+        raise InvalidTransaction('Voter with the public key {} already '
+                                 'exists'.format(public_key))
+    state.set_voter(
+        voter_id=payload.data.voter_id,
+        public_key=payload.data.public_key,
+        name=payload.data.name,
+        created_at=payload.data.created_at,
+        type=payload.data.type)
 
 
 def _create_agent(state, public_key, payload):

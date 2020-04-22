@@ -135,7 +135,7 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider rules="required|alpha_spaces|required_if:votingOption.description,''" name="Voting Name" v-slot="validationContext">
+                                                <validation-provider rules="required|alpha_spaces'" name="Voting Name" v-slot="validationContext">
                                                     <b-field label="Name" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.name"></b-input>
                                                     </b-field>

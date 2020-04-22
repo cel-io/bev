@@ -444,6 +444,38 @@ class Database(object):
             cursor.execute(update_poll_registration)
             cursor.execute(insert_poll_registration)
 
+    def insert_voter(self, voter_dict):
+        update_voter = """
+           UPDATE voters SET end_block_num = {}
+           WHERE end_block_num = {} AND voter_id = '{}'
+           """.format(
+            voter_dict['start_block_num'],
+            voter_dict['end_block_num'],
+            voter_dict['voter_id'],)
+
+        insert_voter = """
+           INSERT INTO voters (
+           voter_id,
+           public_key, 
+           name, 
+           create_at,
+           type,
+           start_block_num,
+           end_block_num)
+           VALUES ('{}', '{}', '{}', '{}', '{}');
+           """.format(
+            voter_dict['voter_id'],
+            voter_dict['public_key'],
+            voter_dict['name'],
+            voter_dict['create_at'],
+            voter_dict['type'],
+            voter_dict['start_block_num'],
+            voter_dict['end_block_num'])
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(update_voter)
+            cursor.execute(insert_voter)
+
     def insert_agent(self, agent_dict):
         update_agent = """
         UPDATE agents SET end_block_num = {}
