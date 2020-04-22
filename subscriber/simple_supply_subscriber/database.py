@@ -142,8 +142,11 @@ CREATE TABLE IF NOT EXISTS voting_options (
 CREATE_VOTER_STMTS = """
 CREATE TABLE IF NOT EXISTS voters (
     id               bigserial PRIMARY KEY,
+    public_key       varchar,
+    name             varchar,
     voter_id         varchar,
     type             voter_type,
+    created_at       bigint,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -458,16 +461,16 @@ class Database(object):
            voter_id,
            public_key, 
            name, 
-           create_at,
+           created_at,
            type,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             voter_dict['voter_id'],
             voter_dict['public_key'],
             voter_dict['name'],
-            voter_dict['create_at'],
+            voter_dict['created_at'],
             voter_dict['type'],
             voter_dict['start_block_num'],
             voter_dict['end_block_num'])

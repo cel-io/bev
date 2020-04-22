@@ -57,14 +57,19 @@ export default{
         submit(){
             this.isEmailUnique = false
 
-            axios.post('api/register',{
+            axios.post('api/voters',{
                 name: this.name,
-                email: this.email,
+                voter_id: this.email,
                 password: this.password,
                 type: 'VOTER'
             })
             .then(response => {
-
+                this.$buefy.toast.open({
+                    duration: 3000,
+                    message: 'Welcome to Volby!',
+                    type: 'is-success'
+                })
+                this.$router.push("/newelection")
             })
             .catch(error => {
                 if(error.response.status == 409){
