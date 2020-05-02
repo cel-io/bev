@@ -135,14 +135,14 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider rules="required|alpha_spaces'" :name="(index + 1) + '. Voting Name'" v-slot="validationContext">
-                                                    <b-field :label="(index + 1) + '. Voting Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <validation-provider rules="required" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
+                                                    <b-field :label="(index + 1) + '. Option Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.name"></b-input>
                                                     </b-field>
                                                 </validation-provider>
                                             </div>
                                             <div class="column">
-                                                <validation-provider rules="alpha_spaces" :name="(index + 1) + '. Option Description'" v-slot="validationContext">
+                                                <validation-provider rules="" :name="(index + 1) + '. Option Description'" v-slot="validationContext">
                                                     <b-field :label="(index + 1) + '. Option Description'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.description"></b-input>
                                                     </b-field>
