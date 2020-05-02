@@ -116,15 +116,19 @@ class RouteHandler(object):
 
     async def authenticate(self, request):
         body = await decode_request(request)
-        required_fields = ['public_key', 'password']
+        required_fields = ['voter_id', 'password']
         validate_fields(required_fields, body)
 
         password = bytes(body.get('password'), 'utf-8')
 
+        voter = await self._database.fetch_voter_resource(body.get('voter_id'))
+        if voter is None:
+            raise ApiUnauthorized('Incorrect voter_id or password')
+
         auth_info = await self._database.fetch_auth_resource(
-            body.get('public_key'))
+            voter.get('public_key'))
         if auth_info is None:
-            raise ApiUnauthorized('No agent with that public key exists')
+            raise ApiUnauthorized('No voter with that public key exists')
 
         hashed_password = auth_info.get('hashed_password')
         if not bcrypt.checkpw(password, bytes.fromhex(hashed_password)):
@@ -133,7 +137,7 @@ class RouteHandler(object):
         token = generate_auth_token(
             request.app['secret_key'], body.get('public_key'))
 
-        return json_response({'authorization': token})
+        return json_response({'accessToken': token,'user': {'name': voter.get('name'),'voter_id': voter.get('voter_id')}})
 
     async def create_agent(self, request):
         body = await decode_request(request)
@@ -298,7 +302,7 @@ def get_time():
 
 
 def generate_auth_token(secret_key, public_key):
-    serializer = Serializer(secret_key)
+    serializer = Serializer(secret_key,3600)
     token = serializer.dumps({'public_key': public_key})
     return token.decode('ascii')
 

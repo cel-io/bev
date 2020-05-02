@@ -138,6 +138,15 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
+    async def fetch_voter_resource(self, voter_id):
+        fetch = """
+        SELECT * FROM voters WHERE voter_id='{}'
+        """.format(voter_id)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
     async def fetch_record_resource(self, record_id):
         fetch_record = """
         SELECT record_id FROM records
