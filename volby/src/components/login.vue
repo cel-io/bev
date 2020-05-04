@@ -46,12 +46,20 @@ export default{
         submit(){
             this.isInvalidLogin = false
 
-            axios.post('api/login',{
+            axios.post('api/authentication',{
                 voter_id: this.email,
                 password: this.password
             })
             .then(response => {
+                this.$store.commit("setAuthToken",response.data.accessToken)
+                this.$store.commit("setUser",response.data.user)
 
+                this.$buefy.toast.open({
+                    duration: 3000,
+                    message: 'Welcome to Volby!',
+                    type: 'is-success'
+                })
+                this.$router.push("/newelection")
             })
             .catch(error => {
                 if(error.response.status == 401){

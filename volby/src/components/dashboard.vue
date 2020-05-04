@@ -5,6 +5,13 @@
 </template>
 <script>
 export default{
-
+    data(){
+        return{
+            title: "Dashboard",
+        }
+    },
+    created() {
+        this.$emit('title',this.title);
+    }
 }
 </script>

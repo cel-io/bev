@@ -58,7 +58,7 @@ class Database(object):
 
     async def fetch_election_resources(self, election_id):
         fetch_election = """
-                SELECT election_id FROM records
+                SELECT election_id FROM elections
                 WHERE election_id='{0}'
                 AND ({1}) >= start_block_num
                 AND ({1}) < end_block_num;
@@ -68,10 +68,38 @@ class Database(object):
             await cursor.execute(fetch_election)
             return await cursor.fetchall()
 
+    async def fetch_current_elections_resources(self, voter_id, timestamp):
+        fetch_elections = """
+                SELECT * FROM elections
+                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id={0})
+                AND start_timestamp <= {1} 
+                AND end_timestamp >= {1}
+                AND ({2}) >= start_block_num
+                AND ({2}) < end_block_num
+                ORDER BY start_timestamp DESC;
+                """.format(voter_id, timestamp, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch_elections)
+            return await cursor.fetchall()
+
+    async def fetch_past_elections_resources(self, voter_id, timestamp):
+        fetch_elections = """
+                SELECT * FROM elections
+                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id={0})
+                AND end_timestamp < {1}
+                AND ({2}) >= start_block_num
+                AND ({2}) < end_block_num
+                ORDER BY start_timestamp DESC;
+                """.format(voter_id, timestamp, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch_elections)
+            return await cursor.fetchall()
+
     async def fetch_all_election_resources(self):
         fetch = """
-        SELECT election_id, name, description, start_timestamp, end_timestamp, results_permission, can_change_vote, 
-            can_show_realtime, admin_id, id_vote, id_voting_options, timestamp 
+        SELECT *
         FROM elections
         WHERE ({0}) >= start_block_num
         AND ({0}) < end_block_num;
@@ -129,10 +157,29 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchall()
 
-    async def fetch_auth_resource(self, public_key):
-        fetch = """
-        SELECT * FROM auth WHERE public_key='{}'
-        """.format(public_key)
+    async def fetch_auth_resource(self, public_key=None, encrypted_private_key=None):
+        if public_key is not None:
+            fetch = """
+            SELECT * FROM auth WHERE public_key='{}'
+            """.format(public_key)
+        elif encrypted_private_key is not None:
+            fetch = """
+            SELECT * FROM auth WHERE encrypted_private_key='{}'
+            """.format(encrypted_private_key)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def fetch_voter_resource(self, voter_id=None, private_key=None):
+        if voter_id is not None:
+            fetch = """
+            SELECT * FROM voters WHERE voter_id='{}'
+            """.format(voter_id)
+        elif private_key is not None:
+            fetch = """
+            SELECT * FROM voters WHERE private_key='{}'
+            """.format(private_key)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

@@ -19,7 +19,7 @@ ENV PATH $PATH:/project/bev/bin
 
 RUN echo "\
 \n\
-ServerName curator_app\n\
+ServerName volby\n\
 AddDefaultCharset utf-8\n\
 LoadModule proxy_module modules/mod_proxy.so\n\
 LoadModule proxy_http_module modules/mod_proxy_http.so\n\

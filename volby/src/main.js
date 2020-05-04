@@ -6,13 +6,6 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 window.Vue = require('vue')
 import Vue from 'vue'
 
-import Home from './components/home'
-import Login from './components/login'
-import Register from './components/register'
-import MainLayout from './components/mainLayout'
-import Dashboard from './components/dashboard'
-import CreateElection from './components/createElection'
-
 import Buefy from 'buefy'
 Vue.use(Buefy)
 import 'bulma-spacing/css/bulma-spacing.min.css'
@@ -27,31 +20,27 @@ localize("en", en);
 Vue.component("ValidationObserver", ValidationObserver);
 Vue.component("ValidationProvider", ValidationProvider);
 
-import VueRouter from 'vue-router'
-Vue.use(VueRouter)
+import {isAfter} from "date-fns"
 
-const routes = [
-    {path: '/home', component: Home, name: 'home'},
-    {path: '/login', component: Login, name: 'login'},
-    {path: '/register', component: Register, name: 'register'},
-    {path: '/',component: MainLayout, redirect: 'newelection',
-        children: [
-            {path: 'dashboard', component: Dashboard, name: 'dashboard'},
-            {path: 'newelection', component: CreateElection, name: 'createElection'}
-        ]
-    }
-]
+import {store} from './store.js'
 
-const router = new VueRouter({
-    routes
-});
+import {router} from './router.js'
 
 const app = new Vue({
     el: '#app',
     router,
+    store,
     data: {
 
     },
     methods: {},
-    mounted() {}
+    mounted() {
+        if(localStorage.getItem("accessToken") !== null){
+            if(isAfter(new Date(),new Date(localStorage.getItem("tokensExpiry")))){
+                this.$store.commit('logout')
+
+                return this.$router.push("/login")
+            }
+        }
+    }
 });
