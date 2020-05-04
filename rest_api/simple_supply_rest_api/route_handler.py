@@ -61,6 +61,10 @@ class RouteHandler(object):
             timestamp=get_time()
         )
 
+        voting_options = body.get('voting_options')
+        voting_options.append({"name": "NULO", "description": "Voto Nulo"})
+        voting_options.append({"name": "BRANCO", "description": "Voto em Branco"})
+
         for voting_option in body.get('voting_options'):
             await self._messenger.send_create_voting_option_transaction(
                 private_key=private_key,
@@ -68,7 +72,8 @@ class RouteHandler(object):
                 name=voting_option.get('name'),
                 description=voting_option.get('description'),
                 election_id=election_id,
-                timestamp=get_time()
+                timestamp=get_time(),
+                num_votes=0
             )
 
         for poll_book in body.get('poll_book'):

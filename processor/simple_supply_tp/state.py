@@ -95,14 +95,16 @@ class SimpleSupplyState(object):
                           voting_option_id,
                           name,
                           description,
-                          election_id):
-        """Creates a new election in state
+                          election_id,
+                          num_votes):
+        """Creates a new voting option in state
 
             Args:
                 voting_option_id (str): Unique ID of the voting option
                 name (str): Name of the voting option
                 description (str): Description of the voting option
                 election_id (str): Unique ID of the election
+                num_votes (int): Number of votes of the specific option
         """
         address = addresser.get_voting_option_address(voting_option_id)
 
@@ -110,7 +112,8 @@ class SimpleSupplyState(object):
             voting_option_id=voting_option_id,
             name=name,
             description=description,
-            election_id=election_id)
+            election_id=election_id,
+            num_votes=num_votes)
 
         container = votingOption_pb2.VotingOptionContainer()
         state_entries = self._context.get_state(

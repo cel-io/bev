@@ -109,6 +109,7 @@ message CreateVotingOptionAction{
     string description = 3;
 
     string election_id = 4;
+    uint32 num_votes = 5;
 }
 
 message CreatePollRegistrationAction{

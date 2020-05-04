@@ -15,12 +15,13 @@
 
 import logging
 import time
+from logging import Logger
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER: Logger = logging.getLogger(__name__)
 
 
 CREATE_BLOCK_STMTS = """
@@ -134,6 +135,7 @@ CREATE TABLE IF NOT EXISTS voting_options (
     name             varchar,
     description      varchar,
     election_id      varchar,
+    num_votes        smallint,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -251,6 +253,20 @@ class Database(object):
     def rollback(self):
         self._conn.rollback()
 
+    def fetch_block(self, block_num):
+        if block_num is None:
+            return
+
+        fetch = """
+        SELECT block_num, block_id FROM blocks WHERE block_num = {}
+        """.format(block_num)
+
+        with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(fetch)
+            block = cursor.fetchone()
+
+        return block
+
     def drop_fork(self, block_num):
         """Deletes all resources from a particular block_num
         """
@@ -314,17 +330,6 @@ class Database(object):
             blocks = cursor.fetchall()
 
         return blocks
-
-    def fetch_block(self, block_num):
-        fetch = """
-        SELECT block_num, block_id FROM blocks WHERE block_num = {}
-        """.format(block_num)
-
-        with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(fetch)
-            block = cursor.fetchone()
-
-        return block
 
     def insert_block(self, block_dict):
         insert = """
@@ -404,14 +409,16 @@ class Database(object):
            name, 
            description, 
            election_id,
+           num_votes,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             voting_option_dict['voting_option_id'],
             voting_option_dict['name'],
             voting_option_dict['description'],
             voting_option_dict['election_id'],
+            voting_option_dict['num_votes'],
             voting_option_dict['start_block_num'],
             voting_option_dict['end_block_num'])
 

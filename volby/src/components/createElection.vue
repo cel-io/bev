@@ -321,7 +321,7 @@ export default{
             }
 
 
-            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4NzQxMzUzMywiZXhwIjoxNTg3NDE3MTMzfQ.eyJwdWJsaWNfa2V5IjoiMDNmMzNjNmEzYzExYzczYjFjYTQ3MWQ0ODVkZmM3OTkxMjEzMGIwNTVjMWM1MTZkMGFhNWYwMDVmMTRjOWJiODM5In0.rMr7tiCRSYYv0DO1ImzCjeH29arhO5p2Welir_SNLm1nr0fINBGB9bWvi7VCVo27JiCUTesXETD5SjtjWL7D1w"
+            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4ODQ0MTExMywiZXhwIjoxNTg4NDQ0NzEzfQ.eyJwdWJsaWNfa2V5IjoiMDJlOGYxNGRiZjI1OGZkMGNlZDg2OWQ4OTZlODY2MDY2MzFjM2NlYjJhNThmOTdmOTQ0OTNmNjE5YTdmYjMzY2YyIn0.HgYHeZzC9HvvcxVCrsH0adXAdjPpBwqZ3C5s_1PFe1Go4Q1jM9g73klT1bNRlI5Knd3_2OrqPrZEeEotJbLV0Q"
             axios.defaults.headers.common.Authorization = "Bearer " + token;
 
             axios.post('api/elections', {

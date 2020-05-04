@@ -1,7 +1,5 @@
-
 import enum
 import hashlib
-
 
 FAMILY_NAME = 'bev'
 FAMILY_VERSION = '0.1'
@@ -12,8 +10,6 @@ ELECTION_PREFIX = '02'
 VOTING_OPTION_PREFIX = '03'
 POLL_REGISTRATION_PREFIX = '04'
 VOTER_PREFIX = '05'
-
-
 
 
 @enum.unique
