@@ -25,13 +25,13 @@ class RouteHandler(object):
         self._database = database
 
     async def create_election(self, request):
+        private_key = await self._authorize(request)
         body = await decode_request(request)
         required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
                            'results_permission', 'can_change_vote', 'can_show_realtime',
                            'can_choose_multiple_options', 'voting_options', 'poll_book']
         validate_fields(required_fields, body)
 
-        private_key = await self._authorize(request)
         election_id = uuid.uuid1().hex
 
         multiple_options_criteria=body.get('multiple_options_criteria')
@@ -82,9 +82,21 @@ class RouteHandler(object):
 
         return json_response({'data': 'Create election transaction submitted'})
 
-    async def list_elections(self, _request):
-        election_list = await self._database.fetch_all_election_resources()
-        return json_response(election_list)
+    async def list_elections_current(self, request):
+        private_key = await self._authorize(request)
+
+        voter = await self._database.fetch_voter_resource(private_key=private_key)
+
+        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('id'), get_time())
+        return json_response(current_elections_list)
+
+    async def list_elections_past(self, request):
+        private_key = await self._authorize(request)
+
+        voter = await self._database.fetch_voter_resource(private_key=private_key)
+
+        past_elections_list = await self._database.fetch_past_elections_resources(voter.get('id'), get_time())
+        return json_response(past_elections_list)
 
     async def create_voter(self, request):
         body = await decode_request(request)
@@ -121,12 +133,12 @@ class RouteHandler(object):
 
         password = bytes(body.get('password'), 'utf-8')
 
-        voter = await self._database.fetch_voter_resource(body.get('voter_id'))
+        voter = await self._database.fetch_voter_resource(voter_id=body.get('voter_id'))
         if voter is None:
             raise ApiUnauthorized('Incorrect voter_id or password')
 
         auth_info = await self._database.fetch_auth_resource(
-            voter.get('public_key'))
+            public_key=voter.get('public_key'))
         if auth_info is None:
             raise ApiUnauthorized('No voter with that public key exists')
 
@@ -257,7 +269,7 @@ class RouteHandler(object):
             raise ApiUnauthorized('Invalid auth token')
         public_key = token_dict.get('public_key')
 
-        auth_resource = await self._database.fetch_auth_resource(public_key)
+        auth_resource = await self._database.fetch_auth_resource(public_key=public_key)
         if auth_resource is None:
             raise ApiUnauthorized('Token is not associated with an agent')
         return decrypt_private_key(request.app['aes_key'],
