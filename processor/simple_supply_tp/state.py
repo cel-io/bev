@@ -21,6 +21,8 @@ from simple_supply_protobuf import election_pb2
 from simple_supply_protobuf import votingOption_pb2
 from simple_supply_protobuf import pollRegistration_pb2
 from simple_supply_protobuf import voter_pb2
+from simple_supply_protobuf import vote_pb2
+
 
 class SimpleSupplyState(object):
     def __init__(self, context, timeout=2):
@@ -161,13 +163,13 @@ class SimpleSupplyState(object):
 
     def get_voter(self,
                   public_key):
-        """Gets the agent associated with the public_key
+        """Gets the voter associated with the public_key
 
         Args:
-            public_key (str): The public key of the agent
+            public_key (str): The public key of the voter
 
         Returns:
-            voter_pb2.Agent: Agent with the provided public_key
+            voter_pb2.Voter: Voter with the provided public_key
         """
         address = addresser.get_voter_address(public_key)
         state_entries = self._context.get_state(
@@ -210,6 +212,42 @@ class SimpleSupplyState(object):
             container.ParseFromString(state_entries[0].data)
 
         container.entries.extend([voter])
+        data = container.SerializeToString()
+
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
+    def set_vote(self,
+                 vote_id,
+                 timestamp,
+                 voter_id,
+                 election_id,
+                 voting_option_id):
+        """Creates a new vote in state
+
+            Args:
+                vote_id (str): Unique ID of the vote
+                timestamp (int): Timestamp
+                voter_id (str): Unique ID of the voting option
+                election_id (str): Unique ID of the election
+                voting_option_id (str): Unique ID of the voting option
+        """
+        address = addresser.get_vote_address(vote_id)
+        vote = vote_pb2.Vote(
+            vote_id=vote_id,
+            timestamp=timestamp,
+            voter_id=voter_id,
+            election_id=election_id,
+            voting_option_id=voting_option_id)
+
+        container = vote_pb2.VoteContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+
+        container.entries.extend([vote])
         data = container.SerializeToString()
 
         updated_state = {}

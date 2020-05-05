@@ -71,7 +71,7 @@ class Database(object):
     async def fetch_current_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
                 SELECT * FROM elections
-                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id={0})
+                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND start_timestamp <= {1} 
                 AND end_timestamp >= {1}
                 AND ({2}) >= start_block_num
@@ -86,7 +86,7 @@ class Database(object):
     async def fetch_past_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
                 SELECT * FROM elections
-                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id={0})
+                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND end_timestamp < {1}
                 AND ({2}) >= start_block_num
                 AND ({2}) < end_block_num
@@ -108,6 +108,22 @@ class Database(object):
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
             return await cursor.fetchall()
+
+    async def update_voting_option_resource(self,
+                                            voting_option_id,
+                                            num_votes):
+        update = """
+        UPDATE voting_options 
+        SET num_votes = '{1}'
+        WHERE voting_option_id = '{0}'
+        """.format(
+            voting_option_id,
+            num_votes)
+
+        async with self._conn.cursor() as cursor:
+            await cursor.execute(update)
+
+        self._conn.commit()
 
     # ------------------------------------------------------------
     # ------------------------------------------------------------
@@ -171,15 +187,24 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
-    async def fetch_voter_resource(self, voter_id=None, private_key=None):
+    async def fetch_voter_resource(self, voter_id=None, public_key=None):
         if voter_id is not None:
             fetch = """
             SELECT * FROM voters WHERE voter_id='{}'
             """.format(voter_id)
-        elif private_key is not None:
+        elif public_key is not None:
             fetch = """
-            SELECT * FROM voters WHERE private_key='{}'
-            """.format(private_key)
+            SELECT * FROM voters WHERE public_key='{}'
+            """.format(public_key)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def fetch_voting_option_resource(self, voting_option_id=None):
+        fetch = """
+           SELECT * FROM voting_options WHERE voting_option_id='{}'
+           """.format(voting_option_id)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

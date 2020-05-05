@@ -25,7 +25,7 @@ class RouteHandler(object):
         self._database = database
 
     async def create_election(self, request):
-        private_key = await self._authorize(request)
+        private_key, public_key = await self._authorize(request)
         body = await decode_request(request)
         required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
                            'results_permission', 'can_change_vote', 'can_show_realtime',
@@ -34,14 +34,14 @@ class RouteHandler(object):
 
         election_id = uuid.uuid1().hex
 
-        multiple_options_criteria=body.get('multiple_options_criteria')
-        multiple_options_value_min=body.get('multiple_options_value_min')
-        multiple_options_value_max=body.get('multiple_options_value_max')
+        multiple_options_criteria = body.get('multiple_options_criteria')
+        multiple_options_value_min = body.get('multiple_options_value_min')
+        multiple_options_value_max = body.get('multiple_options_value_max')
 
         if body.get('can_choose_multiple_options') is False:
-            multiple_options_criteria='NONE'
-            multiple_options_value_min=0
-            multiple_options_value_max=0
+            multiple_options_criteria = 'NONE'
+            multiple_options_value_min = 0
+            multiple_options_value_max = 0
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
@@ -88,19 +88,19 @@ class RouteHandler(object):
         return json_response({'data': 'Create election transaction submitted'})
 
     async def list_elections_current(self, request):
-        private_key = await self._authorize(request)
+        private_key, public_key = await self._authorize(request)
 
-        voter = await self._database.fetch_voter_resource(private_key=private_key)
+        voter = await self._database.fetch_voter_resource(public_key=public_key)
 
-        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('id'), get_time())
+        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'), get_time())
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
-        private_key = await self._authorize(request)
+        private_key, public_key = await self._authorize(request)
 
-        voter = await self._database.fetch_voter_resource(private_key=private_key)
+        voter = await self._database.fetch_voter_resource(public_key=public_key)
 
-        past_elections_list = await self._database.fetch_past_elections_resources(voter.get('id'), get_time())
+        past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
         return json_response(past_elections_list)
 
     async def create_voter(self, request):
@@ -126,6 +126,36 @@ class RouteHandler(object):
         token = generate_auth_token(request.app['secret_key'], public_key)
 
         return json_response({'authorization': token})
+
+    async def create_vote(self, request):
+        body = await decode_request(request)
+        required_fields = []
+        validate_fields(required_fields, body)
+
+        private_key, public_key = await self._authorize(request)
+        voting_option_id = request.match_info.get('votingOptionId', '')
+
+        voter = await self._database.fetch_voter_resource(public_key=public_key)
+        voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+        num_votes_update = voting_option.get('num_votes') + 1
+
+        if voting_option is None:
+            raise ApiNotFound(
+                'Voting Option with the voting option id '
+                '{} was not found'.format(record_id))
+
+        await self._messenger.send_create_vote_transaction(
+            private_key=private_key,
+            vote_id=uuid.uuid1().hex,
+            timestamp=get_time(),
+            voter_id=voter.get('voter_id'),
+            election_id=voting_option.get('election_id'),
+            voting_option_id=voting_option_id)
+
+        await self._database.update_voting_option_resource(voting_option_id=voting_option_id,
+                                                           num_votes=num_votes_update)
+
+        return json_response({'data': 'Create vote transaction submitted'})
 
     # ------------------------------------------------------------
     # ------------------------------------------------------------
@@ -154,7 +184,8 @@ class RouteHandler(object):
         token = generate_auth_token(
             request.app['secret_key'], body.get('public_key'))
 
-        return json_response({'accessToken': token,'user': {'name': voter.get('name'),'voter_id': voter.get('voter_id')}})
+        return json_response(
+            {'accessToken': token, 'user': {'name': voter.get('name'), 'voter_id': voter.get('voter_id')}})
 
     async def create_agent(self, request):
         body = await decode_request(request)
@@ -193,7 +224,7 @@ class RouteHandler(object):
         return json_response(agent)
 
     async def create_record(self, request):
-        private_key = await self._authorize(request)
+        private_key, public_key = await self._authorize(request)
 
         body = await decode_request(request)
         required_fields = ['latitude', 'longitude', 'record_id']
@@ -223,7 +254,7 @@ class RouteHandler(object):
         return json_response(record)
 
     async def transfer_record(self, request):
-        private_key = await self._authorize(request)
+        private_key, public_key = await self._authorize(request)
 
         body = await decode_request(request)
         required_fields = ['receiving_agent']
@@ -241,7 +272,7 @@ class RouteHandler(object):
             {'data': 'Transfer record transaction submitted'})
 
     async def update_record(self, request):
-        private_key = await self._authorize(request)
+        private_key, public_key = await self._authorize(request)
 
         body = await decode_request(request)
         required_fields = ['latitude', 'longitude']
@@ -274,12 +305,14 @@ class RouteHandler(object):
             raise ApiUnauthorized('Invalid auth token')
         public_key = token_dict.get('public_key')
 
+        LOGGER.info(public_key)
+
         auth_resource = await self._database.fetch_auth_resource(public_key=public_key)
         if auth_resource is None:
             raise ApiUnauthorized('Token is not associated with an agent')
         return decrypt_private_key(request.app['aes_key'],
                                    public_key,
-                                   auth_resource['encrypted_private_key'])
+                                   auth_resource['encrypted_private_key']), public_key
 
 
 async def decode_request(request):
@@ -319,7 +352,7 @@ def get_time():
 
 
 def generate_auth_token(secret_key, public_key):
-    serializer = Serializer(secret_key,3600)
+    serializer = Serializer(secret_key, 3600)
     token = serializer.dumps({'public_key': public_key})
     return token.decode('ascii')
 

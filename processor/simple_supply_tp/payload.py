@@ -50,6 +50,11 @@ class BevPayload(object):
                 payload_pb2.BevPayload.CREATE_VOTER:
             return self._transaction.create_voter
 
+        if self._transaction.HasField('create_vote') and \
+            self._transaction.action == \
+                payload_pb2.BevPayload.CREATE_VOTE:
+            return self._transaction.create_vote
+
         if self._transaction.HasField('create_agent') and \
             self._transaction.action == \
                 payload_pb2.BevPayload.CREATE_AGENT:

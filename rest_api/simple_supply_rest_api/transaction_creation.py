@@ -51,8 +51,7 @@ def make_create_election_transaction(transaction_signer,
     """
 
     inputs = [
-        addresser.get_agent_address(
-            transaction_signer.get_public_key().as_hex()),
+        addresser.get_voter_address(transaction_signer.get_public_key().as_hex()),
         addresser.get_election_address(election_id)
     ]
 
@@ -113,7 +112,7 @@ def make_create_voting_option_transaction(transaction_signer,
     """
 
     inputs = [
-        addresser.get_agent_address(
+        addresser.get_voter_address(
             transaction_signer.get_public_key().as_hex()),
         addresser.get_voting_option_address(voting_option_id)
     ]
@@ -163,7 +162,7 @@ def make_create_poll_registration_transaction(transaction_signer,
     """
 
     inputs = [
-        addresser.get_agent_address(
+        addresser.get_voter_address(
             transaction_signer.get_public_key().as_hex()),
         addresser.get_poll_registration_address(voter_id)
     ]
@@ -228,6 +227,57 @@ def make_create_voter_transaction(transaction_signer,
         create_voter=action,
         timestamp=created_at
     )
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
+def make_create_vote_transaction(transaction_signer,
+                                 batch_signer,
+                                 vote_id,
+                                 timestamp,
+                                 voter_id,
+                                 election_id,
+                                 voting_option_id):
+    """Make a CreateVoteAction transaction and wrap it in a batch
+
+    Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        vote_id (str): Unique ID of the vote
+        timestamp (int): Unix UTC timestamp of when the agent is created
+        voter_id (str): Unique ID of the voter
+        election_id (str): Unique ID of the election
+        voting_option_id (str): Unique ID of the voting option
+
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_voter_address(transaction_signer.get_public_key().as_hex()),
+        addresser.get_vote_address(vote_id)
+    ]
+
+    outputs = [addresser.get_vote_address(vote_id)]
+
+    action = payload_pb2.CreateVoteAction(
+        vote_id=vote_id,
+        timestamp=timestamp,
+        voter_id=voter_id,
+        election_id=election_id,
+        voting_option_id=voting_option_id,)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.CREATE_VOTE,
+        create_vote=action,
+        timestamp=timestamp)
     payload_bytes = payload.SerializeToString()
 
     return _make_batch(

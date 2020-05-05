@@ -157,9 +157,22 @@ CREATE TABLE IF NOT EXISTS voters (
 CREATE_POLL_REGISTRATION_STMTS = """
 CREATE TABLE IF NOT EXISTS poll_registrations (
     id               bigserial PRIMARY KEY,
-    voter_id             varchar,
-    name                varchar,
-    election_id         varchar,
+    voter_id         varchar,
+    name             varchar,
+    election_id      varchar,
+    start_block_num  bigint,
+    end_block_num    bigint
+);
+"""
+
+CREATE_VOTE_STMTS = """
+CREATE TABLE IF NOT EXISTS votes (
+    id               bigserial PRIMARY KEY,
+    vote_id          varchar,
+    timestamp        bigint,
+    voter_id         varchar,
+    election_id      varchar,
+    voting_option_id         varchar,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -237,6 +250,9 @@ class Database(object):
 
             LOGGER.debug('Creating table: poll_registrations')
             cursor.execute(CREATE_POLL_REGISTRATION_STMTS)
+
+            LOGGER.debug('Creating table: votes')
+            cursor.execute(CREATE_VOTE_STMTS)
 
         self._conn.commit()
 
@@ -393,6 +409,38 @@ class Database(object):
         with self._conn.cursor() as cursor:
             cursor.execute(update_election)
             cursor.execute(insert_election)
+
+    def insert_vote(self, vote_dict):
+        update_vote = """
+           UPDATE votes SET end_block_num = {}
+           WHERE end_block_num = {} AND election_id = '{}'
+           """.format(
+            vote_dict['start_block_num'],
+            vote_dict['end_block_num'],
+            vote_dict['vote_id'],)
+
+        insert_vote = """
+           INSERT INTO votes (
+           vote_id,  
+           timestamp,
+           voter_id,
+           election_id,
+           voting_option_id,
+           start_block_num,
+           end_block_num)
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           """.format(
+            vote_dict['vote_id'],
+            vote_dict['timestamp'],
+            vote_dict['voter_id'],
+            vote_dict['election_id'],
+            vote_dict['voting_option_id'],
+            vote_dict['start_block_num'],
+            vote_dict['end_block_num'])
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(update_vote)
+            cursor.execute(insert_vote)
 
     def insert_voting_option(self, voting_option_dict):
         update_voting_option = """

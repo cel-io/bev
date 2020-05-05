@@ -21,6 +21,7 @@ from simple_supply_protobuf.election_pb2 import ElectionContainer
 from simple_supply_protobuf.votingOption_pb2 import VotingOptionContainer
 from simple_supply_protobuf.pollRegistration_pb2 import PollRegistrationContainer
 from simple_supply_protobuf.voter_pb2 import VoterContainer
+from simple_supply_protobuf.vote_pb2 import VoteContainer
 
 CONTAINERS = {
     AddressSpace.AGENT: AgentContainer,
@@ -28,7 +29,8 @@ CONTAINERS = {
     AddressSpace.ELECTION: ElectionContainer,
     AddressSpace.VOTING_OPTION: VotingOptionContainer,
     AddressSpace.POLL_REGISTRATION: PollRegistrationContainer,
-    AddressSpace.VOTER: VoterContainer
+    AddressSpace.VOTER: VoterContainer,
+    AddressSpace.VOTE: VoteContainer
 }
 
 

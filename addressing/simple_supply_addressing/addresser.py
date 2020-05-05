@@ -10,6 +10,7 @@ ELECTION_PREFIX = '02'
 VOTING_OPTION_PREFIX = '03'
 POLL_REGISTRATION_PREFIX = '04'
 VOTER_PREFIX = '05'
+VOTE_PREFIX = '06'
 
 
 @enum.unique
@@ -20,6 +21,7 @@ class AddressSpace(enum.IntEnum):
     VOTING_OPTION = 3
     POLL_REGISTRATION = 4
     VOTER = 5
+    VOTE = 6
 
     OTHER_FAMILY = 100
 
@@ -42,6 +44,11 @@ def get_poll_registration_address(voter_id):
 def get_voter_address(public_key):
     return NAMESPACE + VOTER_PREFIX + hashlib.sha512(
         public_key.encode('utf-8')).hexdigest()[:62]
+
+
+def get_vote_address(vote_id):
+    return NAMESPACE + VOTE_PREFIX + hashlib.sha512(
+        vote_id.encode('utf-8')).hexdigest()[:62]
 
 
 def get_agent_address(public_key):
@@ -72,5 +79,7 @@ def get_address_type(address):
         return AddressSpace.POLL_REGISTRATION
     if infix == '05':
         return AddressSpace.VOTER
+    if infix == '06':
+        return AddressSpace.VOTE
 
     return AddressSpace.OTHER_FAMILY

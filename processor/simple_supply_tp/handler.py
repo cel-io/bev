@@ -26,7 +26,6 @@ from simple_supply_protobuf import payload_pb2
 from simple_supply_tp.payload import BevPayload
 from simple_supply_tp.state import SimpleSupplyState
 
-
 SYNC_TOLERANCE = 60 * 5
 MAX_LAT = 90 * 1e6
 MIN_LAT = -90 * 1e6
@@ -95,13 +94,18 @@ class SimpleSupplyHandler(TransactionHandler):
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
+        elif payload.action == payload_pb2.BevPayload.CREATE_VOTE:
+            _create_vote(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
         else:
             raise InvalidTransaction('Unhandled action')
 
 
 def _create_election(state, public_key, payload):
-    if state.get_agent(public_key) is None:
-        raise InvalidTransaction('Agent with the public key {} does '
+    if state.get_voter(public_key) is None:
+        raise InvalidTransaction('Voter with the public key {} does '
                                  'not exist'.format(public_key))
 
     state.set_election(
@@ -123,7 +127,7 @@ def _create_election(state, public_key, payload):
 
 
 def _create_voting_option(state, public_key, payload):
-    if state.get_agent(public_key) is None:
+    if state.get_voter(public_key) is None:
         raise InvalidTransaction('Agent with the public key {} does '
                                  'not exist'.format(public_key))
 
@@ -137,7 +141,7 @@ def _create_voting_option(state, public_key, payload):
 
 
 def _create_poll_registration(state, public_key, payload):
-    if state.get_agent(public_key) is None:
+    if state.get_voter(public_key) is None:
         raise InvalidTransaction('Agent with the public key {} does '
                                  'not exist'.format(public_key))
 
@@ -158,6 +162,20 @@ def _create_voter(state, public_key, payload):
         name=payload.data.name,
         created_at=payload.data.created_at,
         type=payload.data.type)
+
+
+def _create_vote(state, public_key, payload):
+    if state.get_voter(public_key) is None:
+        raise InvalidTransaction('Voter with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.set_vote(
+        vote_id=payload.data.vote_id,
+        timestamp=payload.data.timestamp,
+        voter_id=payload.data.voter_id,
+        election_id=payload.data.election_id,
+        voting_option_id=payload.data.voting_option_id
+    )
 
 
 def _create_agent(state, public_key, payload):
@@ -245,10 +263,10 @@ def _validate_record_owner(signer_public_key, record):
 def _validate_latlng(latitude, longitude):
     if not MIN_LAT <= latitude <= MAX_LAT:
         raise InvalidTransaction('Latitude must be between -90 and 90. '
-                                 'Got {}'.format(latitude/1e6))
+                                 'Got {}'.format(latitude / 1e6))
     if not MIN_LNG <= longitude <= MAX_LNG:
         raise InvalidTransaction('Longitude must be between -180 and 180. '
-                                 'Got {}'.format(longitude/1e6))
+                                 'Got {}'.format(longitude / 1e6))
 
 
 def _validate_timestamp(timestamp):
@@ -259,7 +277,7 @@ def _validate_timestamp(timestamp):
     submitting and validating transactions may have different system times
     """
     dts = datetime.datetime.utcnow()
-    current_time = round(time.mktime(dts.timetuple()) + dts.microsecond/1e6)
+    current_time = round(time.mktime(dts.timetuple()) + dts.microsecond / 1e6)
     if (timestamp - current_time) > SYNC_TOLERANCE:
         raise InvalidTransaction(
             'Timestamp must be less than local time.'

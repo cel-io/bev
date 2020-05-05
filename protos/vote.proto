@@ -6,7 +6,7 @@ message Vote{
     string voter_id = 3;
 
     string election_id = 4;
-    repeated string voting_option_id = 5;
+    string voting_option_id = 5;
 }
 
 message VoteContainer {

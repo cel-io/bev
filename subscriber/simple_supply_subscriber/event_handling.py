@@ -24,7 +24,6 @@ from simple_supply_addressing.addresser import AddressSpace
 from simple_supply_addressing.addresser import NAMESPACE
 from simple_supply_subscriber.decoding import deserialize_data
 
-
 MAX_BLOCK_NUMBER = int(math.pow(2, 63)) - 1
 NAMESPACE_REGEX = re.compile('^{}'.format(NAMESPACE))
 LOGGER = logging.getLogger(__name__)
@@ -94,6 +93,8 @@ def _apply_state_changes(database, events, block_num, block_id):
             _apply_poll_registration_change(database, block_num, resources)
         elif data_type == AddressSpace.VOTER:
             _apply_voter_change(database, block_num, resources)
+        elif data_type == AddressSpace.VOTE:
+            _apply_vote_change(database, block_num, resources)
         else:
             LOGGER.warning('Unsupported data type: %s', data_type)
 
@@ -151,3 +152,10 @@ def _apply_voter_change(database, block_num, voters):
         voter['start_block_num'] = block_num
         voter['end_block_num'] = MAX_BLOCK_NUMBER
         database.insert_voter(voter)
+
+
+def _apply_vote_change(database, block_num, votes):
+    for vote in votes:
+        vote['start_block_num'] = block_num
+        vote['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_vote(vote)
