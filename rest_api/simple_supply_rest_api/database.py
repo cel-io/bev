@@ -125,54 +125,6 @@ class Database(object):
 
         self._conn.commit()
 
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-
-    async def create_auth_entry(self,
-                                public_key,
-                                encrypted_private_key,
-                                hashed_password):
-        insert = """
-        INSERT INTO auth (
-            public_key,
-            encrypted_private_key,
-            hashed_password
-        )
-        VALUES ('{}', '{}', '{}');
-        """.format(
-            public_key,
-            encrypted_private_key.hex(),
-            hashed_password.hex())
-
-        async with self._conn.cursor() as cursor:
-            await cursor.execute(insert)
-
-        self._conn.commit()
-
-    async def fetch_agent_resource(self, public_key):
-        fetch = """
-        SELECT public_key, name, timestamp FROM agents
-        WHERE public_key='{0}'
-        AND ({1}) >= start_block_num
-        AND ({1}) < end_block_num;
-        """.format(public_key, LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch)
-            return await cursor.fetchone()
-
-    async def fetch_all_agent_resources(self):
-        fetch = """
-        SELECT public_key, name, timestamp FROM agents
-        WHERE ({0}) >= start_block_num
-        AND ({0}) < end_block_num;
-        """.format(LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch)
-            return await cursor.fetchall()
-
     async def fetch_auth_resource(self, public_key=None, encrypted_private_key=None):
         if public_key is not None:
             fetch = """
@@ -209,6 +161,72 @@ class Database(object):
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
             return await cursor.fetchone()
+
+    async def fetch_vote_resource(self, vote_id=None):
+        fetch = """
+           SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes WHERE vote_id='{}')
+           """.format(vote_id)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def fetch_election_resource(self, election_id=None):
+        fetch = """
+              SELECT * FROM elections WHERE election_id='{}'
+              """.format(election_id)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def create_auth_entry(self,
+                                public_key,
+                                encrypted_private_key,
+                                hashed_password):
+        insert = """
+        INSERT INTO auth (
+            public_key,
+            encrypted_private_key,
+            hashed_password
+        )
+        VALUES ('{}', '{}', '{}');
+        """.format(
+            public_key,
+            encrypted_private_key.hex(),
+            hashed_password.hex())
+
+        async with self._conn.cursor() as cursor:
+            await cursor.execute(insert)
+
+        self._conn.commit()
+
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
+
+    async def fetch_agent_resource(self, public_key):
+        fetch = """
+        SELECT public_key, name, timestamp FROM agents
+        WHERE public_key='{0}'
+        AND ({1}) >= start_block_num
+        AND ({1}) < end_block_num;
+        """.format(public_key, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def fetch_all_agent_resources(self):
+        fetch = """
+        SELECT public_key, name, timestamp FROM agents
+        WHERE ({0}) >= start_block_num
+        AND ({0}) < end_block_num;
+        """.format(LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchall()
 
     async def fetch_record_resource(self, record_id):
         fetch_record = """

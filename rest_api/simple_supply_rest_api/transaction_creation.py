@@ -7,8 +7,6 @@ from simple_supply_addressing import addresser
 
 from simple_supply_protobuf import payload_pb2
 
-import time
-
 
 def make_create_election_transaction(transaction_signer,
                                      batch_signer,
@@ -272,11 +270,56 @@ def make_create_vote_transaction(transaction_signer,
         timestamp=timestamp,
         voter_id=voter_id,
         election_id=election_id,
-        voting_option_id=voting_option_id,)
+        voting_option_id=voting_option_id)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_VOTE,
         create_vote=action,
+        timestamp=timestamp)
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
+def make_update_vote_transaction(transaction_signer,
+                                 batch_signer,
+                                 vote_id,
+                                 timestamp,
+                                 voting_option_id):
+    """Make a UpdateVoteAction transaction and wrap it in a batch
+
+    Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        vote_id (str): Unique ID of the vote
+        timestamp (int): Unix UTC timestamp of when the vote is change
+        voting_option_id (str): Unique ID of the voting option
+
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_voter_address(transaction_signer.get_public_key().as_hex()),
+        addresser.get_vote_address(vote_id)
+    ]
+
+    outputs = [addresser.get_vote_address(vote_id)]
+
+    action = payload_pb2.UpdateVoteAction(
+        vote_id=vote_id,
+        timestamp=timestamp,
+        voting_option_id=voting_option_id)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.UPDATE_VOTE,
+        update_vote=action,
         timestamp=timestamp)
     payload_bytes = payload.SerializeToString()
 
@@ -305,7 +348,7 @@ def make_create_agent_transaction(transaction_signer,
 
     """
 
-    agent_address = addresser.get_agent_address(
+    agent_address = addresser.get_voter_address(
         transaction_signer.get_public_key().as_hex())
 
     inputs = [agent_address]
@@ -349,7 +392,7 @@ def make_create_record_transaction(transaction_signer,
     """
 
     inputs = [
-        addresser.get_agent_address(
+        addresser.get_voter_address(
             transaction_signer.get_public_key().as_hex()),
         addresser.get_record_address(record_id)
     ]
@@ -392,9 +435,9 @@ def make_transfer_record_transaction(transaction_signer,
     Returns:
         batch_pb2.Batch: The transaction wrapped in a batch
     """
-    sending_agent_address = addresser.get_agent_address(
+    sending_agent_address = addresser.get_voter_address(
         transaction_signer.get_public_key().as_hex())
-    receiving_agent_address = addresser.get_agent_address(receiving_agent)
+    receiving_agent_address = addresser.get_voter_address(receiving_agent)
     record_address = addresser.get_record_address(record_id)
 
     inputs = [sending_agent_address, receiving_agent_address, record_address]
@@ -438,7 +481,7 @@ def make_update_record_transaction(transaction_signer,
     Returns:
         batch_pb2.Batch: The transaction wrapped in a batch
     """
-    agent_address = addresser.get_agent_address(
+    agent_address = addresser.get_voter_address(
         transaction_signer.get_public_key().as_hex())
     record_address = addresser.get_record_address(record_id)
 

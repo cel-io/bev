@@ -413,7 +413,7 @@ class Database(object):
     def insert_vote(self, vote_dict):
         update_vote = """
            UPDATE votes SET end_block_num = {}
-           WHERE end_block_num = {} AND election_id = '{}'
+           WHERE end_block_num = {} AND vote_id = '{}'
            """.format(
             vote_dict['start_block_num'],
             vote_dict['end_block_num'],

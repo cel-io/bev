@@ -24,6 +24,8 @@ from simple_supply_rest_api.transaction_creation import \
     make_create_voter_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_create_vote_transaction
+from simple_supply_rest_api.transaction_creation import \
+    make_update_vote_transaction
 
 
 class Messenger(object):
@@ -164,6 +166,22 @@ class Messenger(object):
             timestamp=timestamp,
             voter_id=voter_id,
             election_id=election_id,
+            voting_option_id=voting_option_id)
+        await self._send_and_wait_for_commit(batch)
+
+    async def send_update_vote_transaction(self,
+                                           private_key,
+                                           vote_id,
+                                           timestamp,
+                                           voting_option_id):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_update_vote_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            vote_id=vote_id,
+            timestamp=timestamp,
             voting_option_id=voting_option_id)
         await self._send_and_wait_for_commit(batch)
 

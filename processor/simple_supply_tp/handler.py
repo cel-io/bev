@@ -99,6 +99,11 @@ class SimpleSupplyHandler(TransactionHandler):
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
+        elif payload.action == payload_pb2.BevPayload.UPDATE_VOTE:
+            _update_vote(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
         else:
             raise InvalidTransaction('Unhandled action')
 
@@ -178,6 +183,18 @@ def _create_vote(state, public_key, payload):
     )
 
 
+def _update_vote(state, public_key, payload):
+    if state.get_voter(public_key) is None:
+        raise InvalidTransaction('Voter with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.update_vote(
+        vote_id=payload.data.vote_id,
+        timestamp=payload.data.timestamp,
+        voting_option_id=payload.data.voting_option_id
+    )
+
+
 def _create_agent(state, public_key, payload):
     if state.get_agent(public_key):
         raise InvalidTransaction('Agent with the public key {} already '
@@ -189,7 +206,7 @@ def _create_agent(state, public_key, payload):
 
 
 def _create_record(state, public_key, payload):
-    if state.get_agent(public_key) is None:
+    if state.get_voter(public_key) is None:
         raise InvalidTransaction('Agent with the public key {} does '
                                  'not exist'.format(public_key))
 
@@ -211,7 +228,7 @@ def _create_record(state, public_key, payload):
 
 
 def _transfer_record(state, public_key, payload):
-    if state.get_agent(payload.data.receiving_agent) is None:
+    if state.get_voter(payload.data.receiving_agent) is None:
         raise InvalidTransaction(
             'Agent with the public key {} does '
             'not exist'.format(payload.data.receiving_agent))

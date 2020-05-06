@@ -92,7 +92,8 @@ class RouteHandler(object):
 
         voter = await self._database.fetch_voter_resource(public_key=public_key)
 
-        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'), get_time())
+        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'),
+                                                                                        get_time())
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
@@ -156,6 +157,58 @@ class RouteHandler(object):
                                                            num_votes=num_votes_update)
 
         return json_response({'data': 'Create vote transaction submitted'})
+
+    async def update_vote(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        body = await decode_request(request)
+        required_fields = ['voting_option_id']
+        validate_fields(required_fields, body)
+
+        vote_id = request.match_info.get('voteId', '')
+        vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+
+        if vote is None:
+            raise ApiNotFound(
+                'Vote with the vote id '
+                '{} was not found'.format(vote_id))
+
+        election = await self._database.fetch_election_resource(election_id=vote.get('election_id'))
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(vote.get('election_id')))
+
+        if election.get('can_change_vote') == 0:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found don\'t permit to change vote'.format(vote.get('election_id')))
+
+        new_voting_option_id = body.get('voting_option_id')
+        old_voting_option_id = vote.get('voting_option_id')
+
+        old_voting_option = await self._database.fetch_voting_option_resource(voting_option_id=old_voting_option_id)
+        new_voting_option = await self._database.fetch_voting_option_resource(voting_option_id=new_voting_option_id)
+        num_votes_remove = old_voting_option.get('num_votes')-1
+        num_votes_update = new_voting_option.get('num_votes')+1
+
+        await self._messenger.send_update_vote_transaction(
+            private_key=private_key,
+            vote_id=vote_id,
+            timestamp=get_time(),
+            voting_option_id=new_voting_option_id)
+
+        # remove -1 to old voting option
+        await self._database.update_voting_option_resource(voting_option_id=old_voting_option_id,
+                                                           num_votes=num_votes_remove)
+
+        # add +1 to new voting option
+        await self._database.update_voting_option_resource(voting_option_id=new_voting_option_id,
+                                                           num_votes=num_votes_update)
+
+        return json_response(
+            {'data': 'Update Vote transaction submitted'})
 
     # ------------------------------------------------------------
     # ------------------------------------------------------------
