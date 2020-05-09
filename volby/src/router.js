@@ -10,6 +10,7 @@ import Register from './components/register'
 import MainLayout from './components/mainLayout'
 import Dashboard from './components/dashboard'
 import CreateElection from './components/createElection'
+import CreateVote from './components/createVote'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -31,7 +32,8 @@ const routes = [
     {path: '/',component: MainLayout, redirect: 'dashboard',
         children: [
             {path: 'dashboard', component: Dashboard, name: 'dashboard'},
-            {path: 'newelection', component: CreateElection, name: 'createElection'}
+            {path: 'newelection', component: CreateElection, name: 'createElection'},
+            {path: 'election/:electionId/vote', component: CreateVote, name: 'createVote'}
         ],
         beforeEnter: authGuard
     }
