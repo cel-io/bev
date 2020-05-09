@@ -117,10 +117,6 @@ CREATE TABLE IF NOT EXISTS elections (
     results_permission          results_permission_type,
     can_change_vote             boolean,
     can_show_realtime           boolean,
-    can_choose_multiple_options boolean,
-    multiple_options_criteria   multiple_options_criteria_type,
-    multiple_options_value_min  int,
-    multiple_options_value_max  int,
     admin_id                    smallint,
     timestamp                   bigint,
     start_block_num             bigint,
@@ -379,15 +375,11 @@ class Database(object):
            results_permission,
            can_change_vote, 
            can_show_realtime,
-           can_choose_multiple_options,
-           multiple_options_criteria,
-           multiple_options_value_min,
-           multiple_options_value_max,
            admin_id, 
            timestamp,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             election_dict['election_id'],
             election_dict['name'],
@@ -397,10 +389,6 @@ class Database(object):
             election_dict['results_permission'],
             election_dict['can_change_vote'],
             election_dict['can_show_realtime'],
-            election_dict['can_choose_multiple_options'],
-            election_dict['multiple_options_criteria'],
-            election_dict['multiple_options_value_min'],
-            election_dict['multiple_options_value_max'],
             election_dict['admin_id'],
             election_dict['timestamp'],
             election_dict['start_block_num'],

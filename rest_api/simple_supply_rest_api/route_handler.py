@@ -29,19 +29,10 @@ class RouteHandler(object):
         body = await decode_request(request)
         required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
                            'results_permission', 'can_change_vote', 'can_show_realtime',
-                           'can_choose_multiple_options', 'voting_options', 'poll_book']
+                           'voting_options', 'poll_book']
         validate_fields(required_fields, body)
 
         election_id = uuid.uuid1().hex
-
-        multiple_options_criteria = body.get('multiple_options_criteria')
-        multiple_options_value_min = body.get('multiple_options_value_min')
-        multiple_options_value_max = body.get('multiple_options_value_max')
-
-        if body.get('can_choose_multiple_options') is False:
-            multiple_options_criteria = 'NONE'
-            multiple_options_value_min = 0
-            multiple_options_value_max = 0
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
@@ -53,17 +44,13 @@ class RouteHandler(object):
             results_permission=body.get('results_permission'),
             can_change_vote=body.get('can_change_vote'),
             can_show_realtime=body.get('can_show_realtime'),
-            can_choose_multiple_options=body.get('can_choose_multiple_options'),
-            multiple_options_criteria=multiple_options_criteria,
-            multiple_options_value_min=multiple_options_value_min,
-            multiple_options_value_max=multiple_options_value_max,
             admin_id="1",
             timestamp=get_time()
         )
 
         voting_options = body.get('voting_options')
-        voting_options.append({"name": "NULO", "description": "Voto Nulo"})
-        voting_options.append({"name": "BRANCO", "description": "Voto em Branco"})
+        voting_options.append({"name": "NULL", "description": "VOTE NULL"})
+        voting_options.append({"name": "BLANK", "description": "VOTE BLANK"})
 
         for voting_option in body.get('voting_options'):
             await self._messenger.send_create_voting_option_transaction(

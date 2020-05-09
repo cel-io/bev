@@ -18,10 +18,6 @@ def make_create_election_transaction(transaction_signer,
                                      results_permission,
                                      can_change_vote,
                                      can_show_realtime,
-                                     can_choose_multiple_options,
-                                     multiple_options_criteria,
-                                     multiple_options_value_min,
-                                     multiple_options_value_max,
                                      admin_id,
                                      timestamp):
     """Make a CreateElectionAction transaction and wrap it in a batch
@@ -37,10 +33,6 @@ def make_create_election_transaction(transaction_signer,
         results_permission (int): Defines if its possible to change the voting option of the election
         can_show_realtime (bool): Defines if the results of the election will be show realtime
         can_change_vote  (bool): Defines if the results of the election will be presented
-        can_choose_multiple_options  (bool): Defines if the voters can choose multiple options
-        multiple_options_criteria (string): Multiple option choosing criteria
-        multiple_options_value_min (int): Defines how many options can be chosen based ona criteria
-        multiple_options_value_max (int): Defines the maximum amount of options when the criteria is BETWEEN
         admin_id (str):  Unique ID of the administrator
         timestamp (int): Unix UTC timestamp of when the election is created
 
@@ -64,10 +56,6 @@ def make_create_election_transaction(transaction_signer,
         results_permission=results_permission,
         can_change_vote=can_change_vote,
         can_show_realtime=can_show_realtime,
-        can_choose_multiple_options=can_choose_multiple_options,
-        multiple_options_criteria=multiple_options_criteria,
-        multiple_options_value_min=multiple_options_value_min,
-        multiple_options_value_max=multiple_options_value_max,
         admin_id=admin_id)
 
     payload = payload_pb2.BevPayload(

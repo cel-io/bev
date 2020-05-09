@@ -122,10 +122,6 @@ def _create_election(state, public_key, payload):
         results_permission=payload.data.results_permission,
         can_change_vote=payload.data.can_change_vote,
         can_show_realtime=payload.data.can_show_realtime,
-        can_choose_multiple_options=payload.data.can_choose_multiple_options,
-        multiple_options_criteria=payload.data.multiple_options_criteria,
-        multiple_options_value_min=payload.data.multiple_options_value_min,
-        multiple_options_value_max=payload.data.multiple_options_value_max,
         admin_id=payload.data.admin_id,
         timestamp=payload.timestamp
     )
