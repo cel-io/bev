@@ -74,23 +74,6 @@ class RouteHandler(object):
 
         return json_response({'data': 'Create election transaction submitted'})
 
-    async def list_elections_current(self, request):
-        private_key, public_key = await self._authorize(request)
-
-        voter = await self._database.fetch_voter_resource(public_key=public_key)
-
-        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'),
-                                                                                        get_time())
-        return json_response(current_elections_list)
-
-    async def list_elections_past(self, request):
-        private_key, public_key = await self._authorize(request)
-
-        voter = await self._database.fetch_voter_resource(public_key=public_key)
-
-        past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
-        return json_response(past_elections_list)
-
     async def create_voter(self, request):
         body = await decode_request(request)
         required_fields = ['voter_id', 'name', 'type', 'password']
@@ -197,9 +180,37 @@ class RouteHandler(object):
         return json_response(
             {'data': 'Update Vote transaction submitted'})
 
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
+    async def list_election(self, request):
+        private_key, public_key = await self._authorize(request)
+        election_id = request.match_info.get('electionId', '')
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        return json_response(election)
+
+    async def list_voting_options_election(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        election_id = request.match_info.get('electionId', '')
+        voting_options = await self._database.fetch_election_voting_options_resource(election_id=election_id)
+
+        return json_response(voting_options)
+
+    async def list_elections_current(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        voter = await self._database.fetch_voter_resource(public_key=public_key)
+
+        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'),
+                                                                                        get_time())
+        return json_response(current_elections_list)
+
+    async def list_elections_past(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        voter = await self._database.fetch_voter_resource(public_key=public_key)
+
+        past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
+        return json_response(past_elections_list)
 
     async def authenticate(self, request):
         body = await decode_request(request)
@@ -226,6 +237,32 @@ class RouteHandler(object):
 
         return json_response(
             {'accessToken': token, 'user': {'name': voter.get('name'), 'voter_id': voter.get('voter_id')}})
+
+    async def _authorize(self, request):
+        token = request.headers.get('AUTHORIZATION')
+        if token is None:
+            raise ApiUnauthorized('No auth token provided')
+        token_prefixes = ('Bearer', 'Token')
+        for prefix in token_prefixes:
+            if prefix in token:
+                token = token.partition(prefix)[2].strip()
+        try:
+            token_dict = deserialize_auth_token(request.app['secret_key'],
+                                                token)
+        except BadSignature:
+            raise ApiUnauthorized('Invalid auth token')
+        public_key = token_dict.get('public_key')
+
+        auth_resource = await self._database.fetch_auth_resource(public_key=public_key)
+        if auth_resource is None:
+            raise ApiUnauthorized('Token is not associated with an agent')
+        return decrypt_private_key(request.app['aes_key'],
+                                   public_key,
+                                   auth_resource['encrypted_private_key']), public_key
+
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # ------------------------------------------------------------
 
     async def create_agent(self, request):
         body = await decode_request(request)
@@ -330,29 +367,7 @@ class RouteHandler(object):
         return json_response(
             {'data': 'Update record transaction submitted'})
 
-    async def _authorize(self, request):
-        token = request.headers.get('AUTHORIZATION')
-        if token is None:
-            raise ApiUnauthorized('No auth token provided')
-        token_prefixes = ('Bearer', 'Token')
-        for prefix in token_prefixes:
-            if prefix in token:
-                token = token.partition(prefix)[2].strip()
-        try:
-            token_dict = deserialize_auth_token(request.app['secret_key'],
-                                                token)
-        except BadSignature:
-            raise ApiUnauthorized('Invalid auth token')
-        public_key = token_dict.get('public_key')
 
-        LOGGER.info(public_key)
-
-        auth_resource = await self._database.fetch_auth_resource(public_key=public_key)
-        if auth_resource is None:
-            raise ApiUnauthorized('Token is not associated with an agent')
-        return decrypt_private_key(request.app['aes_key'],
-                                   public_key,
-                                   auth_resource['encrypted_private_key']), public_key
 
 
 async def decode_request(request):
