@@ -212,6 +212,13 @@ class RouteHandler(object):
         past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
         return json_response(past_elections_list)
 
+    async def list_vote(self, request):
+        private_key, public_key = await self._authorize(request)
+        vote_id = request.match_info.get('voteId', '')
+        vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+
+        return json_response(vote)
+
     async def authenticate(self, request):
         body = await decode_request(request)
         required_fields = ['voter_id', 'password']

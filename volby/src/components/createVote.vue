@@ -92,7 +92,6 @@ export default{
                     if(a.id > b.id) { return 1; }
                     return 0;
                 })
-                console.log(this.voting_options_array[this.voting_options_array.length - 3])
             })
             .catch(error => {
                 console.log(error)
