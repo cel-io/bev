@@ -88,7 +88,10 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider rules="required" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
+                                                <validation-provider :rules="{
+                                                    required: true,
+                                                    custom_rule: votingOptions
+                                                    }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
                                                     <b-field :label="(index + 1) + '. Option Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.name"></b-input>
                                                     </b-field>
@@ -172,12 +175,22 @@
 <script>
 
 import { extend } from 'vee-validate';
-import {unique} from 'vee-validate/dist/rules';
+import { unique, custom_rule } from 'vee-validate/dist/rules';
 
 extend('unique', {
     validate(value, obj) {
         if (obj.filter(o => o.id === value).length > 1) {
             return  `${value} is already taken.`
+        }else{
+            return true;
+        }
+    }
+});
+
+extend('custom_rule', {
+    validate(value, obj) {
+        if (value.toUpperCase() == "NULL" || value.toUpperCase() == "BLANK" ) {
+            return  `${value.toUpperCase()} is a default options in the election.`
         }else{
             return true;
         }

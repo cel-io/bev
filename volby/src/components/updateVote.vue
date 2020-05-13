@@ -10,10 +10,10 @@
                         <span>{{ this.election.description }}</span>
                     </b-field>
                     <p class="content title is-6">
-                        <b> Voting Options </b>
+                        <b> Voting Options: </b>
                     </p>
                     <b-field v-for="(voting_option, index) in this.voting_options_array" :key="index">
-                        <b-radio v-model="votingOptionSelected" type="is-sucess" name="name" :native-value="voting_option">
+                        <b-radio v-model="votingOptionSelectedId" type="is-sucess" name="name" :native-value="voting_option.voting_option_id">
                             {{ (voting_option.name).toUpperCase() }}
                         </b-radio>
                         <hr v-if="voting_option == voting_options_array[voting_options_array.length - 2]">
@@ -31,19 +31,36 @@
 export default{
     data(){
         return{
-            title: "Vote",
-            electionId: this.$route.params.electionId,
+            title: "Update Vote",
+            voteId: this.$route.params.voteId,
             election: {},
+            old_vote: {},
             voting_options_array: [],
-            votingOptionSelected: ""
+            votingOptionSelected: {},
+            votingOptionSelectedId: 0
         }
     },
     methods: {
         submit(){
-            console.log(this.votingOptionSelected)
+
+            if(this.votingOptionSelectedId == this.old_vote.voting_option_id){
+                this.$buefy.toast.open({
+                    duration: 5000,
+                    message: `Invalid Operation! Can't vote in the same option.`,
+                    type: 'is-danger'
+                })
+                return
+            }
+
+
+            this.voting_options_array.forEach(voting_option => {
+                if(voting_option.voting_option_id == this.votingOptionSelectedId ){
+                    Object.assign(this.votingOptionSelected,voting_option)
+                    return
+                }
+            })
 
             if(this.votingOptionSelected.name == "NULL" || this.votingOptionSelected.name == "BLANK" ){
-
                 this.$buefy.dialog.confirm({
                     title: 'Default Voting Option Selected',
                     message: 'You just selected a default voting option (<b> NULL / BLANK</b>). If you sure of your vote click <b>Vote</b>',
@@ -51,14 +68,14 @@ export default{
                     type: 'is-warning',
                     hasIcon: true,
                     onConfirm: () => {
-                        this.$buefy.toast.open('Vote submited!')
-
-                        axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
+                        axios.put('api/votes/'+ this.old_vote.vote_id + '/update', {
+                            "voting_option_id": this.votingOptionSelected.voting_option_id
+                        })
                         .then(response => {
                             this.$router.push("/dashboard")
                             this.$buefy.toast.open({
                                 duration: 5000,
-                                message: 'Vote submitted',
+                                message: 'Vote updated',
                                 position: 'is-top-right',
                                 type: 'is-sucess'
                             })
@@ -70,12 +87,14 @@ export default{
 
                 })
             }else{
-                axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
+                axios.put('api/votes/'+ this.old_vote.vote_id + '/update', {
+                    "voting_option_id": this.votingOptionSelected.voting_option_id
+                })
                 .then(response => {
-                    this.$router.push("/dashboard")
+                    this.$router.push('/dashboard')
                     this.$buefy.toast.open({
                         duration: 5000,
-                        message: 'Vote submitted',
+                        message: 'Vote updated',
                         position: 'is-top-right',
                         type: 'is-sucess'
                     })
@@ -90,17 +109,27 @@ export default{
         let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTMwNTk4OCwiZXhwIjoxNTg5MzA5NTg4fQ.eyJwdWJsaWNfa2V5IjoiMDJhOTdhYTVjYzQ0ZDgyY2IwNTFjMTQwNWZhNjJjYjc4MWQ2NzY4NTcwODdlZTc2ODViNTI0MWJhYjBjYWE0YWU5In0.zHFUQyhQqjBLVH_IrarK_NPriVIjgjh5WGpydVTeV0-eQRImSFhWdTVurUBT3bmgvUBTfexPfHpmk18TiS2auQ"
         axios.defaults.headers.common.Authorization = "Bearer " + token;
 
-        axios.get('api/elections/'+ this.electionId)
+        axios.get('api/votes/'+ this.voteId)
         .then(response => {
-            this.election = response.data
+            this.old_vote = response.data
+            this.votingOptionSelectedId = this.old_vote.voting_option_id
 
-            axios.get('api/elections/'+ this.electionId +'/voting_options')
+            axios.get('api/elections/'+ this.old_vote.election_id)
             .then(response => {
-                this.voting_options_array = response.data
-                this.voting_options_array.sort(function(a, b){
-                    if(a.id < b.id) { return -1; }
-                    if(a.id > b.id) { return 1; }
-                    return 0;
+                this.election = response.data
+
+                axios.get('api/elections/'+ this.old_vote.election_id +'/voting_options')
+                .then(response => {
+                    this.voting_options_array = response.data
+                    this.voting_options_array.sort(function(a, b){
+                        if(a.id < b.id) { return -1; }
+                        if(a.id > b.id) { return 1; }
+                        return 0;
+                    })
+
+                })
+                .catch(error => {
+                    console.log(error)
                 })
             })
             .catch(error => {
@@ -110,10 +139,8 @@ export default{
         .catch(error => {
             console.log(error)
         })
-
-
     },
-    created() {
+    created(){
         this.$emit('title',this.title);
     }
 }
