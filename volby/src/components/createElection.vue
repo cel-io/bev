@@ -88,7 +88,10 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider rules="required" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
+                                                <validation-provider :rules="{
+                                                    required: true,
+                                                    custom_rule: votingOptions
+                                                    }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
                                                     <b-field :label="(index + 1) + '. Option Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.name"></b-input>
                                                     </b-field>
@@ -172,12 +175,22 @@
 <script>
 
 import { extend } from 'vee-validate';
-import {unique} from 'vee-validate/dist/rules';
+import { unique, custom_rule } from 'vee-validate/dist/rules';
 
 extend('unique', {
     validate(value, obj) {
         if (obj.filter(o => o.id === value).length > 1) {
             return  `${value} is already taken.`
+        }else{
+            return true;
+        }
+    }
+});
+
+extend('custom_rule', {
+    validate(value, obj) {
+        if (value.toUpperCase() == "NULL" || value.toUpperCase() == "BLANK" ) {
+            return  `${value.toUpperCase()} is a default options in the election.`
         }else{
             return true;
         }
@@ -248,7 +261,7 @@ export default{
         },
         submit(){
 
-            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4ODg5MjI1NywiZXhwIjoxNTg4ODk1ODU3fQ.eyJwdWJsaWNfa2V5IjoiMDNhN2M4YWFmZjU5NDJkOGRiM2E0OTViZDIxODE3MGYxM2VhNzNkMzNiYmNjMzc3YzAwNjIzZTgyNmU3OWI0OWUxIn0.LRWLgHdAmBf57YXlFUCZNRUKVcJibLBMKbbqgixWvGjfMqMV6KJn-ZCdlotE_bkipH3P07JyXi1Xycj83sv1Ig"
+            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTMxNjAzNywiZXhwIjoxNTg5MzE5NjM3fQ.eyJwdWJsaWNfa2V5IjoiMDI4MDIzNTlmYTQyZTI5NWZmYTFmYzQ3M2I1Y2I2NjgxNTYyYzM0OTY5NjRiMTRiYzI1MDdmN2JlYjY4OWE5NzhiIn0.aDDnfpH0KxJ9v6yb3-sl_2AOiZ3UyZlSXgrdxDxFcUs9PLzcA-wp1EicKxOqGR4gmnypbBf-4rw6IP4BeamgkQ"
             axios.defaults.headers.common.Authorization = "Bearer " + token;
 
             axios.post('api/elections', {
@@ -263,8 +276,7 @@ export default{
                 "poll_book": this.pollBook
             })
             .then(response => {
-                this.$router.push("home")
-                console.log("Eleição criada")
+                this.$router.push("/dashboard")
             })
             .catch(error => {
                 console.log(error)

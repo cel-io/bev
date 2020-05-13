@@ -37,8 +37,7 @@ export default{
             old_vote: {},
             voting_options_array: [],
             votingOptionSelected: {},
-            votingOptionSelectedId: 0,
-            new_voting_option: {}
+            votingOptionSelectedId: 0
         }
     },
     methods: {
@@ -69,14 +68,17 @@ export default{
                     type: 'is-warning',
                     hasIcon: true,
                     onConfirm: () => {
-                        this.$buefy.toast.open('Vote updated!')
-
                         axios.put('api/votes/'+ this.old_vote.vote_id + '/update', {
                             "voting_option_id": this.votingOptionSelected.voting_option_id
                         })
                         .then(response => {
-                            this.$router.push("home")
-                            console.log("Vote atualizado")
+                            this.$router.push("/dashboard")
+                            this.$buefy.toast.open({
+                                duration: 5000,
+                                message: 'Vote updated',
+                                position: 'is-top-right',
+                                type: 'is-sucess'
+                            })
                         })
                         .catch(error => {
                             console.log(error)
@@ -89,8 +91,13 @@ export default{
                     "voting_option_id": this.votingOptionSelected.voting_option_id
                 })
                 .then(response => {
-                    this.$router.push("home")
-                    console.log("Vote atualizado")
+                    this.$router.push('/dashboard')
+                    this.$buefy.toast.open({
+                        duration: 5000,
+                        message: 'Vote updated',
+                        position: 'is-top-right',
+                        type: 'is-sucess'
+                    })
                 })
                 .catch(error => {
                     console.log(error)
@@ -99,7 +106,7 @@ export default{
         }
     },
     mounted(){
-        let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTIyMjY4MCwiZXhwIjoxNTg5MjI2MjgwfQ.eyJwdWJsaWNfa2V5IjoiMDIzMTMzMDE5NDhiZTYzMDdiMTdhMjM2ZDhjOGZiODkxNjZkNmNmODg0ODc3NWQ0M2I4MGJkYjBmYjk0ZTFjMWFmIn0.gogBCPIFwwne5rAA5H1Z-5t0YvATQaD8b-iMkeprt1gfPl361dKFSwzLutxerk9MtHMKO111Jw9DLvyiR6EV0w"
+        let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTMwNTk4OCwiZXhwIjoxNTg5MzA5NTg4fQ.eyJwdWJsaWNfa2V5IjoiMDJhOTdhYTVjYzQ0ZDgyY2IwNTFjMTQwNWZhNjJjYjc4MWQ2NzY4NTcwODdlZTc2ODViNTI0MWJhYjBjYWE0YWU5In0.zHFUQyhQqjBLVH_IrarK_NPriVIjgjh5WGpydVTeV0-eQRImSFhWdTVurUBT3bmgvUBTfexPfHpmk18TiS2auQ"
         axios.defaults.headers.common.Authorization = "Bearer " + token;
 
         axios.get('api/votes/'+ this.voteId)

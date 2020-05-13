@@ -33,6 +33,14 @@ class RouteHandler(object):
         validate_fields(required_fields, body)
 
         election_id = uuid.uuid1().hex
+        voting_options = body.get('voting_options')
+
+        for voting_option in voting_options:
+            if voting_option.get('name').upper() == "NULL" or voting_option.get('name').upper() == "BLANK":
+                raise ApiInternalError('NULL and BLANK are default options')
+
+        voting_options.append({"name": "NULL", "description": "VOTE NULL"})
+        voting_options.append({"name": "BLANK", "description": "VOTE BLANK"})
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
@@ -47,10 +55,6 @@ class RouteHandler(object):
             admin_id="1",
             timestamp=get_time()
         )
-
-        voting_options = body.get('voting_options')
-        voting_options.append({"name": "NULL", "description": "VOTE NULL"})
-        voting_options.append({"name": "BLANK", "description": "VOTE BLANK"})
 
         for voting_option in body.get('voting_options'):
             await self._messenger.send_create_voting_option_transaction(
@@ -107,13 +111,20 @@ class RouteHandler(object):
         voting_option_id = request.match_info.get('votingOptionId', '')
 
         voter = await self._database.fetch_voter_resource(public_key=public_key)
+
+        if voter is None:
+            raise ApiNotFound(
+                'Voter with the public_key '
+                '{} was not found'.format(public_key))
+
         voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
-        num_votes_update = voting_option.get('num_votes') + 1
 
         if voting_option is None:
             raise ApiNotFound(
                 'Voting Option with the voting option id '
-                '{} was not found'.format(record_id))
+                '{} was not found'.format(voting_option_id))
+
+        num_votes_update = voting_option.get('num_votes') + 1
 
         await self._messenger.send_create_vote_transaction(
             private_key=private_key,
@@ -180,10 +191,15 @@ class RouteHandler(object):
         return json_response(
             {'data': 'Update Vote transaction submitted'})
 
-    async def list_election(self, request):
+    async def get_election(self, request):
         private_key, public_key = await self._authorize(request)
         election_id = request.match_info.get('electionId', '')
         election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
 
         return json_response(election)
 
@@ -193,6 +209,11 @@ class RouteHandler(object):
         election_id = request.match_info.get('electionId', '')
         voting_options = await self._database.fetch_election_voting_options_resource(election_id=election_id)
 
+        if voting_options is None:
+            raise ApiNotFound(
+                'Voting Options in the election id '
+                '{} was not found'.format(election_id))
+
         return json_response(voting_options)
 
     async def list_elections_current(self, request):
@@ -200,8 +221,16 @@ class RouteHandler(object):
 
         voter = await self._database.fetch_voter_resource(public_key=public_key)
 
+        if voter is None:
+            raise ApiNotFound(
+                'Voter with the public key '
+                '{} was not found'.format(public_key))
+
         current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'),
                                                                                         get_time())
+        if current_elections_list is None:
+            raise ApiNotFound('Voter with the no current elections')
+
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
@@ -209,13 +238,27 @@ class RouteHandler(object):
 
         voter = await self._database.fetch_voter_resource(public_key=public_key)
 
+        if voter is None:
+            raise ApiNotFound(
+                'Voter with the public key '
+                '{} was not found'.format(public_key))
+
         past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
+
+        if past_elections_list is None:
+            raise ApiNotFound('Voter with the no past elections')
+
         return json_response(past_elections_list)
 
     async def list_vote(self, request):
         private_key, public_key = await self._authorize(request)
         vote_id = request.match_info.get('voteId', '')
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+
+        if voter is None:
+            raise ApiNotFound(
+                'Voter with the public key '
+                '{} was not found'.format(public_key))
 
         return json_response(vote)
 

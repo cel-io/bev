@@ -56,18 +56,6 @@ class Database(object):
         """
         self._conn.close()
 
-    async def fetch_election_resources(self, election_id):
-        fetch_election = """
-                SELECT election_id FROM elections
-                WHERE election_id='{0}'
-                AND ({1}) >= start_block_num
-                AND ({1}) < end_block_num;
-                """.format(election_id, LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch_election)
-            return await cursor.fetchall()
-
     async def fetch_current_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
                 SELECT * FROM elections
@@ -155,8 +143,11 @@ class Database(object):
 
     async def fetch_election_resource(self, election_id=None):
         fetch = """
-                 SELECT * FROM elections WHERE election_id='{}'
-                 """.format(election_id)
+                 SELECT * FROM elections 
+                 WHERE election_id='{0}'
+                 AND ({1}) >= start_block_num
+                 AND ({1}) < end_block_num;
+                 """.format(election_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
@@ -164,9 +155,11 @@ class Database(object):
 
     async def fetch_voting_option_resource(self, voting_option_id=None):
         fetch = """
-           SELECT * FROM voting_options WHERE voting_option_id='{}'
-           ORDER BY start_block_num DESC;
-           """.format(voting_option_id)
+           SELECT * FROM voting_options 
+           WHERE voting_option_id='{0}'
+           AND ({1}) >= start_block_num
+           AND ({1}) < end_block_num;
+           """.format(voting_option_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

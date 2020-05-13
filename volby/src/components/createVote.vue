@@ -53,10 +53,15 @@ export default{
                     onConfirm: () => {
                         this.$buefy.toast.open('Vote submited!')
 
-                        axios.post('api/vote/'+ this.votingOptionSelected.voting_option_id, {})
+                        axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                         .then(response => {
-                            this.$router.push("home")
-                            console.log("Vote criado")
+                            this.$router.push("/dashboard")
+                            this.$buefy.toast.open({
+                                duration: 5000,
+                                message: 'Vote submitted',
+                                position: 'is-top-right',
+                                type: 'is-sucess'
+                            })
                         })
                         .catch(error => {
                             console.log(error)
@@ -65,10 +70,15 @@ export default{
 
                 })
             }else{
-                axios.post('api/vote/'+ this.votingOptionSelected.voting_option_id, {})
+                axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                 .then(response => {
-                    this.$router.push("home")
-                    console.log("Vote criado")
+                    this.$router.push("/dashboard")
+                    this.$buefy.toast.open({
+                        duration: 5000,
+                        message: 'Vote submitted',
+                        position: 'is-top-right',
+                        type: 'is-sucess'
+                    })
                 })
                 .catch(error => {
                     console.log(error)
@@ -77,7 +87,7 @@ export default{
         }
     },
     mounted(){
-        let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTE5NzAyNiwiZXhwIjoxNTg5MjAwNjI2fQ.eyJwdWJsaWNfa2V5IjoiMDNhYmVmNmFlMTNhZGUzY2UzZDZiMjg0NzE3MGIzOGM0YmRhMDJhZGE3ZDYzYjkwYTc5OWQ0N2I3MzcyNDc5MzdjIn0.MrvzhQ8P9kiHx0Ou_qzjqoVdgNYq0FzzxYAopeMaZo8d3kVDjCQ8ujtiuYu7sUOvrCSShxm1roc0KnrheYjDbg"
+        let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTMwNTk4OCwiZXhwIjoxNTg5MzA5NTg4fQ.eyJwdWJsaWNfa2V5IjoiMDJhOTdhYTVjYzQ0ZDgyY2IwNTFjMTQwNWZhNjJjYjc4MWQ2NzY4NTcwODdlZTc2ODViNTI0MWJhYjBjYWE0YWU5In0.zHFUQyhQqjBLVH_IrarK_NPriVIjgjh5WGpydVTeV0-eQRImSFhWdTVurUBT3bmgvUBTfexPfHpmk18TiS2auQ"
         axios.defaults.headers.common.Authorization = "Bearer " + token;
 
         axios.get('api/elections/'+ this.electionId)
