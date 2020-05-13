@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS elections (
     results_permission          results_permission_type,
     can_change_vote             boolean,
     can_show_realtime           boolean,
-    admin_id                    smallint,
+    admin_id                    varchar,
     timestamp                   bigint,
     start_block_num             bigint,
     end_block_num               bigint

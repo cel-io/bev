@@ -34,13 +34,14 @@ const app = new Vue({
 
     },
     methods: {},
-    mounted() {
+    created() {
         if(localStorage.getItem("accessToken") !== null){
             if(isAfter(new Date(),new Date(localStorage.getItem("tokensExpiry")))){
                 this.$store.commit('logout')
 
                 return this.$router.push("/login")
             }
+            window.axios.defaults.headers.common.Authorization = "Bearer " + localStorage.getItem("accessToken")
         }
     }
 });

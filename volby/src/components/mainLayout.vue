@@ -13,6 +13,9 @@
                 <b-navbar-item tag="router-link" to="dashboard">
                     Dashboard
                 </b-navbar-item>
+                <b-navbar-item tag="router-link" to="elections">
+                    Elections
+                </b-navbar-item>
                 <b-navbar-item tag="router-link" to="newelection">
                     New Election
                 </b-navbar-item>
@@ -22,7 +25,7 @@
             </template>
         </b-navbar>
         <div class="container is-fluid section has-padding-top-0">
-            <h1 class="title">
+            <h1 class="title is-1">
                 {{title}}
             </h1>
             <router-view @title="onTitle"></router-view>

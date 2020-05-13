@@ -64,12 +64,17 @@ export default{
                 type: 'VOTER'
             })
             .then(response => {
+                axios.defaults.headers.common.Authorization = "Bearer " + response.data.accessToken
+
+                this.$store.commit("setAuthToken",response.data.accessToken)
+                this.$store.commit("setUser",response.data.user)
+
                 this.$buefy.toast.open({
                     duration: 3000,
                     message: 'Welcome to Volby!',
                     type: 'is-success'
                 })
-                this.$router.push("/newelection")
+                this.$router.push("/dashboard").catch(e => {})
             })
             .catch(error => {
                 if(error.response.status == 409){

@@ -33,6 +33,7 @@ class RouteHandler(object):
         validate_fields(required_fields, body)
 
         election_id = uuid.uuid1().hex
+        admin = await self._database.fetch_voter_resource(public_key=public_key)
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
@@ -44,7 +45,7 @@ class RouteHandler(object):
             results_permission=body.get('results_permission'),
             can_change_vote=body.get('can_change_vote'),
             can_show_realtime=body.get('can_show_realtime'),
-            admin_id="1",
+            admin_id=admin.get('voter_id'),
             timestamp=get_time()
         )
 
@@ -113,7 +114,9 @@ class RouteHandler(object):
 
         token = generate_auth_token(request.app['secret_key'], public_key)
 
-        return json_response({'authorization': token})
+        return json_response(
+            {'accessToken': token, 'user': {'name': body.get('name'), 'voter_id': body.get('voter_id'),
+                                            'type': body.get('type')}})
 
     async def create_vote(self, request):
         body = await decode_request(request)
@@ -222,10 +225,11 @@ class RouteHandler(object):
             raise ApiUnauthorized('Incorrect public key or password')
 
         token = generate_auth_token(
-            request.app['secret_key'], body.get('public_key'))
+            request.app['secret_key'], voter.get('public_key'))
 
         return json_response(
-            {'accessToken': token, 'user': {'name': voter.get('name'), 'voter_id': voter.get('voter_id')}})
+            {'accessToken': token, 'user': {'name': voter.get('name'), 'voter_id': voter.get('voter_id'),
+                                            'type': voter.get('type')}})
 
     async def create_agent(self, request):
         body = await decode_request(request)
@@ -331,7 +335,7 @@ class RouteHandler(object):
             {'data': 'Update record transaction submitted'})
 
     async def _authorize(self, request):
-        token = request.headers.get('AUTHORIZATION')
+        token = request.headers.get('Authorization')
         if token is None:
             raise ApiUnauthorized('No auth token provided')
         token_prefixes = ('Bearer', 'Token')
@@ -345,11 +349,9 @@ class RouteHandler(object):
             raise ApiUnauthorized('Invalid auth token')
         public_key = token_dict.get('public_key')
 
-        LOGGER.info(public_key)
-
         auth_resource = await self._database.fetch_auth_resource(public_key=public_key)
         if auth_resource is None:
-            raise ApiUnauthorized('Token is not associated with an agent')
+            raise ApiUnauthorized('Token is not associated with a voter')
         return decrypt_private_key(request.app['aes_key'],
                                    public_key,
                                    auth_resource['encrypted_private_key']), public_key
@@ -392,7 +394,7 @@ def get_time():
 
 
 def generate_auth_token(secret_key, public_key):
-    serializer = Serializer(secret_key, 3600)
+    serializer = Serializer(secret_key, expires_in=3600)
     token = serializer.dumps({'public_key': public_key})
     return token.decode('ascii')
 

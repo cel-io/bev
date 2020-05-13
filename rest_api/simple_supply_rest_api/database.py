@@ -70,12 +70,15 @@ class Database(object):
 
     async def fetch_current_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
-                SELECT * FROM elections
-                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
+                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}' 
+                    AND election_id=e.election_id) 
+                    IS NOT NULL AS "voted"
+                FROM elections e JOIN voters v ON e.admin_id = v.voter_id
+                AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND start_timestamp <= {1} 
                 AND end_timestamp >= {1}
-                AND ({2}) >= start_block_num
-                AND ({2}) < end_block_num
+                AND ({2}) >= e.start_block_num
+                AND ({2}) < e.end_block_num
                 ORDER BY start_timestamp DESC;
                 """.format(voter_id, timestamp, LATEST_BLOCK_NUM)
 
@@ -85,11 +88,14 @@ class Database(object):
 
     async def fetch_past_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
-                SELECT * FROM elections
-                WHERE election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
+                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}' 
+                    AND election_id=e.election_id) 
+                    IS NOT NULL AS "voted" 
+                FROM elections e JOIN voters v ON e.admin_id = v.voter_id
+                AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND end_timestamp < {1}
-                AND ({2}) >= start_block_num
-                AND ({2}) < end_block_num
+                AND ({2}) >= e.start_block_num
+                AND ({2}) < e.end_block_num
                 ORDER BY start_timestamp DESC;
                 """.format(voter_id, timestamp, LATEST_BLOCK_NUM)
 
@@ -125,29 +131,19 @@ class Database(object):
 
         self._conn.commit()
 
-    async def fetch_auth_resource(self, public_key=None, encrypted_private_key=None):
-        if public_key is not None:
-            fetch = """
-            SELECT * FROM auth WHERE public_key='{}'
-            """.format(public_key)
-        elif encrypted_private_key is not None:
-            fetch = """
-            SELECT * FROM auth WHERE encrypted_private_key='{}'
-            """.format(encrypted_private_key)
+    async def fetch_auth_resource(self, public_key=None):
+        fetch = """
+        SELECT * FROM auth WHERE public_key='{}'
+        """.format(public_key)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
     async def fetch_voter_resource(self, voter_id=None, public_key=None):
-        if voter_id is not None:
-            fetch = """
-            SELECT * FROM voters WHERE voter_id='{}'
-            """.format(voter_id)
-        elif public_key is not None:
-            fetch = """
-            SELECT * FROM voters WHERE public_key='{}'
-            """.format(public_key)
+        fetch = """
+        SELECT * FROM voters WHERE """ + ("""voter_id""" if voter_id else """public_key""") + """='{}'
+        """.format(voter_id if voter_id else public_key)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

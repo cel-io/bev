@@ -8,7 +8,7 @@
                             <b-tab-item label="Informations">
                                 <div class="columns">
                                     <div class="column">
-                                        <validation-provider rules="required|alpha_spaces" name="Name" v-slot="validationContext">
+                                        <validation-provider rules="required" name="Name" v-slot="validationContext">
                                             <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-input v-model="name"></b-input>
                                             </b-field>
@@ -101,15 +101,15 @@
                                                     </b-field>
                                                 </validation-provider>
                                             </div>
-                                            <div v-if="votingOptions.length > 1" class="column is-narrow" style="margin-top: auto;" rounded>
-                                                <b-button @click="removeVotingOption(index)" type="is-danger" icon-right="delete" />
+                                            <div v-if="votingOptions.length > 1" class="column is-narrow" style="margin-top: auto;">
+                                                <b-button rounded @click="removeVotingOption(index)" type="is-danger" icon-right="delete" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <b-button @click="addVotingOption" class="is-pulled-right" icon-right="plus" type="is-info" rounded></b-button>
+                                        <b-button rounded @click="addVotingOption" class="is-pulled-right" icon-right="plus" type="is-info"></b-button>
                                     </div>
                                 </div>
                                 <hr />
@@ -143,14 +143,14 @@
                                                 </validation-provider>
                                             </div>
                                             <div v-if="pollBook.length > 1" class="column is-narrow" style="margin-top: auto;" rounded>
-                                                <b-button @click="removeVoter(index)" type="is-danger" icon-right="delete" />
+                                                <b-button rounded @click="removeVoter(index)" type="is-danger" icon-right="delete" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <b-button @click="addVoter" class="is-pulled-right" icon-right="plus" type="is-info" rounded></b-button>
+                                        <b-button rounded @click="addVoter" class="is-pulled-right" icon-right="plus" type="is-info"></b-button>
                                     </div>
                                 </div>
                                 <hr />
@@ -247,10 +247,6 @@ export default{
             return timestamp/1000;
         },
         submit(){
-
-            let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4ODg5MjI1NywiZXhwIjoxNTg4ODk1ODU3fQ.eyJwdWJsaWNfa2V5IjoiMDNhN2M4YWFmZjU5NDJkOGRiM2E0OTViZDIxODE3MGYxM2VhNzNkMzNiYmNjMzc3YzAwNjIzZTgyNmU3OWI0OWUxIn0.LRWLgHdAmBf57YXlFUCZNRUKVcJibLBMKbbqgixWvGjfMqMV6KJn-ZCdlotE_bkipH3P07JyXi1Xycj83sv1Ig"
-            axios.defaults.headers.common.Authorization = "Bearer " + token;
-
             axios.post('api/elections', {
                 "name": this.name,
                 "description": this.description,
@@ -263,8 +259,13 @@ export default{
                 "poll_book": this.pollBook
             })
             .then(response => {
-                this.$router.push("home")
-                console.log("Eleição criada")
+                this.$buefy.toast.open({
+                    duration: 3000,
+                    message: 'Election created successfully!',
+                    type: 'is-success'
+                })
+
+                this.$router.push("/dashboard").catch(e => {})
             })
             .catch(error => {
                 console.log(error)

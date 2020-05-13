@@ -8,23 +8,25 @@ export const store = new Vuex.Store({
         return{
             accessToken: localStorage.getItem("accessToken"),
             tokensExpiry: localStorage.getItem("tokensExpiry"),
-            user: localStorage.getItem("user")
+            user: JSON.parse(localStorage.getItem("user"))
         }
     },
     mutations: {
         setAuthToken(state, accessToken){
             localStorage.setItem("accessToken", accessToken)
-            state.accessToken = localStorage.getItem("accessToken")
+            state.accessToken = accessToken
 
             const tokensExpiry = addSeconds(new Date(), 3600)
             state.tokensExpiry = tokensExpiry
             localStorage.setItem("tokensExpiry", tokensExpiry)
         },
         setUser(state, user){
-            localStorage.setItem("user", user)
-            state.user = localStorage.getItem("user")
+            localStorage.setItem("user", JSON.stringify(user))
+            state.user = user
         },
         logout(state){
+            axios.defaults.headers.common.Authorization = ""
+
             state.accessToken = null
             state.tokensExpiry = null
             state.user = null
