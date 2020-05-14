@@ -84,9 +84,9 @@ def start_rest_api(host, port, messenger, database):
 
     app.router.add_post('/voters', handler.create_voter)
 
+    app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_post('/votes/{votingOptionId}', handler.create_vote)
     app.router.add_put('/votes/{voteId}/update', handler.update_vote)
-    app.router.add_get('/votes/{voteId}', handler.list_vote)
 
     app.router.add_post('/authentication', handler.authenticate)
 

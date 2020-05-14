@@ -137,6 +137,15 @@ CREATE TABLE IF NOT EXISTS voting_options (
 );
 """
 
+CREATE_COUNT_VOTE_STMTS = """
+CREATE TABLE IF NOT EXISTS count_votes (
+    id               bigserial PRIMARY KEY,
+    voting_option_id varchar,
+    name             varchar,
+    num_votes        smallint
+);
+"""
+
 CREATE_VOTER_STMTS = """
 CREATE TABLE IF NOT EXISTS voters (
     id               bigserial PRIMARY KEY,
@@ -249,6 +258,9 @@ class Database(object):
 
             LOGGER.debug('Creating table: votes')
             cursor.execute(CREATE_VOTE_STMTS)
+
+            LOGGER.debug('Creating table: count_votes')
+            cursor.execute(CREATE_COUNT_VOTE_STMTS)
 
         self._conn.commit()
 

@@ -42,7 +42,6 @@ export default{
     },
     methods: {
         submit(){
-
             if(this.votingOptionSelectedId == this.old_vote.voting_option_id){
                 this.$buefy.toast.open({
                     duration: 5000,
@@ -114,7 +113,7 @@ export default{
             axios.get('api/elections/'+ this.old_vote.election_id)
             .then(response => {
                 this.election = response.data
-
+                
                 axios.get('api/elections/'+ this.old_vote.election_id +'/voting_options')
                 .then(response => {
                     this.voting_options_array = response.data
@@ -126,15 +125,15 @@ export default{
 
                 })
                 .catch(error => {
-                    console.log(error)
+                    console.log(error.data)
                 })
             })
             .catch(error => {
-                console.log(error)
+                console.log(error.data)
             })
         })
         .catch(error => {
-            console.log(error)
+            console.log(error.data)
         })
     },
     created(){

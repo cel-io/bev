@@ -58,9 +58,14 @@ class RouteHandler(object):
         )
 
         for voting_option in voting_options:
+            voting_option_id = uuid.uuid1().hex
+
+            await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
+                                                                        name=voting_option.get('name'))
+
             await self._messenger.send_create_voting_option_transaction(
                 private_key=private_key,
-                voting_option_id=uuid.uuid1().hex,
+                voting_option_id=voting_option_id,
                 name=voting_option.get('name'),
                 description=voting_option.get('description'),
                 election_id=election_id,
@@ -119,14 +124,17 @@ class RouteHandler(object):
                 'Voter with the public_key '
                 '{} was not found'.format(public_key))
 
-        voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+        voting_option = await self._database.fetch_voting_option_resource(
+            voting_option_id=voting_option_id)
+        vo_count_vote = await self._database.fetch_voting_option_num_vote_resource(
+            voting_option_id=voting_option_id)
 
         if voting_option is None:
             raise ApiNotFound(
                 'Voting Option with the voting option id '
                 '{} was not found'.format(voting_option_id))
 
-        num_votes_update = voting_option.get('num_votes') + 1
+        num_votes_update = vo_count_vote.get('num_votes') + 1
 
         await self._messenger.send_create_vote_transaction(
             private_key=private_key,
@@ -136,8 +144,8 @@ class RouteHandler(object):
             election_id=voting_option.get('election_id'),
             voting_option_id=voting_option_id)
 
-        await self._database.update_voting_option_resource(voting_option_id=voting_option_id,
-                                                           num_votes=num_votes_update)
+        await self._database.update_voting_option_num_vote_resource(voting_option_id=voting_option_id,
+                                                                    num_votes=num_votes_update)
 
         return json_response({'data': 'Create vote transaction submitted'})
 
@@ -171,10 +179,12 @@ class RouteHandler(object):
         new_voting_option_id = body.get('voting_option_id')
         old_voting_option_id = vote.get('voting_option_id')
 
-        old_voting_option = await self._database.fetch_voting_option_resource(voting_option_id=old_voting_option_id)
-        new_voting_option = await self._database.fetch_voting_option_resource(voting_option_id=new_voting_option_id)
-        num_votes_remove = old_voting_option.get('num_votes')-1
-        num_votes_update = new_voting_option.get('num_votes')+1
+        old_num_vote = await self._database.fetch_voting_option_num_vote_resource(
+            voting_option_id=old_voting_option_id)
+        new_num_vote = await self._database.fetch_voting_option_num_vote_resource(
+            voting_option_id=new_voting_option_id)
+        num_votes_remove = old_num_vote.get('num_votes')-1
+        num_votes_update = new_num_vote.get('num_votes')+1
 
         await self._messenger.send_update_vote_transaction(
             private_key=private_key,
@@ -183,12 +193,12 @@ class RouteHandler(object):
             voting_option_id=new_voting_option_id)
 
         # remove -1 to old voting option
-        await self._database.update_voting_option_resource(voting_option_id=old_voting_option_id,
-                                                           num_votes=num_votes_remove)
+        await self._database.update_voting_option_num_vote_resource(voting_option_id=old_voting_option_id,
+                                                                    num_votes=num_votes_remove)
 
         # add +1 to new voting option
-        await self._database.update_voting_option_resource(voting_option_id=new_voting_option_id,
-                                                           num_votes=num_votes_update)
+        await self._database.update_voting_option_num_vote_resource(voting_option_id=new_voting_option_id,
+                                                                    num_votes=num_votes_update)
 
         return json_response(
             {'data': 'Update Vote transaction submitted'})
@@ -257,10 +267,10 @@ class RouteHandler(object):
         vote_id = request.match_info.get('voteId', '')
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
 
-        if voter is None:
+        if vote is None:
             raise ApiNotFound(
-                'Voter with the public key '
-                '{} was not found'.format(public_key))
+                'Vote with the vote id BLEUUU'
+                '{} was not found'.format(vote_id))
 
         return json_response(vote)
 

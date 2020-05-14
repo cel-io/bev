@@ -103,11 +103,32 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchall()
 
-    async def update_voting_option_resource(self,
-                                            voting_option_id,
-                                            num_votes):
+    async def insert_voting_option_num_vote_resource(self,
+                                                     voting_option_id,
+                                                     name):
+        num_votes = 0
+
+        insert = """
+           INSERT INTO count_votes (
+                    voting_option_id,
+                    name,
+                    num_votes)
+           VALUES ('{}', '{}', '{}')
+           """.format(
+            voting_option_id,
+            name,
+            num_votes)
+
+        async with self._conn.cursor() as cursor:
+            await cursor.execute(insert)
+
+        self._conn.commit()
+
+    async def update_voting_option_num_vote_resource(self,
+                                                     voting_option_id,
+                                                     num_votes):
         update = """
-        UPDATE voting_options 
+        UPDATE count_votes
         SET num_votes = '{1}'
         WHERE voting_option_id = '{0}'
         """.format(
@@ -156,6 +177,16 @@ class Database(object):
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
            """.format(voting_option_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def fetch_voting_option_num_vote_resource(self, voting_option_id=None):
+        fetch = """
+              SELECT * FROM count_votes 
+              WHERE voting_option_id='{0}';
+              """.format(voting_option_id)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
