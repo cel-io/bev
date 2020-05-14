@@ -39,6 +39,7 @@ class SimpleSupplyState(object):
                      can_change_vote,
                      can_show_realtime,
                      admin_id,
+                     status,
                      timestamp):
         """Creates a new election in state
 
@@ -52,6 +53,7 @@ class SimpleSupplyState(object):
                 can_show_realtime (bool): Defines if the results of the election will be show realtime
                 can_change_vote  (bool): Defines if the results of the election will be presented
                 admin_id (int):  Unique ID of the administrator
+                status (bool): Defines if the election is online or canceled
                 timestamp (int): Timestamp
         """
         address = addresser.get_election_address(election_id)
@@ -66,6 +68,7 @@ class SimpleSupplyState(object):
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
             admin_id=admin_id,
+            status=status,
             timestamp=timestamp)
 
         container = election_pb2.ElectionContainer()

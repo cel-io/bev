@@ -58,6 +58,7 @@ class Messenger(object):
                                                can_change_vote,
                                                can_show_realtime,
                                                admin_id,
+                                               status,
                                                timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
@@ -74,6 +75,7 @@ class Messenger(object):
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
             admin_id=admin_id,
+            status=status,
             timestamp=timestamp)
         await self._send_and_wait_for_commit(batch)
 

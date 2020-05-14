@@ -123,6 +123,7 @@ def _create_election(state, public_key, payload):
         can_change_vote=payload.data.can_change_vote,
         can_show_realtime=payload.data.can_show_realtime,
         admin_id=payload.data.admin_id,
+        status=payload.data.status,
         timestamp=payload.timestamp
     )
 

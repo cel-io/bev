@@ -91,6 +91,7 @@ message CreateElectionAction {
     bool can_show_realtime = 8;
 
     string admin_id = 9;
+    bool status = 10;
 }
 
 message CreateVotingOptionAction{

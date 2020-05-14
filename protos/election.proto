@@ -18,7 +18,8 @@ message Election{
     bool can_show_realtime = 8;
 
     string admin_id = 9;
-    uint64 timestamp = 10;
+    bool status = 10;
+    uint64 timestamp = 11;
 }
 
 message ElectionContainer {

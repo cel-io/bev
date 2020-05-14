@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS elections (
     can_change_vote             boolean,
     can_show_realtime           boolean,
     admin_id                    varchar,
+    status                      boolean,
     timestamp                   bigint,
     start_block_num             bigint,
     end_block_num               bigint
@@ -387,11 +388,12 @@ class Database(object):
            results_permission,
            can_change_vote, 
            can_show_realtime,
-           admin_id, 
+           admin_id,
+           status, 
            timestamp,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             election_dict['election_id'],
             election_dict['name'],
@@ -402,6 +404,7 @@ class Database(object):
             election_dict['can_change_vote'],
             election_dict['can_show_realtime'],
             election_dict['admin_id'],
+            election_dict['status'],
             election_dict['timestamp'],
             election_dict['start_block_num'],
             election_dict['end_block_num'])

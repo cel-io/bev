@@ -54,6 +54,7 @@ class RouteHandler(object):
             can_change_vote=body.get('can_change_vote'),
             can_show_realtime=body.get('can_show_realtime'),
             admin_id=admin.get('voter_id'),
+            status=1,
             timestamp=get_time()
         )
 

@@ -19,6 +19,7 @@ def make_create_election_transaction(transaction_signer,
                                      can_change_vote,
                                      can_show_realtime,
                                      admin_id,
+                                     status,
                                      timestamp):
     """Make a CreateElectionAction transaction and wrap it in a batch
 
@@ -34,6 +35,7 @@ def make_create_election_transaction(transaction_signer,
         can_show_realtime (bool): Defines if the results of the election will be show realtime
         can_change_vote  (bool): Defines if the results of the election will be presented
         admin_id (str):  Unique ID of the administrator
+        status (bool): Defines if the election is online or canceled
         timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
@@ -56,7 +58,8 @@ def make_create_election_transaction(transaction_signer,
         results_permission=results_permission,
         can_change_vote=can_change_vote,
         can_show_realtime=can_show_realtime,
-        admin_id=admin_id)
+        admin_id=admin_id,
+        status=status)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_ELECTION,
