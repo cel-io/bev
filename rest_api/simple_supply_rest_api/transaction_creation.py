@@ -79,8 +79,7 @@ def make_create_voting_option_transaction(transaction_signer,
                                           name,
                                           description,
                                           election_id,
-                                          timestamp,
-                                          num_votes):
+                                          timestamp):
     """Make a CreateVotingOptionAction transaction and wrap it in a batch
 
     Args:
@@ -91,7 +90,6 @@ def make_create_voting_option_transaction(transaction_signer,
         description (str): Description of the voting option
         election_id (str):  Unique ID of the election
         timestamp (int): Unix UTC timestamp of when the election is created
-        num_votes (int): Number of votes of the specific option
 
     Returns:
         batch_pb2.Batch: The transaction wrapped in a batch
@@ -109,8 +107,7 @@ def make_create_voting_option_transaction(transaction_signer,
         voting_option_id=voting_option_id,
         name=name,
         description=description,
-        election_id=election_id,
-        num_votes=num_votes)
+        election_id=election_id)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_VOTING_OPTION,

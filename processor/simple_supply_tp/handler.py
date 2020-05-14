@@ -136,8 +136,7 @@ def _create_voting_option(state, public_key, payload):
         voting_option_id=payload.data.voting_option_id,
         name=payload.data.name,
         description=payload.data.description,
-        election_id=payload.data.election_id,
-        num_votes=0
+        election_id=payload.data.election_id
     )
 
 

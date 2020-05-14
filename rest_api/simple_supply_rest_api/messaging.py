@@ -83,8 +83,7 @@ class Messenger(object):
                                                     name,
                                                     description,
                                                     election_id,
-                                                    timestamp,
-                                                    num_votes):
+                                                    timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
 
@@ -95,8 +94,7 @@ class Messenger(object):
             name=name,
             description=description,
             election_id=election_id,
-            timestamp=timestamp,
-            num_votes=num_votes
+            timestamp=timestamp
         )
 
         await self._send_and_wait_for_commit(batch)

@@ -57,15 +57,14 @@ class RouteHandler(object):
             timestamp=get_time()
         )
 
-        for voting_option in body.get('voting_options'):
+        for voting_option in voting_options:
             await self._messenger.send_create_voting_option_transaction(
                 private_key=private_key,
                 voting_option_id=uuid.uuid1().hex,
                 name=voting_option.get('name'),
                 description=voting_option.get('description'),
                 election_id=election_id,
-                timestamp=get_time(),
-                num_votes=0
+                timestamp=get_time()
             )
 
         for poll_book in body.get('poll_book'):

@@ -445,16 +445,14 @@ class Database(object):
            name, 
            description, 
            election_id,
-           num_votes,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             voting_option_dict['voting_option_id'],
             voting_option_dict['name'],
             voting_option_dict['description'],
             voting_option_dict['election_id'],
-            voting_option_dict['num_votes'],
             voting_option_dict['start_block_num'],
             voting_option_dict['end_block_num'])
 

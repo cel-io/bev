@@ -37,7 +37,7 @@
                                 <span v-if="showParticipation[props.row.id]" >
                                     <b-tag v-if="props.row.voted" type="is-success" rounded>Voted</b-tag>
                                     <b-tag v-else type="is-danger" rounded>Didn't Vote</b-tag>
-                                </span>                                
+                                </span>
                                 <b-button rounded size="is-small" @click="toggleParticipation(props.row.id)" :icon-left="showParticipation[props.row.id] ? 'eye-off-outline' : 'eye-outline'"></b-button>
                             </b-table-column>
                             <b-table-column label="Actions">
@@ -108,7 +108,7 @@ export default{
     },
     created() {
         this.$emit('title',this.title)
-        this.getCurrentElections()       
+        this.getCurrentElections()
     }
 }
 </script>
