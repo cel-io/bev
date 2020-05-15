@@ -14,6 +14,7 @@ message BevPayload{
         CREATE_VOTER = 7;
         CREATE_VOTE = 8;
         UPDATE_VOTE = 9;
+        UPDATE_ELECTION = 10;
     }
 
     // Whether the payload contains a create agent, create record,
@@ -32,9 +33,10 @@ message BevPayload{
     CreateVoterAction create_voter = 9;
     CreateVoteAction create_vote = 10;
     UpdateVoteAction update_vote = 11;
+    UpdateElectionAction update_election = 12;
 
     // Approximately when transaction was submitted, as a Unix UTC timestamp
-    uint64 timestamp = 12;
+    uint64 timestamp = 13;
 }
 
 
@@ -138,4 +140,25 @@ message UpdateVoteAction{
     string vote_id = 1;
     uint64 timestamp = 2;
     string voting_option_id = 3;
+}
+
+message UpdateElectionAction {
+    string election_id = 1;
+    string name = 2;
+    string description = 3;
+    uint64 start_timestamp = 4;
+    uint64 end_timestamp = 5;
+
+    enum ResultsPermission {
+        PRIVATE = 0;
+        VOTERS_ONLY = 1;
+        PUBLIC = 2;
+    }
+
+    ResultsPermission results_permission = 6;
+    bool can_change_vote = 7;
+    bool can_show_realtime = 8;
+
+    string admin_id = 9;
+    bool status = 10;
 }

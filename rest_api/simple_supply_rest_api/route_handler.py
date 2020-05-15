@@ -12,6 +12,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiNotFound
 from simple_supply_rest_api.errors import ApiUnauthorized
+from simple_supply_rest_api.errors import ApiInternalError
 
 import uuid
 
@@ -135,6 +136,13 @@ class RouteHandler(object):
                 'Voting Option with the voting option id '
                 '{} was not found'.format(voting_option_id))
 
+        election = await self._database.fetch_election_resource(election_id=voting_option.get('election_id'))
+
+        if election.get('status') == 0:
+            raise ApiInternalError(
+                'Election with the election id '
+                '{} is cancelled'.format(election.get('election_id')))
+
         num_votes_update = vo_count_vote.get('num_votes') + 1
 
         await self._messenger.send_create_vote_transaction(
@@ -173,7 +181,12 @@ class RouteHandler(object):
                 '{} was not found'.format(vote.get('election_id')))
 
         if election.get('can_change_vote') == 0:
-            raise ApiNotFound(
+            raise ApiInternalError(
+                'Election with the election id '
+                '{} was not found don\'t permit to change vote'.format(vote.get('election_id')))
+
+        if election.get('can_change_vote') == 0:
+            raise ApiInternalError(
                 'Election with the election id '
                 '{} was not found don\'t permit to change vote'.format(vote.get('election_id')))
 
@@ -184,8 +197,8 @@ class RouteHandler(object):
             voting_option_id=old_voting_option_id)
         new_num_vote = await self._database.fetch_voting_option_num_vote_resource(
             voting_option_id=new_voting_option_id)
-        num_votes_remove = old_num_vote.get('num_votes')-1
-        num_votes_update = new_num_vote.get('num_votes')+1
+        num_votes_remove = old_num_vote.get('num_votes') - 1
+        num_votes_update = new_num_vote.get('num_votes') + 1
 
         await self._messenger.send_update_vote_transaction(
             private_key=private_key,
@@ -203,6 +216,53 @@ class RouteHandler(object):
 
         return json_response(
             {'data': 'Update Vote transaction submitted'})
+
+    async def update_election(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        body = await decode_request(request)
+        required_fields = ['voting_option_id']
+        validate_fields(required_fields, body)
+
+        electionId = request.match_info.get('electionId', '')
+
+        election = await self._database.fetch_election_resource(election_id=electionId)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(electionId))
+
+        current_time = get_time()
+
+        if election.get(start_timestamp) > current_time:
+            raise ApiInternalError(
+                'Election with the election id '
+                '{} already start.'.format(electionId))
+
+        admin = await self._database.fetch_voter_resource(public_key=public_key)
+
+        if election.get('status') == 1:
+            status = 0
+        else:
+            status = 1
+
+        await self._messenger.send_update_election_transaction(
+            private_key=private_key,
+            election_id=electionId,
+            name=election.get('name'),
+            description=election.get('description'),
+            start_timestamp=election.get('start_timestamp'),
+            end_timestamp=election.get('end_timestamp'),
+            results_permission=election.get('results_permission'),
+            can_change_vote=election.get('can_change_vote'),
+            can_show_realtime=election.get('can_show_realtime'),
+            admin_id=admin.get('voter_id'),
+            status=status,
+            timestamp=get_time())
+
+        return json_response(
+            {'data': 'Update Election transaction submitted'})
 
     async def get_election(self, request):
         private_key, public_key = await self._authorize(request)
@@ -454,6 +514,7 @@ class RouteHandler(object):
         return decrypt_private_key(request.app['aes_key'],
                                    public_key,
                                    auth_resource['encrypted_private_key']), public_key
+
 
 async def decode_request(request):
     try:

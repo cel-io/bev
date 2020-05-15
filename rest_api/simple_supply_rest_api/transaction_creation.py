@@ -319,6 +319,73 @@ def make_update_vote_transaction(transaction_signer,
         batch_signer=batch_signer)
 
 
+def make_update_election_transaction(transaction_signer,
+                                     batch_signer,
+                                     election_id,
+                                     name,
+                                     description,
+                                     start_timestamp,
+                                     end_timestamp,
+                                     results_permission,
+                                     can_change_vote,
+                                     can_show_realtime,
+                                     admin_id,
+                                     status,
+                                     timestamp):
+    """Make a CreateElectionAction transaction and wrap it in a batch
+
+    Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        election_id (str): Unique ID of the election
+        name (str): Name of the election
+        description (str): Description of the election
+        start_timestamp (int): Unix UTC timestamp of when the election start
+        end_timestamp (int): Unix UTC timestamp of when the election end
+        results_permission (int): Defines if its possible to change the voting option of the election
+        can_show_realtime (bool): Defines if the results of the election will be show realtime
+        can_change_vote  (bool): Defines if the results of the election will be presented
+        admin_id (str):  Unique ID of the administrator
+        status (bool): Defines if the election is online or canceled
+        timestamp (int): Unix UTC timestamp of when the election is created
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_voter_address(transaction_signer.get_public_key().as_hex()),
+        addresser.get_election_address(election_id)
+    ]
+
+    outputs = [addresser.get_election_address(election_id)]
+
+    action = payload_pb2.UpdateElectionAction(
+        election_id=election_id,
+        name=name,
+        description=description,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+        results_permission=results_permission,
+        can_change_vote=can_change_vote,
+        can_show_realtime=can_show_realtime,
+        admin_id=admin_id,
+        status=status)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.UPDATE_ELECTION,
+        update_election=action,
+        timestamp=timestamp)
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
 def make_create_agent_transaction(transaction_signer,
                                   batch_signer,
                                   name,

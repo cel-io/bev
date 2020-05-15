@@ -26,6 +26,9 @@ from simple_supply_rest_api.transaction_creation import \
     make_create_vote_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_update_vote_transaction
+from simple_supply_rest_api.transaction_creation import \
+    make_update_election_transaction
+
 
 
 class Messenger(object):
@@ -175,6 +178,38 @@ class Messenger(object):
             vote_id=vote_id,
             timestamp=timestamp,
             voting_option_id=voting_option_id)
+        await self._send_and_wait_for_commit(batch)
+
+    async def send_update_election_transaction(self,
+                                               private_key,
+                                               election_id,
+                                               name,
+                                               description,
+                                               start_timestamp,
+                                               end_timestamp,
+                                               results_permission,
+                                               can_change_vote,
+                                               can_show_realtime,
+                                               admin_id,
+                                               status,
+                                               timestamp):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_update_election_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            election_id=election_id,
+            name=name,
+            description=description,
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
+            results_permission=results_permission,
+            can_change_vote=can_change_vote,
+            can_show_realtime=can_show_realtime,
+            admin_id=admin_id,
+            status=status,
+            timestamp=timestamp)
         await self._send_and_wait_for_commit(batch)
 
     # ------------------------------------------------------------
