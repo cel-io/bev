@@ -21,7 +21,6 @@
                     <b-field class="is-pulled-right">
                         <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
                     </b-field>
-                </br>
             </div>
         </div>
     </section>
@@ -90,13 +89,13 @@ export default{
                     "voting_option_id": this.votingOptionSelected.voting_option_id
                 })
                 .then(response => {
-                    this.$router.push('/dashboard')
                     this.$buefy.toast.open({
                         duration: 5000,
-                        message: 'Vote updated',
+                        message: 'Vote successfully!',
                         position: 'is-top-right',
                         type: 'is-sucess'
                     })
+                    this.$router.push('/eletions')                    
                 })
                 .catch(error => {
                     console.log(error)
@@ -137,7 +136,8 @@ export default{
         })
     },
     created(){
-        this.$emit('title',this.title);
+        this.$emit('title',this.title)
+        this.$emit('back',"")
     }
 }
 </script>

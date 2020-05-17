@@ -21,9 +21,8 @@
                     <b-field class="is-pulled-right">
                         <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
                     </b-field>
-                </br>
+                </div>
             </div>
-        </div>
     </section>
 </div>
 </template>
@@ -51,7 +50,7 @@ export default{
                     type: 'is-warning',
                     hasIcon: true,
                     onConfirm: () => {
-                        this.$buefy.toast.open('Vote submited!')
+                        this.$buefy.toast.open('Vote submitted!')
 
                         axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                         .then(response => {
@@ -87,6 +86,7 @@ export default{
         }
     },
     mounted(){
+
         axios.get('api/elections/'+ this.electionId)
         .then(response => {
             this.election = response.data
@@ -111,7 +111,8 @@ export default{
 
     },
     created() {
-        this.$emit('title',this.title);
+        this.$emit('title',this.title)
+        this.$emit('back',"")
     }
 }
 </script>

@@ -11,7 +11,8 @@ export default{
         }
     },
     created() {
-        this.$emit('title',this.title);
+        this.$emit('title',this.title)
+        this.$emit('back',"")
     }
 }
 </script>

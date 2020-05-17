@@ -4,7 +4,7 @@
             <div class="card box has-margin-bottom-40">
                 <div class="card-content has-padding-bottom-0">
                     <validation-observer ref="observer" v-slot="{ handleSubmit }">
-                        <b-tabs v-model="activeTab">
+                        <b-tabs v-model="activeTab" expanded>
                             <b-tab-item label="Informations">
                                 <div class="columns">
                                     <div class="column">
@@ -264,7 +264,7 @@ export default{
                 "name": this.name,
                 "description": this.description,
                 "start_timestamp": this.toTimestamp(this.startDate),
-                "end_timestamp": this.toTimestamp(this.startDate),
+                "end_timestamp": this.toTimestamp(this.endDate),
                 "results_permission": this.resultsPermission,
                 "can_change_vote": this.canChangeVote,
                 "can_show_realtime": this.canShowRealtime,
@@ -286,7 +286,8 @@ export default{
         }
     },
     created() {
-        this.$emit('title',this.title);
+        this.$emit('title',this.title)
+        this.$emit('back',"")
     }
 }
 </script>
