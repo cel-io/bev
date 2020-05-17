@@ -201,7 +201,7 @@ class RouteHandler(object):
 
         if election is None:
             raise ApiNotFound(
-                'Election with the election id '
+                'Election with the A election id '
                 '{} was not found'.format(election_id))
 
         return json_response(election)
@@ -224,16 +224,8 @@ class RouteHandler(object):
 
         voter = await self._database.fetch_voter_resource(public_key=public_key)
 
-        if voter is None:
-            raise ApiNotFound(
-                'Voter with the public key '
-                '{} was not found'.format(public_key))
-
         current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'),
                                                                                         get_time())
-        if current_elections_list is None:
-            raise ApiNotFound('Voter with the no current elections')
-
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
@@ -241,15 +233,7 @@ class RouteHandler(object):
 
         voter = await self._database.fetch_voter_resource(public_key=public_key)
 
-        if voter is None:
-            raise ApiNotFound(
-                'Voter with the public key '
-                '{} was not found'.format(public_key))
-
         past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
-
-        if past_elections_list is None:
-            raise ApiNotFound('Voter with the no past elections')
 
         return json_response(past_elections_list)
 

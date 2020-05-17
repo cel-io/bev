@@ -21,7 +21,6 @@
                     <b-field class="is-pulled-right">
                         <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
                     </b-field>
-                </br>
             </div>
         </div>
     </section>
@@ -91,13 +90,13 @@ export default{
                     "voting_option_id": this.votingOptionSelected.voting_option_id
                 })
                 .then(response => {
-                    this.$router.push('/dashboard')
                     this.$buefy.toast.open({
                         duration: 5000,
-                        message: 'Vote updated',
+                        message: 'Vote successfully!',
                         position: 'is-top-right',
                         type: 'is-sucess'
                     })
+                    this.$router.push('/eletions')                    
                 })
                 .catch(error => {
                     console.log(error)
@@ -106,9 +105,6 @@ export default{
         }
     },
     mounted(){
-        let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTMwNTk4OCwiZXhwIjoxNTg5MzA5NTg4fQ.eyJwdWJsaWNfa2V5IjoiMDJhOTdhYTVjYzQ0ZDgyY2IwNTFjMTQwNWZhNjJjYjc4MWQ2NzY4NTcwODdlZTc2ODViNTI0MWJhYjBjYWE0YWU5In0.zHFUQyhQqjBLVH_IrarK_NPriVIjgjh5WGpydVTeV0-eQRImSFhWdTVurUBT3bmgvUBTfexPfHpmk18TiS2auQ"
-        axios.defaults.headers.common.Authorization = "Bearer " + token;
-
         axios.get('api/votes/'+ this.voteId)
         .then(response => {
             this.old_vote = response.data
@@ -141,7 +137,8 @@ export default{
         })
     },
     created(){
-        this.$emit('title',this.title);
+        this.$emit('title',this.title)
+        this.$emit('back',"")
     }
 }
 </script>

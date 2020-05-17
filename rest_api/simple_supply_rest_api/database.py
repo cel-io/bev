@@ -59,7 +59,7 @@ class Database(object):
     async def fetch_current_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
                 SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}' 
-                    AND election_id=e.election_id) 
+                    AND election_id=e.election_id LIMIT 1) 
                     IS NOT NULL AS "voted"
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                 AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
@@ -77,7 +77,7 @@ class Database(object):
     async def fetch_past_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
                 SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}' 
-                    AND election_id=e.election_id) 
+                    AND election_id=e.election_id LIMIT 1) 
                     IS NOT NULL AS "voted" 
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                 AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
@@ -130,8 +130,10 @@ class Database(object):
 
     async def fetch_voter_resource(self, voter_id=None, public_key=None):
         fetch = """
-        SELECT * FROM voters WHERE """ + ("""voter_id""" if voter_id else """public_key""") + """='{}'
-        """.format(voter_id if voter_id else public_key)
+        SELECT * FROM voters WHERE """ + ("""voter_id""" if voter_id else """public_key""") + """='{0}'
+        AND ({1}) >= start_block_num
+        AND ({1}) < end_block_num;
+        """.format(voter_id if voter_id else public_key,LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
@@ -175,8 +177,10 @@ class Database(object):
 
     async def fetch_vote_resource(self, vote_id=None):
         fetch = """
-           SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes WHERE vote_id='{}')
-           """.format(vote_id)
+           SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes WHERE vote_id='{0}')
+           AND ({1}) >= start_block_num
+           AND ({1}) < end_block_num;
+           """.format(vote_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

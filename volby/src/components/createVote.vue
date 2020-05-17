@@ -21,9 +21,8 @@
                     <b-field class="is-pulled-right">
                         <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
                     </b-field>
-                </br>
+                </div>
             </div>
-        </div>
     </section>
 </div>
 </template>
@@ -51,7 +50,7 @@ export default{
                     type: 'is-warning',
                     hasIcon: true,
                     onConfirm: () => {
-                        this.$buefy.toast.open('Vote submited!')
+                        this.$buefy.toast.open('Vote submitted!')
 
                         axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                         .then(response => {
@@ -87,8 +86,6 @@ export default{
         }
     },
     mounted(){
-        let token = "eyJhbGciOiJIUzUxMiIsImlhdCI6MTU4OTMwNTk4OCwiZXhwIjoxNTg5MzA5NTg4fQ.eyJwdWJsaWNfa2V5IjoiMDJhOTdhYTVjYzQ0ZDgyY2IwNTFjMTQwNWZhNjJjYjc4MWQ2NzY4NTcwODdlZTc2ODViNTI0MWJhYjBjYWE0YWU5In0.zHFUQyhQqjBLVH_IrarK_NPriVIjgjh5WGpydVTeV0-eQRImSFhWdTVurUBT3bmgvUBTfexPfHpmk18TiS2auQ"
-        axios.defaults.headers.common.Authorization = "Bearer " + token;
 
         axios.get('api/elections/'+ this.electionId)
         .then(response => {
@@ -114,7 +111,8 @@ export default{
 
     },
     created() {
-        this.$emit('title',this.title);
+        this.$emit('title',this.title)
+        this.$emit('back',"")
     }
 }
 </script>

@@ -20,6 +20,9 @@ localize("en", en);
 Vue.component("ValidationObserver", ValidationObserver);
 Vue.component("ValidationProvider", ValidationProvider);
 
+import VueCountdown from '@chenfengyuan/vue-countdown';
+Vue.component(VueCountdown.name, VueCountdown);
+
 import {isAfter} from "date-fns"
 
 import {store} from './store.js'
