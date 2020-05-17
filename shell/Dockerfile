@@ -36,6 +36,7 @@ RUN pip3 install \
     aiohttp \
     aiopg \
     bcrypt \
+    diskcache \
     grpcio-tools \
     itsdangerous \
     nose2 \

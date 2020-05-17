@@ -16,6 +16,8 @@ from simple_supply_rest_api.errors import ApiInternalError
 
 import uuid
 
+from diskcache import Cache
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -24,6 +26,7 @@ class RouteHandler(object):
         self._loop = loop
         self._messenger = messenger
         self._database = database
+        self.cache = Cache()
 
     async def create_election(self, request):
         private_key, public_key = await self._authorize(request)
@@ -105,7 +108,7 @@ class RouteHandler(object):
 
         await self._database.create_auth_entry(public_key, encrypted_private_key, hashed_password)
 
-        token = generate_auth_token(request.app['secret_key'], public_key)
+        token = self.generate_auth_token(request.app['secret_key'], public_key)
 
         return json_response(
             {'accessToken': token, 'user': {'name': body.get('name'), 'voter_id': body.get('voter_id'),
@@ -339,7 +342,7 @@ class RouteHandler(object):
         if not bcrypt.checkpw(password, bytes.fromhex(hashed_password)):
             raise ApiUnauthorized('Incorrect public key or password')
 
-        token = generate_auth_token(
+        token = self.generate_auth_token(
             request.app['secret_key'], voter.get('public_key'))
 
         return json_response(
@@ -355,8 +358,7 @@ class RouteHandler(object):
             if prefix in token:
                 token = token.partition(prefix)[2].strip()
         try:
-            token_dict = deserialize_auth_token(request.app['secret_key'],
-                                                token)
+            token_dict = self.deserialize_auth_token(request.app['secret_key'], token)
         except BadSignature:
             raise ApiUnauthorized('Invalid auth token')
         public_key = token_dict.get('public_key')
@@ -391,7 +393,7 @@ class RouteHandler(object):
         await self._database.create_auth_entry(
             public_key, encrypted_private_key, hashed_password)
 
-        token = generate_auth_token(
+        token = self.generate_auth_token(
             request.app['secret_key'], public_key)
 
         return json_response({'authorization': token})
@@ -475,29 +477,32 @@ class RouteHandler(object):
         return json_response(
             {'data': 'Update record transaction submitted'})
 
-    async def _authorize(self, request):
+    async def logout(self, request):
+        await self._authorize(request)
         token = request.headers.get('AUTHORIZATION')
-        if token is None:
-            raise ApiUnauthorized('No auth token provided')
         token_prefixes = ('Bearer', 'Token')
         for prefix in token_prefixes:
             if prefix in token:
                 token = token.partition(prefix)[2].strip()
-        try:
-            token_dict = deserialize_auth_token(request.app['secret_key'],
-                                                token)
-        except BadSignature:
-            raise ApiUnauthorized('Invalid auth token')
-        public_key = token_dict.get('public_key')
 
-        LOGGER.info(public_key)
+        self.cache.delete(token)
+        return json_response("Successful logout")
 
-        auth_resource = await self._database.fetch_auth_resource(public_key=public_key)
-        if auth_resource is None:
-            raise ApiUnauthorized('Token is not associated with an agent')
-        return decrypt_private_key(request.app['aes_key'],
-                                   public_key,
-                                   auth_resource['encrypted_private_key']), public_key
+    def generate_auth_token(self, secret_key, public_key):
+        serializer = Serializer(secret_key, expires_in=3600)
+        token = serializer.dumps({'public_key': public_key})
+        decoded_token = token.decode('ascii')
+        self.cache.add(decoded_token, 1, expire=3600)
+        self.cache.close()
+        return decoded_token
+
+    def deserialize_auth_token(self, secret_key, token):
+        token_status = self.cache.get(token)
+        if token_status is None:
+            raise BadSignature
+
+        serializer = Serializer(secret_key)
+        return serializer.loads(token)
 
 
 async def decode_request(request):
@@ -534,14 +539,3 @@ def hash_password(password):
 def get_time():
     dts = datetime.datetime.utcnow()
     return round(time.mktime(dts.timetuple()) + dts.microsecond / 1e6)
-
-
-def generate_auth_token(secret_key, public_key):
-    serializer = Serializer(secret_key, expires_in=3600)
-    token = serializer.dumps({'public_key': public_key})
-    return token.decode('ascii')
-
-
-def deserialize_auth_token(secret_key, token):
-    serializer = Serializer(secret_key)
-    return serializer.loads(token)
