@@ -132,7 +132,6 @@ CREATE TABLE IF NOT EXISTS voting_options (
     name             varchar,
     description      varchar,
     election_id      varchar,
-    num_votes        smallint,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -143,6 +142,7 @@ CREATE TABLE IF NOT EXISTS count_votes (
     id               bigserial PRIMARY KEY,
     voting_option_id varchar,
     name             varchar,
+    election_id      varchar,
     num_votes        smallint
 );
 """
@@ -230,17 +230,17 @@ class Database(object):
             LOGGER.debug('Creating table: auth')
             cursor.execute(CREATE_AUTH_STMTS)
 
-            LOGGER.debug('Creating table: records')
-            cursor.execute(CREATE_RECORD_STMTS)
-
-            LOGGER.debug('Creating table: record_locations')
-            cursor.execute(CREATE_RECORD_LOCATION_STMTS)
-
-            LOGGER.debug('Creating table: record_owners')
-            cursor.execute(CREATE_RECORD_OWNER_STMTS)
-
-            LOGGER.debug('Creating table: agents')
-            cursor.execute(CREATE_AGENT_STMTS)
+            # LOGGER.debug('Creating table: records')
+            # cursor.execute(CREATE_RECORD_STMTS)
+            #
+            # LOGGER.debug('Creating table: record_locations')
+            # cursor.execute(CREATE_RECORD_LOCATION_STMTS)
+            #
+            # LOGGER.debug('Creating table: record_owners')
+            # cursor.execute(CREATE_RECORD_OWNER_STMTS)
+            #
+            # LOGGER.debug('Creating table: agents')
+            # cursor.execute(CREATE_AGENT_STMTS)
 
             LOGGER.debug('Creating types')
             cursor.execute(CREATE_TYPES_STMTS)
