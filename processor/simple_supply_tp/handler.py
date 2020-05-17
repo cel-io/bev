@@ -104,6 +104,11 @@ class SimpleSupplyHandler(TransactionHandler):
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
+        elif payload.action == payload_pb2.BevPayload.UPDATE_ELECTION:
+            _update_election(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
         else:
             raise InvalidTransaction('Unhandled action')
 
@@ -123,6 +128,7 @@ def _create_election(state, public_key, payload):
         can_change_vote=payload.data.can_change_vote,
         can_show_realtime=payload.data.can_show_realtime,
         admin_id=payload.data.admin_id,
+        status=payload.data.status,
         timestamp=payload.timestamp
     )
 
@@ -136,8 +142,7 @@ def _create_voting_option(state, public_key, payload):
         voting_option_id=payload.data.voting_option_id,
         name=payload.data.name,
         description=payload.data.description,
-        election_id=payload.data.election_id,
-        num_votes=0
+        election_id=payload.data.election_id
     )
 
 
@@ -188,6 +193,18 @@ def _update_vote(state, public_key, payload):
         vote_id=payload.data.vote_id,
         timestamp=payload.data.timestamp,
         voting_option_id=payload.data.voting_option_id
+    )
+
+
+def _update_election(state, public_key, payload):
+    if state.get_voter(public_key) is None:
+        raise InvalidTransaction('Voter with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.update_election(
+        election_id=payload.data.election_id,
+        status=payload.data.status,
+        timestamp=payload.timestamp
     )
 
 

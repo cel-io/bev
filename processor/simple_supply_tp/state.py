@@ -39,6 +39,7 @@ class SimpleSupplyState(object):
                      can_change_vote,
                      can_show_realtime,
                      admin_id,
+                     status,
                      timestamp):
         """Creates a new election in state
 
@@ -52,6 +53,7 @@ class SimpleSupplyState(object):
                 can_show_realtime (bool): Defines if the results of the election will be show realtime
                 can_change_vote  (bool): Defines if the results of the election will be presented
                 admin_id (int):  Unique ID of the administrator
+                status (bool): Defines if the election is online or canceled
                 timestamp (int): Timestamp
         """
         address = addresser.get_election_address(election_id)
@@ -66,6 +68,7 @@ class SimpleSupplyState(object):
             can_change_vote=can_change_vote,
             can_show_realtime=can_show_realtime,
             admin_id=admin_id,
+            status=status,
             timestamp=timestamp)
 
         container = election_pb2.ElectionContainer()
@@ -85,8 +88,7 @@ class SimpleSupplyState(object):
                           voting_option_id,
                           name,
                           description,
-                          election_id,
-                          num_votes):
+                          election_id):
         """Creates a new voting option in state
 
             Args:
@@ -94,7 +96,6 @@ class SimpleSupplyState(object):
                 name (str): Name of the voting option
                 description (str): Description of the voting option
                 election_id (str): Unique ID of the election
-                num_votes (int): Number of votes of the specific option
         """
         address = addresser.get_voting_option_address(voting_option_id)
 
@@ -102,8 +103,7 @@ class SimpleSupplyState(object):
             voting_option_id=voting_option_id,
             name=name,
             description=description,
-            election_id=election_id,
-            num_votes=num_votes)
+            election_id=election_id)
 
         container = votingOption_pb2.VotingOptionContainer()
         state_entries = self._context.get_state(
@@ -258,6 +258,28 @@ class SimpleSupplyState(object):
                 if vote.vote_id == vote_id:
                     vote.timestamp = timestamp
                     vote.voting_option_id = voting_option_id
+
+        data = container.SerializeToString()
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
+    def update_election(self,
+                        election_id,
+                        status,
+                        timestamp):
+
+        address = addresser.get_election_address(election_id)
+        container = election_pb2.ElectionContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+            for election in container.entries:
+                if election.election_id == election_id:
+                    election.status = status
+                    election.timestamp = timestamp
 
         data = container.SerializeToString()
         updated_state = {}

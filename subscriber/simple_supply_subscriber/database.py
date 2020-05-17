@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS elections (
     can_change_vote             boolean,
     can_show_realtime           boolean,
     admin_id                    varchar,
+    status                      boolean,
     timestamp                   bigint,
     start_block_num             bigint,
     end_block_num               bigint
@@ -134,6 +135,15 @@ CREATE TABLE IF NOT EXISTS voting_options (
     num_votes        smallint,
     start_block_num  bigint,
     end_block_num    bigint
+);
+"""
+
+CREATE_COUNT_VOTE_STMTS = """
+CREATE TABLE IF NOT EXISTS count_votes (
+    id               bigserial PRIMARY KEY,
+    voting_option_id varchar,
+    name             varchar,
+    num_votes        smallint
 );
 """
 
@@ -249,6 +259,9 @@ class Database(object):
 
             LOGGER.debug('Creating table: votes')
             cursor.execute(CREATE_VOTE_STMTS)
+
+            LOGGER.debug('Creating table: count_votes')
+            cursor.execute(CREATE_COUNT_VOTE_STMTS)
 
         self._conn.commit()
 
@@ -375,11 +388,12 @@ class Database(object):
            results_permission,
            can_change_vote, 
            can_show_realtime,
-           admin_id, 
+           admin_id,
+           status, 
            timestamp,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             election_dict['election_id'],
             election_dict['name'],
@@ -390,6 +404,7 @@ class Database(object):
             election_dict['can_change_vote'],
             election_dict['can_show_realtime'],
             election_dict['admin_id'],
+            election_dict['status'],
             election_dict['timestamp'],
             election_dict['start_block_num'],
             election_dict['end_block_num'])
@@ -445,16 +460,14 @@ class Database(object):
            name, 
            description, 
            election_id,
-           num_votes,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             voting_option_dict['voting_option_id'],
             voting_option_dict['name'],
             voting_option_dict['description'],
             voting_option_dict['election_id'],
-            voting_option_dict['num_votes'],
             voting_option_dict['start_block_num'],
             voting_option_dict['end_block_num'])
 
