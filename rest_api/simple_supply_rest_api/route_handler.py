@@ -66,7 +66,8 @@ class RouteHandler(object):
             voting_option_id = uuid.uuid1().hex
 
             await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
-                                                                        name=voting_option.get('name'))
+                                                                        name=voting_option.get('name'),
+                                                                        election_id=election_id)
 
             await self._messenger.send_create_voting_option_transaction(
                 private_key=private_key,
@@ -278,6 +279,18 @@ class RouteHandler(object):
                 '{} was not found'.format(election_id))
 
         return json_response(election)
+
+    async def get_election_votes(self, request):
+        private_key, public_key = await self._authorize(request)
+        election_id = request.match_info.get('electionId', '')
+        number_of_votes = await self._database.fetch_number_of_votes(election_id=election_id)
+
+        if number_of_votes is None:
+            raise ApiNotFound(
+                'No voting options with the election id '
+                '{} was not found'.format(election_id))
+
+        return json_response(number_of_votes)
 
     async def list_voting_options_election(self, request):
         private_key, public_key = await self._authorize(request)

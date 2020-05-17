@@ -105,18 +105,21 @@ class Database(object):
 
     async def insert_voting_option_num_vote_resource(self,
                                                      voting_option_id,
-                                                     name):
+                                                     name,
+                                                     election_id):
         num_votes = 0
 
         insert = """
            INSERT INTO count_votes (
                     voting_option_id,
                     name,
+                    election_id,
                     num_votes)
-           VALUES ('{}', '{}', '{}')
+           VALUES ('{}', '{}', '{}', '{}')
            """.format(
             voting_option_id,
             name,
+            election_id,
             num_votes)
 
         async with self._conn.cursor() as cursor:
@@ -172,6 +175,18 @@ class Database(object):
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
             return await cursor.fetchone()
+
+    async def fetch_number_of_votes(self, election_id=None):
+        fetch = """
+                    SELECT * FROM count_votes
+                    WHERE election_id='{0}'
+                    AND ({1}) >= start_block_num
+                    AND ({1}) < end_block_num;
+                    """.format(election_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchall()
 
     async def fetch_voting_option_resource(self, voting_option_id=None):
         fetch = """
