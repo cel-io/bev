@@ -29,7 +29,7 @@
                                     <div class="columns">
                                         <div class="column is-12">
                                             <span class="has-text-weight-bold">Description: </span> {{election.description}}
-                                        </div>                                        
+                                        </div>
                                     </div>
                                     <div class="columns">
                                         <div class="column">
@@ -42,7 +42,7 @@
                                             <countdown :time="(election.end_timestamp - currentTimestamp ) * 1000">
                                                 <template slot-scope="props"><span class="has-text-weight-bold">Time Remaining:</span> {{ props.days }} days, {{ props.hours }} hours, {{ props.minutes }} minutes, {{ props.seconds }} seconds.</template>
                                             </countdown>
-                                        </div>                                    
+                                        </div>
                                     </div>
                                 </b-tab-item>
                                 <b-tab-item label="Ballot">
@@ -62,30 +62,96 @@
                                     </div>
                                 </b-tab-item>
                                 <b-tab-item label="Results">
-                                    results
+                                    <br>
+                                    <div class=" has-text-centered" v-if="this.num_votes_all == 0">
+                                        <span>No Votes found to Generate Chart.</span>
+                                    </div>
+                                    <div v-else class="title is-3 has-text-centered">
+                                        <div v-if="election.end_timestamp > currentTimestamp">
+                                            <strong>Live Results - Total Votes</strong>
+                                        </div>
+                                        <div v-else>
+                                            <strong>Results - Total Votes</strong>
+                                        </div>
+                                        <div class="small">
+                                            <pie-chart :chart-data="datacollection1"></pie-chart>
+                                        </div>
+                                        <br>
+                                        <div v-if="election.end_timestamp > currentTimestamp">
+                                            <strong>Live Results - Number of Votes Submitted and Missing</strong>
+                                        </div>
+                                        <div v-else>
+                                            <strong>Results - Number of Votes Submitted and Missing</strong>
+                                        </div>
+                                        <div class="small">
+                                            <bar-chart :chart-data="datacollection2" :options="options"></bar-chart>
+                                        </div>
+                                    </div>
                                 </b-tab-item>
                             </b-tabs>
                         </div>
                     </div>
                 </template>
-                
+
             </div>
         </div>
     </div>
 </template>
 <script>
 import {timestampToDate} from '../helpers.js'
+import PieChart from './Charts/PieChart.js'
+import BarChart from './Charts/BarChart.js'
 
 export default{
+    components: {
+        PieChart,
+        BarChart
+    },
     data(){
         return{
             title: "Election",
             electionId: this.$route.params.electionId,
             election: {},
+            user: {},
+            vote:{},
+            canUpdate: false,
+            alreadyVote: false,
             votingOptions: [],
             isLoading: true,
             currentTimestamp: Math.floor(new Date().getTime() / 1000),
-            activeTab: 0
+            activeTab: 0,
+            datacollection1: null,
+            datacollection2: null,
+            votingOptionsAux: [],
+            countLabels: [],
+            numberVotes: [],
+            colors:[],
+            pollBookAux: [],
+            num_votes_all: 0,
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: false
+                        },
+                        barPercentage: 0.4
+                    }]
+                },
+                responsive: true
+            },
+            canVote: null,
+            canUpdate: false,
         }
     },
     methods: {
@@ -93,6 +159,12 @@ export default{
             axios.get('api/elections/'+ this.electionId)
             .then(response => {
                 this.election = response.data
+
+                if(this.election.can_change_vote == 1){
+                    this.canUpdate = true
+                }else{
+                    this.canUpdate = false
+                }
 
                 axios.get('api/elections/'+ this.electionId +'/voting_options')
                 .then(response => {
@@ -110,7 +182,69 @@ export default{
                         return 0;
                     })
 
-                    this.isLoading = false
+                    axios.get('api/elections/'+this.electionId+'/number_of_votes')
+                    .then(response => {
+                        this.votingOptionsAux = response.data
+
+                        this.votingOptionsAux.forEach(voting_option => {
+                            this.countLabels.push(voting_option.name.toUpperCase())
+                            this.numberVotes.push(voting_option.num_votes)
+                            this.num_votes_all += voting_option.num_votes
+                            this.colors.push("#"+Math.floor(Math.random()*16777215).toString(16))
+                        })
+
+                        axios.get('api/elections/'+this.electionId+'/poll_book')
+                        .then(response => {
+                            this.pollBookAux = response.data
+                            var num_votes_missing = this.pollBookAux.length - this.num_votes_all
+
+                            this.datacollection2 = {
+                                labels: ["Submitted Votes","Votes Missing"],
+                                datasets: [
+                                    {
+                                        label: 'Data',
+                                        backgroundColor: "#3b5ce1",
+                                        data: [this.num_votes_all, num_votes_missing]
+                                    }
+                                ]
+                            }
+                            this.user =  this.$store.getters.user
+
+                            axios.get('api/votes/'+this.user.voter_id+'/voter')
+                            .then(response => {
+                                this.vote = response.data
+
+                                if(this.vote == null){
+                                    this.alreadyVote = false
+                                }else{
+                                    this.alreadyVote = true
+                                }
+
+                                this.isLoading = false
+                            })
+                            .catch(error => {
+                                console.log(error)
+                                if(error.response.status == 401){
+                                    this.$store.commit("logout")
+                                    this.$router.push("/login")
+                                }
+                            })
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            if(error.response.status == 401){
+                                this.$store.commit("logout")
+                                this.$router.push("/login")
+                            }
+                        })
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        if(error.response.status == 401){
+                            this.$store.commit("logout")
+                            this.$router.push("/login")
+                        }
+                    })
                 })
                 .catch(error => {
                     console.log(error)
@@ -130,7 +264,22 @@ export default{
         },
         toDate(timestamp){
             return timestampToDate(timestamp)
-        }
+        },
+        fillData () {
+            this.datacollection1 = {
+                labels: this.countLabels,
+                datasets: [
+                    {
+                        label: 'Data One',
+                        backgroundColor: this.colors,
+                        data: this.numberVotes
+                    }
+                ]
+            }
+        },
+        getRandomInt () {
+            return Math.floor(Math.random() * (50 - 5 + 1)) + 5
+        },
     },
     created() {
         this.$emit('title',this.title)
@@ -138,6 +287,16 @@ export default{
     },
     mounted(){
         this.getElection()
+
+        this.fillData()
+
+
     }
 }
 </script>
+<style>
+.small {
+    max-width: 600px;
+    margin:  30px auto;
+}
+</style>

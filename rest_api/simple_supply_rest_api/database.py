@@ -178,6 +178,16 @@ class Database(object):
     async def fetch_number_of_votes(self, election_id=None):
         fetch = """
                     SELECT * FROM count_votes
+                    WHERE election_id='{0}';
+                    """.format(election_id)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchall()
+
+    async def fetch_poll_book(self, election_id=None):
+        fetch = """
+                    SELECT * FROM poll_registrations
                     WHERE election_id='{0}'
                     AND ({1}) >= start_block_num
                     AND ({1}) < end_block_num;
@@ -227,6 +237,17 @@ class Database(object):
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
            """.format(vote_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
+    async def fetch_vote_by_voter_id_resource(self, voter_id=None):
+        fetch = """
+              SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes WHERE voter_id='{0}')
+              AND ({1}) >= start_block_num
+              AND ({1}) < end_block_num;
+              """.format(voter_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

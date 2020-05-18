@@ -81,6 +81,7 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_get('/elections/past', handler.list_elections_past)
     app.router.add_get('/elections/{electionId}', handler.get_election)
     app.router.add_get('/elections/{electionId}/number_of_votes', handler.get_election_votes)
+    app.router.add_get('/elections/{electionId}/poll_book', handler.get_poll_registrations)
     app.router.add_get('/elections/{electionId}/voting_options', handler.list_voting_options_election)
     app.router.add_post('/elections', handler.create_election)
     app.router.add_put('/elections/{electionId}/change_status', handler.update_election)
@@ -88,21 +89,22 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_post('/voters', handler.create_voter)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
+    app.router.add_get('/votes/{voterId}/voter', handler.get_vote_voter_id)
     app.router.add_post('/votes/{votingOptionId}', handler.create_vote)
     app.router.add_put('/votes/{voteId}/update', handler.update_vote)
 
     app.router.add_post('/authentication', handler.authenticate)
 
-    app.router.add_post('/agents', handler.create_agent)
-    app.router.add_get('/agents', handler.list_agents)
-    app.router.add_get('/agents/{agent_id}', handler.fetch_agent)
-
-    app.router.add_post('/records', handler.create_record)
-    app.router.add_get('/records', handler.list_records)
-    app.router.add_get('/records/{record_id}', handler.fetch_record)
-    app.router.add_post(
-        '/records/{record_id}/transfer', handler.transfer_record)
-    app.router.add_post('/records/{record_id}/update', handler.update_record)
+    # app.router.add_post('/agents', handler.create_agent)
+    # app.router.add_get('/agents', handler.list_agents)
+    # app.router.add_get('/agents/{agent_id}', handler.fetch_agent)
+    #
+    # app.router.add_post('/records', handler.create_record)
+    # app.router.add_get('/records', handler.list_records)
+    # app.router.add_get('/records/{record_id}', handler.fetch_record)
+    # app.router.add_post(
+    #     '/records/{record_id}/transfer', handler.transfer_record)
+    # app.router.add_post('/records/{record_id}/update', handler.update_record)
 
     LOGGER.info('Starting Simple Supply REST API on %s:%s', host, port)
     web.run_app(

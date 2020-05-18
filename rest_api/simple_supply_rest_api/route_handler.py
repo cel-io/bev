@@ -289,6 +289,18 @@ class RouteHandler(object):
 
         return json_response(number_of_votes)
 
+    async def get_poll_registrations(self, request):
+        private_key, public_key = await self._authorize(request)
+        election_id = request.match_info.get('electionId', '')
+        poll_book = await self._database.fetch_poll_book(election_id=election_id)
+
+        if poll_book is None:
+            raise ApiNotFound(
+                'No voters with the election id '
+                '{} was not found'.format(election_id))
+
+        return json_response(poll_book)
+
     async def list_voting_options_election(self, request):
         private_key, public_key = await self._authorize(request)
 
@@ -325,10 +337,12 @@ class RouteHandler(object):
         vote_id = request.match_info.get('voteId', '')
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
 
-        if vote is None:
-            raise ApiNotFound(
-                'Vote with the vote id BLEUUU'
-                '{} was not found'.format(vote_id))
+        return json_response(vote)
+
+    async def get_vote_voter_id(self, request):
+        private_key, public_key = await self._authorize(request)
+        voter_id = request.match_info.get('voterId', '')
+        vote = await self._database.fetch_vote_by_voter_id_resource(voter_id=voter_id)
 
         return json_response(vote)
 
