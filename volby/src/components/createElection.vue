@@ -9,7 +9,8 @@
                                 <div class="columns">
                                     <div class="column">
                                         <validation-provider rules="required" name="Name" v-slot="validationContext">
-                                            <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                            <b-field :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <template slot="label">Name <span class="has-text-danger">*</span></template>
                                                 <b-input v-model="name"></b-input>
                                             </b-field>
                                         </validation-provider>
@@ -18,14 +19,15 @@
                                 <div class="columns">
                                     <div class="column">
                                         <b-field label="Description">
-                                            <b-input v-model="description" maxlength="200" type="textarea"></b-input>
+                                            <b-input v-model="description" maxlength="1000" type="textarea"></b-input>
                                         </b-field>
                                     </div>
                                 </div>
                                 <div class="columns">
                                     <div class="column">
                                         <validation-provider rules="required" name="Start Date" v-slot="validationContext">
-                                            <b-field label="Start Date" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                            <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <template slot="label">Start Date <span class="has-text-danger">*</span></template>
                                                 <b-datetimepicker rounded v-model="startDate" placeholder="Click to select..." icon="calendar-today" :datepicker="{ showWeekNumber }" :timepicker="{ enableSeconds, hourFormat: format }" :min-datetime="dateNow" :max-datetime="endDate" horizontal-time-picker>
                                                 </b-datetimepicker>
                                             </b-field>
@@ -33,7 +35,8 @@
                                     </div>
                                     <div class="column">
                                         <validation-provider rules="required" name="End Date" v-slot="validationContext">
-                                            <b-field label="End Date" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                            <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                <template slot="label">End Date <span class="has-text-danger">*</span></template>
                                                 <b-datetimepicker rounded v-model="endDate" placeholder="Click to select..." icon="calendar-today" :datepicker="{ showWeekNumber }" :timepicker="{ enableSeconds, hourFormat: format }" :min-datetime="startDate ? startDate : dateNow" horizontal-time-picker>
                                                 </b-datetimepicker>
                                             </b-field>
@@ -92,7 +95,8 @@
                                                     required: true,
                                                     custom_rule: votingOptions
                                                     }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
-                                                    <b-field :label="(index + 1) + '. Option Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <template slot="label">{{(index + 1) + '. Option Name'}} <span class="has-text-danger">*</span></template>
                                                         <b-input v-model="votingOption.name"></b-input>
                                                     </b-field>
                                                 </validation-provider>
@@ -133,14 +137,16 @@
                                                     email: true,
                                                     unique: pollBook
                                                     }" :name="(index + 1) + '. Voter Email'" v-slot="validationContext">
-                                                    <b-field :label="(index + 1) + '. Voter Email'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <template slot="label">{{(index + 1) + '. Voter Email'}} <span class="has-text-danger">*</span></template>
                                                         <b-input v-model="voter.id"></b-input>
                                                     </b-field>
                                                 </validation-provider>
                                             </div>
                                             <div class="column">
                                                 <validation-provider rules="required|alpha_spaces" :name="(index + 1) + '. Voter Name '" v-slot="validationContext">
-                                                    <b-field :label="(index + 1) + '. Voter Name'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                    <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <template slot="label">{{(index + 1) + '. Voter Name'}} <span class="has-text-danger">*</span></template>
                                                         <b-input v-model="voter.name"></b-input>
                                                     </b-field>
                                                 </validation-provider>
@@ -202,7 +208,7 @@ export default{
         return{
             title: "New Election",
             activeTab: 0,
-            name: "",
+            name: "My Election",
             description: "",
             dateNow: new Date(),
             startDate: null,
@@ -215,7 +221,11 @@ export default{
             canShowRealtime: true,
             votingOptions: [
                 {
-                    name: "",
+                    name: "Option A",
+                    description: ""
+                },
+                {
+                    name: "Option B",
                     description: ""
                 }
             ],
@@ -288,6 +298,12 @@ export default{
     created() {
         this.$emit('title',this.title)
         this.$emit('back',"")
+        this.startDate = new Date()
+        this.endDate = new Date()
+
+        this.startDate.setDate(this.startDate.getDate() + 1)
+        this.endDate.setDate(this.endDate.getDate() + 1)
+        this.endDate.setHours(this.endDate.getHours() + 3)
     }
 }
 </script>

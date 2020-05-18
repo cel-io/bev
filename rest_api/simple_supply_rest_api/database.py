@@ -165,10 +165,11 @@ class Database(object):
 
     async def fetch_election_resource(self, election_id=None):
         fetch = """
-                 SELECT * FROM elections 
+                 SELECT *, v.name AS "admin_name"
+                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                  WHERE election_id='{0}'
-                 AND ({1}) >= start_block_num
-                 AND ({1}) < end_block_num;
+                 AND ({1}) >= e.start_block_num
+                 AND ({1}) < e.end_block_num;
                  """.format(election_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:

@@ -22,6 +22,12 @@
             </template>
 
             <template slot="end">
+                <b-navbar-dropdown>
+                    <template slot="label"><span class="has-margin-right-10">{{user.name}}</span> <b-tag type="is-volby" rounded>{{user.type}}</b-tag></template>
+                    <b-navbar-item @click="logout">
+                        Logout
+                    </b-navbar-item>
+                </b-navbar-dropdown>
             </template>
         </b-navbar>
         <div class="container is-fluid section has-padding-top-0">
@@ -40,7 +46,8 @@ export default{
     data: function(){
         return{
             title: "",
-            backRedirect: ""
+            backRedirect: "",
+            user: this.$store.getters.user
         }
     },
     methods: {
@@ -49,6 +56,21 @@ export default{
         },
         onBackButton: function(redirect){
             this.backRedirect = redirect
+        },
+        logout(){
+            axios.post("api/logout")
+            .then(response => {
+                this.$store.commit('logout')
+                this.$router.push("/home").catch(e => {})
+            })
+            .catch(error => {
+                if(error.response.status == 401){
+                    this.$store.commit('logout')
+                    this.$router.push("/home").catch(e => {})
+                }else{
+                    console.log(error)
+                }                                
+            })            
         }
     }
 }

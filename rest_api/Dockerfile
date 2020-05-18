@@ -31,6 +31,7 @@ RUN pip3 install \
     aiohttp \
     aiopg \
     bcrypt \
+    diskcache \
     itsdangerous \
     pycrypto \
     psycopg2-binary

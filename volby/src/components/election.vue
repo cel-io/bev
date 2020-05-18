@@ -44,6 +44,11 @@
                                             </countdown>
                                         </div>
                                     </div>
+                                    <div class="columns">
+                                        <div class="column">
+                                            <span class="has-text-weight-bold">Created By:</span> {{election.admin_name}}
+                                        </div>                                        
+                                    </div>
                                 </b-tab-item>
                                 <b-tab-item label="Ballot">
                                     <div class="card box" v-for="votingOption in votingOptions" :key="votingOption.id">
