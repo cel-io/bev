@@ -3,12 +3,12 @@
         <section>
             <div class="card box has-margin-bottom-40">
                 <div class="card-content has-padding-bottom-0">
-                    <validation-observer ref="observer" v-slot="{ handleSubmit }">
+                    <validation-observer ref="observer">
                         <b-tabs v-model="activeTab" expanded>
                             <b-tab-item label="Informations">
                                 <div class="columns">
                                     <div class="column">
-                                        <validation-provider rules="required" name="Name" v-slot="validationContext">
+                                        <validation-provider vid="name" rules="required" name="Name" v-slot="validationContext">
                                             <b-field :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <template slot="label">Name <span class="has-text-danger">*</span></template>
                                                 <b-input v-model="name"></b-input>
@@ -25,7 +25,7 @@
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <validation-provider rules="required" name="Start Date" v-slot="validationContext">
+                                        <validation-provider vid="startDate" rules="required" name="Start Date" v-slot="validationContext">
                                             <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <template slot="label">Start Date <span class="has-text-danger">*</span></template>
                                                 <b-datetimepicker rounded v-model="startDate" placeholder="Click to select..." icon="calendar-today" :datepicker="{ showWeekNumber }" :timepicker="{ enableSeconds, hourFormat: format }" :min-datetime="dateNow" :max-datetime="endDate" horizontal-time-picker>
@@ -34,7 +34,7 @@
                                         </validation-provider>
                                     </div>
                                     <div class="column">
-                                        <validation-provider rules="required" name="End Date" v-slot="validationContext">
+                                        <validation-provider vid="endDate" rules="required" name="End Date" v-slot="validationContext">
                                             <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <template slot="label">End Date <span class="has-text-danger">*</span></template>
                                                 <b-datetimepicker rounded v-model="endDate" placeholder="Click to select..." icon="calendar-today" :datepicker="{ showWeekNumber }" :timepicker="{ enableSeconds, hourFormat: format }" :min-datetime="startDate ? startDate : dateNow" horizontal-time-picker>
@@ -45,7 +45,7 @@
                                 </div>
                                 <div class="columns is-vcentered">
                                     <div class="column">
-                                        <validation-provider rules="required" name="Results Exposure" v-slot="validationContext">
+                                        <validation-provider vid="resultsExposure" rules="required" name="Results Exposure" v-slot="validationContext">
                                             <b-field label="Results Exposure" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-select v-model="resultsPermission" expanded>
                                                     <option value="PRIVATE">Private</option>
@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="columns">
                                     <div class="column">
-                                        <validation-provider rules="required" name="Mutable Votes" v-slot="validationContext">
+                                        <validation-provider vid="mutableVotes" rules="required" name="Mutable Votes" v-slot="validationContext">
                                             <b-field label="Mutable Votes" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-switch v-model="canChangeVote">
                                                     {{canChangeVote ? 'Voters can change their vote multiple times after their initial choice' : "Voters can't change their vote after their initial choice"}}
@@ -70,7 +70,7 @@
                                         </validation-provider>
                                     </div>
                                     <div class="column">
-                                        <validation-provider rules="required" name="Realtime Results Exposure" v-slot="validationContext">
+                                        <validation-provider vid="realtimeResults" rules="required" name="Realtime Results Exposure" v-slot="validationContext">
                                             <b-field label="Realtime Results Exposure" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                 <b-switch v-model="canShowRealtime">
                                                     {{canShowRealtime ? 'Results can be viewed in real time' : "Results can't be viewed in real time"}}
@@ -91,7 +91,7 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider :rules="{
+                                                <validation-provider :vid="'optionName_' + index" :rules="{
                                                     required: true,
                                                     custom_rule: votingOptions
                                                     }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
@@ -102,7 +102,7 @@
                                                 </validation-provider>
                                             </div>
                                             <div class="column">
-                                                <validation-provider rules="" :name="(index + 1) + '. Option Description'" v-slot="validationContext">
+                                                <validation-provider :vid="'optionDescription_' + index" rules="" :name="(index + 1) + '. Option Description'" v-slot="validationContext">
                                                     <b-field :label="(index + 1) + '. Option Description'" expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <b-input v-model="votingOption.description"></b-input>
                                                     </b-field>
@@ -132,7 +132,7 @@
                                     <div class="card-content">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <validation-provider :rules="{
+                                                <validation-provider :vid="'voterId_' + index" :rules="{
                                                     required: true,
                                                     email: true,
                                                     unique: pollBook
@@ -144,7 +144,7 @@
                                                 </validation-provider>
                                             </div>
                                             <div class="column">
-                                                <validation-provider rules="required|alpha_spaces" :name="(index + 1) + '. Voter Name '" v-slot="validationContext">
+                                                <validation-provider :vid="'voterName_' + index" rules="required|alpha_spaces" :name="(index + 1) + '. Voter Name '" v-slot="validationContext">
                                                     <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <template slot="label">{{(index + 1) + '. Voter Name'}} <span class="has-text-danger">*</span></template>
                                                         <b-input v-model="voter.name"></b-input>
@@ -167,7 +167,7 @@
                                     <b-button rounded @click="prevTab()" icon-left="arrow-left">Previous</b-button>
                                 </b-field>
                                 <b-field class="is-pulled-right">
-                                    <b-button type="is-primary" rounded @click.prevent="handleSubmit(submit)">Submit</b-button>
+                                    <b-button type="is-primary" rounded @click.prevent="submit">Submit</b-button>
                                 </b-field>
                             </b-tab-item>
                         </b-tabs>
@@ -270,6 +270,47 @@ export default{
             return timestamp/1000;
         },
         submit(){
+            this.$refs.observer.validate()
+
+            if(!this.$refs.observer.valid){
+                if(this.$refs.observer.errors.name.length > 0 || this.$refs.observer.errors.startDate.length > 0 || this.$refs.observer.errors.endDate.length > 0
+                || this.$refs.observer.errors.resultsExposure.length > 0 || this.$refs.observer.errors.realtimeResults.length > 0 || this.$refs.observer.errors.mutableVotes.length > 0){
+                    this.$buefy.snackbar.open({
+                        message: 'Input errors on the <b>Informations</b> tab.',
+                        type: 'is-warning',
+                        position: 'is-bottom-left',
+                        actionText: 'Go There',
+                        indefinite: true,
+                        queue: false,
+                        onAction: () => {
+                            this.activeTab = 0
+                        }
+                    })
+                }
+
+                let ballotFields = Object.keys(this.$refs.observer.errors).filter(key => {
+                    return key.startsWith("optionName");
+                })
+
+                for(let field in ballotFields){
+                    if(this.$refs.observer.errors[ballotFields[field]].length > 0){
+                        this.$buefy.snackbar.open({
+                            message: 'Input errors on the <b>Ballot</b> tab.',
+                            type: 'is-warning',
+                            position: 'is-bottom-left',
+                            actionText: 'Go There',
+                            indefinite: true,
+                            queue: false,
+                            onAction: () => {
+                                this.activeTab = 1
+                            }
+                        })
+                    }
+                }
+
+                return
+            }              
+
             axios.post('api/elections', {
                 "name": this.name,
                 "description": this.description,
@@ -303,7 +344,7 @@ export default{
 
         this.startDate.setDate(this.startDate.getDate() + 1)
         this.endDate.setDate(this.endDate.getDate() + 1)
-        this.endDate.setHours(this.endDate.getHours() + 3)
+        this.endDate.setHours(this.endDate.getHours() + 3)       
     }
 }
 </script>
