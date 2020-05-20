@@ -165,7 +165,7 @@ class Database(object):
 
     async def fetch_election_resource(self, election_id=None):
         fetch = """
-                 SELECT *, v.name AS "admin_name"
+                 SELECT e.*, v.name AS "admin_name"
                  FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                  WHERE election_id='{0}'
                  AND ({1}) >= e.start_block_num

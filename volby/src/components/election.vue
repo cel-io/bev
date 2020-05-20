@@ -171,6 +171,8 @@ export default{
                     this.canUpdate = false
                 }
 
+                console.log(this.election)
+
                 axios.get('api/elections/'+ this.electionId +'/voting_options')
                 .then(response => {
                     this.votingOptions = response.data
@@ -294,8 +296,6 @@ export default{
         this.getElection()
 
         this.fillData()
-
-
     }
 }
 </script>

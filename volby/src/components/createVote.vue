@@ -10,7 +10,7 @@
                         <span>{{ this.election.description }}</span>
                     </b-field>
                     <p class="content title is-6">
-                        <b> Voting Options </b>
+                        <b> Ballot </b>
                     </p>
                     <b-field v-for="(voting_option, index) in this.voting_options_array" :key="index">
                         <b-radio v-model="votingOptionSelected" type="is-sucess" name="name" :native-value="voting_option">
@@ -40,8 +40,6 @@ export default{
     },
     methods: {
         submit(){
-            console.log(this.votingOptionSelected)
-
             if(this.votingOptionSelected.name == "NULL" || this.votingOptionSelected.name == "BLANK" ){
 
                 this.$buefy.dialog.confirm({

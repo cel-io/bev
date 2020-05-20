@@ -206,6 +206,7 @@ extend('custom_rule', {
 export default{
     data(){
         return{
+            formStatus: false,
             title: "New Election",
             activeTab: 0,
             name: "My Election",
@@ -271,8 +272,11 @@ export default{
         },
         submit(){
             this.$refs.observer.validate()
+            .then(result => {
+                this.formStatus = result
+            })
 
-            if(!this.$refs.observer.valid){
+            if(!this.formStatus){
                 if(this.$refs.observer.errors.name.length > 0 || this.$refs.observer.errors.startDate.length > 0 || this.$refs.observer.errors.endDate.length > 0
                 || this.$refs.observer.errors.resultsExposure.length > 0 || this.$refs.observer.errors.realtimeResults.length > 0 || this.$refs.observer.errors.mutableVotes.length > 0){
                     this.$buefy.snackbar.open({
@@ -309,7 +313,8 @@ export default{
                 }
 
                 return
-            }              
+            }      
+            
 
             axios.post('api/elections', {
                 "name": this.name,
