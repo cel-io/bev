@@ -30,7 +30,7 @@
                                     </countdown>
                                 </div>
                                 <div class="column is-4 has-text-right">
-                                    <b-button class="has-text-right" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
+                                    <b-button class="has-text-right" tag="router-link" :to="'/election/' + election.election_id" rounded type="is-info">Open</b-button>
                                 </div>
                             </div>
                         </div>
@@ -57,47 +57,47 @@
                 </template>
                 <template v-else>
                     <b-table :data="pastElections"
-                            :paginated="isPaginated"
-                            :per-page="perPage"
-                            :current-page.sync="currentPage"
-                            :pagination-simple="isPaginationSimple"
-                            :pagination-position="paginationPosition"
-                            default-sort="start_timestamp"
-                            :default-sort-direction="'desc'"
-                            aria-next-label="Next page"
-                            aria-previous-label="Previous page"
-                            aria-page-label="Page"
-                            aria-current-label="Current page">
+                    :paginated="isPaginated"
+                    :per-page="perPage"
+                    :current-page.sync="currentPage"
+                    :pagination-simple="isPaginationSimple"
+                    :pagination-position="paginationPosition"
+                    default-sort="start_timestamp"
+                    :default-sort-direction="'desc'"
+                    aria-next-label="Next page"
+                    aria-previous-label="Previous page"
+                    aria-page-label="Page"
+                    aria-current-label="Current page">
 
-                        <template slot-scope="props">
-                            <b-table-column field="name" label="Name" sortable>
-                                {{ props.row.name }}
-                            </b-table-column>
-                            <b-table-column field="admin_name" label="Created By" sortable>
-                                {{ props.row.admin_name }}
-                            </b-table-column>
-                            <b-table-column field="start_timestamp" label="Start Time" sortable>
-                                {{ toDate(props.row.start_timestamp) }}
-                            </b-table-column>
-                            <b-table-column field="end_timestamp" label="End Time" sortable>
-                                {{ toDate(props.row.start_timestamp) }}
-                            </b-table-column>
-                            <b-table-column field="voted" label="Participation" centered sortable>
-                                <span v-if="showParticipation[props.row.id]" >
-                                    <b-tag v-if="props.row.voted" type="is-success" rounded>Voted</b-tag>
-                                    <b-tag v-else type="is-danger" rounded>Didn't Vote</b-tag>
-                                </span>
-                                <b-button rounded size="is-small" @click="toggleParticipation(props.row.id)" :icon-left="showParticipation[props.row.id] ? 'eye-off-outline' : 'eye-outline'"></b-button>
-                            </b-table-column>
-                            <b-table-column label="Actions">
-                                <b-button tag="router-link" :to="'/election/' + props.row.election_id" rounded icon-left="plus" type="is-info" size="is-small">Info</b-button>
-                            </b-table-column>
-                        </template>
-                    </b-table>
-                </template>
-            </div>
+                    <template slot-scope="props">
+                        <b-table-column field="name" label="Name" sortable>
+                            {{ props.row.name }}
+                        </b-table-column>
+                        <b-table-column field="admin_name" label="Created By" sortable>
+                            {{ props.row.admin_name }}
+                        </b-table-column>
+                        <b-table-column field="start_timestamp" label="Start Time" sortable>
+                            {{ toDate(props.row.start_timestamp) }}
+                        </b-table-column>
+                        <b-table-column field="end_timestamp" label="End Time" sortable>
+                            {{ toDate(props.row.start_timestamp) }}
+                        </b-table-column>
+                        <b-table-column field="voted" label="Participation" centered sortable>
+                            <span v-if="showParticipation[props.row.id]" >
+                                <b-tag v-if="props.row.voted" type="is-success" rounded>Voted</b-tag>
+                                <b-tag v-else type="is-danger" rounded>Didn't Vote</b-tag>
+                            </span>
+                            <b-button rounded size="is-small" @click="toggleParticipation(props.row.id)" :icon-left="showParticipation[props.row.id] ? 'eye-off-outline' : 'eye-outline'"></b-button>
+                        </b-table-column>
+                        <b-table-column label="Actions">
+                            <b-button tag="router-link" :to="'/election/' + props.row.election_id" rounded icon-left="plus" type="is-info" size="is-small">Info</b-button>
+                        </b-table-column>
+                    </template>
+                </b-table>
+            </template>
         </div>
     </div>
+</div>
 </template>
 <script>
 import {timestampToDate} from '../helpers.js'
@@ -115,7 +115,10 @@ export default{
             isPaginated: true,
             isPaginationSimple: false,
             paginationPosition: 'bottom',
-            currentTimestamp: Math.floor(new Date().getTime() / 1000)
+            currentTimestamp: Math.floor(new Date().getTime() / 1000),
+            canUpdate: false,
+            alreadyVote: false,
+            user: {}
         }
     },
     methods:{
@@ -159,12 +162,12 @@ export default{
         },
         toggleParticipation(id){
             this.$set(this.showParticipation, id, !this.showParticipation[id])
-        }
+        },
     },
     created() {
         this.$emit('title',this.title)
         this.$emit('back',"")
         this.getCurrentElections()
-    }
+    },
 }
 </script>

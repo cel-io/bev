@@ -342,10 +342,20 @@ class RouteHandler(object):
 
         return json_response(vote)
 
-    async def get_vote_voter_id(self, request):
+    async def list_votes(self, request):
         private_key, public_key = await self._authorize(request)
         voter_id = request.match_info.get('voterId', '')
-        vote = await self._database.fetch_vote_by_voter_id_resource(voter_id=voter_id)
+        votes = await self._database.fetch_votes_resource(voter_id=voter_id)
+
+        return json_response(votes)
+
+    async def get_vote_election(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        voter_id = request.match_info.get('voterId', '')
+        election_id = request.match_info.get('electionId', '')
+        vote = await self._database.fetch_vote_in_election_resource(voter_id=voter_id,
+                                                                    election_id=election_id)
 
         return json_response(vote)
 

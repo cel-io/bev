@@ -15,8 +15,14 @@
                             <span class="is-size-3 has-margin-right-5">{{election.name}}</span>
                         </div>
                         <div class="column is-6 has-text-right" v-if="election.end_timestamp > currentTimestamp">
-                            <b-tooltip type="is-dark" label="Voters can change their vote multiple times after their initial choice"><b-tag type="is-success" class="has-margin-top-5 has-margin-right-5" rounded>Mutable Votes</b-tag></b-tooltip>
-                            <b-button tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
+                            <b-tooltip v-if="!this.canUpdate && this.alreadyVote" type="is-dark" label="You already have submitted a vote. The option multible votes is disabled for this election">
+                                <b-tag class="has-margin-top-5 has-margin-right-5">Can't Vote any more.</b-tag>
+                            </b-tooltip>
+                            <b-tooltip v-else-if="this.canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
+                                <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
+                            </b-tooltip>
+                            <b-button v-if="this.canUpdate && this.alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
+                            <b-button v-else-if="!this.alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
                         </div>
                         <div class="column is-6 has-text-right" v-else>
                             <b-tag type="is-info" rounded>Terminated</b-tag>
@@ -47,7 +53,7 @@
                                     <div class="columns">
                                         <div class="column">
                                             <span class="has-text-weight-bold">Created By:</span> {{election.admin_name}}
-                                        </div>                                        
+                                        </div>
                                     </div>
                                 </b-tab-item>
                                 <b-tab-item label="Ballot">
@@ -155,8 +161,6 @@ export default{
                 },
                 responsive: true
             },
-            canVote: null,
-            canUpdate: false,
         }
     },
     methods: {
@@ -217,15 +221,18 @@ export default{
                             }
                             this.user =  this.$store.getters.user
 
-                            axios.get('api/votes/'+this.user.voter_id+'/voter')
+                            axios.get('api/votes/'+this.user.voter_id+'/election/'+this.election.election_id)
                             .then(response => {
                                 this.vote = response.data
+                                console.log(this.vote)
 
                                 if(this.vote == null){
                                     this.alreadyVote = false
                                 }else{
                                     this.alreadyVote = true
                                 }
+
+                                console.log(this.alreadyVote)
 
                                 this.isLoading = false
                             })
