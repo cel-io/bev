@@ -9,6 +9,7 @@ from Crypto.Cipher import AES
 from itsdangerous import BadSignature
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
+from simple_supply_rest_api.errors import ApiConflict
 from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiNotFound
 from simple_supply_rest_api.errors import ApiUnauthorized
@@ -65,11 +66,7 @@ class RouteHandler(object):
         for voting_option in voting_options:
             voting_option_id = uuid.uuid1().hex
 
-            await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
-                                                                        name=voting_option.get('name'),
-                                                                        election_id=election_id)
-
-            await self._messenger.send_create_voting_option_transaction(
+            self._messenger.send_create_voting_option_transaction(
                 private_key=private_key,
                 voting_option_id=voting_option_id,
                 name=voting_option.get('name'),
@@ -77,6 +74,10 @@ class RouteHandler(object):
                 election_id=election_id,
                 timestamp=get_time()
             )
+
+            await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
+                                                                        name=voting_option.get('name'),
+                                                                        election_id=election_id)
 
         for poll_book in body.get('poll_book'):
             await self._messenger.send_create_poll_registration_transaction(
@@ -93,6 +94,9 @@ class RouteHandler(object):
         body = await decode_request(request)
         required_fields = ['voter_id', 'name', 'type', 'password']
         validate_fields(required_fields, body)
+
+        if await self._database.is_voter_created(body.get("voter_id")) is not None:
+            raise ApiConflict("Voter ID must be unique")
 
         public_key, private_key = self._messenger.get_new_key_pair()
 

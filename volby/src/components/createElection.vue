@@ -206,7 +206,6 @@ extend('custom_rule', {
 export default{
     data(){
         return{
-            formStatus: false,
             title: "New Election",
             activeTab: 0,
             name: "My Election",
@@ -273,50 +272,46 @@ export default{
         submit(){
             this.$refs.observer.validate()
             .then(result => {
-                this.formStatus = result
-            })
-
-            if(!this.formStatus){
-                if(this.$refs.observer.errors.name.length > 0 || this.$refs.observer.errors.startDate.length > 0 || this.$refs.observer.errors.endDate.length > 0
-                || this.$refs.observer.errors.resultsExposure.length > 0 || this.$refs.observer.errors.realtimeResults.length > 0 || this.$refs.observer.errors.mutableVotes.length > 0){
-                    this.$buefy.snackbar.open({
-                        message: 'Input errors on the <b>Informations</b> tab.',
-                        type: 'is-warning',
-                        position: 'is-bottom-left',
-                        actionText: 'Go There',
-                        indefinite: true,
-                        queue: false,
-                        onAction: () => {
-                            this.activeTab = 0
-                        }
-                    })
-                }
-
-                let ballotFields = Object.keys(this.$refs.observer.errors).filter(key => {
-                    return key.startsWith("optionName");
-                })
-
-                for(let field in ballotFields){
-                    if(this.$refs.observer.errors[ballotFields[field]].length > 0){
+                if(!result){
+                    if(this.$refs.observer.errors.name.length > 0 || this.$refs.observer.errors.startDate.length > 0 || this.$refs.observer.errors.endDate.length > 0
+                    || this.$refs.observer.errors.resultsExposure.length > 0 || this.$refs.observer.errors.realtimeResults.length > 0 || this.$refs.observer.errors.mutableVotes.length > 0){
                         this.$buefy.snackbar.open({
-                            message: 'Input errors on the <b>Ballot</b> tab.',
+                            message: 'Input errors on the <b>Informations</b> tab.',
                             type: 'is-warning',
                             position: 'is-bottom-left',
                             actionText: 'Go There',
                             indefinite: true,
                             queue: false,
                             onAction: () => {
-                                this.activeTab = 1
+                                this.activeTab = 0
                             }
                         })
                     }
+
+                    let ballotFields = Object.keys(this.$refs.observer.errors).filter(key => {
+                        return key.startsWith("optionName");
+                    })
+
+                    for(let field in ballotFields){
+                        if(this.$refs.observer.errors[ballotFields[field]].length > 0){
+                            this.$buefy.snackbar.open({
+                                message: 'Input errors on the <b>Ballot</b> tab.',
+                                type: 'is-warning',
+                                position: 'is-bottom-left',
+                                actionText: 'Go There',
+                                indefinite: true,
+                                queue: false,
+                                onAction: () => {
+                                    this.activeTab = 1
+                                }
+                            })
+                        }
+                    }
+
+                    return
                 }
 
-                return
-            }      
-            
-
-            axios.post('api/elections', {
+                axios.post('api/elections', {
                 "name": this.name,
                 "description": this.description,
                 "start_timestamp": this.toTimestamp(this.startDate),
@@ -326,18 +321,19 @@ export default{
                 "can_show_realtime": this.canShowRealtime,
                 "voting_options": this.votingOptions,
                 "poll_book": this.pollBook
-            })
-            .then(response => {
-                this.$buefy.toast.open({
-                    duration: 3000,
-                    message: 'Election created successfully!',
-                    type: 'is-success'
                 })
+                .then(response => {
+                    this.$buefy.toast.open({
+                        duration: 3000,
+                        message: 'Election created successfully!',
+                        type: 'is-success'
+                    })
 
-                this.$router.push("/dashboard").catch(e => {})
-            })
-            .catch(error => {
-                console.log(error)
+                    this.$router.push("/dashboard").catch(e => {})
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             })
         }
     },

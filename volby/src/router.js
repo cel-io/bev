@@ -29,10 +29,10 @@ const authGuard = (to, from, next) => {
 }
 
 const routes = [
-    {path: '/home', component: Home, name: 'home'},
+    {path: '/', component: Home, name: 'home'},
     {path: '/login', component: Login, name: 'login'},
     {path: '/register', component: Register, name: 'register'},
-    {path: '/',component: MainLayout, redirect: 'dashboard',
+    {path: '',component: MainLayout, redirect: 'dashboard',
         children: [
             {path: 'dashboard', component: Dashboard, name: 'dashboard'},
             {path: 'newelection', component: CreateElection, name: 'createElection'},

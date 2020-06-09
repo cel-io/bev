@@ -157,11 +157,23 @@ class Database(object):
         SELECT * FROM voters WHERE """ + ("""voter_id""" if voter_id else """public_key""") + """='{0}'
         AND ({1}) >= start_block_num
         AND ({1}) < end_block_num;
-        """.format(voter_id if voter_id else public_key,LATEST_BLOCK_NUM)
+        """.format(voter_id if voter_id else public_key, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
             return await cursor.fetchone()
+
+    async def is_voter_created(self, voter_id):
+        fetch = """
+            SELECT voter_id
+            FROM voters
+            WHERE voter_id = '{0}';
+        """.format(voter_id)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
 
     async def fetch_election_resource(self, election_id=None):
         fetch = """
