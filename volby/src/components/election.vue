@@ -77,25 +77,36 @@
                                     <div class=" has-text-centered" v-if="this.num_votes_all == 0">
                                         <span>No Votes found to Generate Chart.</span>
                                     </div>
-                                    <div v-else class="title is-3 has-text-centered">
-                                        <div v-if="election.end_timestamp > currentTimestamp">
-                                            <strong>Live Results - Total Votes</strong>
-                                        </div>
-                                        <div v-else>
-                                            <strong>Results - Total Votes</strong>
-                                        </div>
-                                        <div class="small">
-                                            <pie-chart :chart-data="datacollection1"></pie-chart>
-                                        </div>
-                                        <br>
-                                        <div v-if="election.end_timestamp > currentTimestamp">
-                                            <strong>Live Results - Number of Votes Submitted and Missing</strong>
-                                        </div>
-                                        <div v-else>
-                                            <strong>Results - Number of Votes Submitted and Missing</strong>
-                                        </div>
-                                        <div class="small">
-                                            <bar-chart :chart-data="datacollection2" :options="options"></bar-chart>
+                                    <div v-else class="has-text-centered">
+                                        <div class="columns">
+                                            <div class="column is-6">
+                                                <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
+                                                    <strong>Live Results - Total Votes</strong>
+                                                </div>
+                                                <div class="title is-3" v-else>
+                                                    <strong>Results - Total Votes</strong>
+                                                </div>
+                                                <div v-if="this.switchGraph" class="small">
+                                                    <pie-chart :chart-data="datacollection1"></pie-chart>
+                                                </div>
+                                                <div v-else class="small">
+                                                    <bar-chart :chart-data="datacollection1"></bar-chart>
+                                                </div>
+                                                <b-switch v-model="switchGraph"> Show BarChart </b-switch>
+                                            </div>
+                                            <br>
+                                            <div class="column is-6">
+                                                <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
+                                                    <strong>Live Results - Number of Votes Submitted</strong>
+                                                </div>
+                                                <div class="title is-3" v-else>
+                                                    <strong>Results - Percentage of Votes Submitted</strong>
+                                                </div>
+                                                <div>
+                                                    <span class="title is-5"> Votes Submitted - {{ this.percentage_n_vote }} % </span>
+                                                    <span class="title is-5"> Votes Missing - {{ this.percentage_n_missing }} % </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </b-tab-item>
@@ -132,13 +143,15 @@ export default{
             currentTimestamp: Math.floor(new Date().getTime() / 1000),
             activeTab: 0,
             datacollection1: null,
-            datacollection2: null,
-            votingOptionsAux: [],
             countLabels: [],
             numberVotes: [],
             colors:[],
             pollBookAux: [],
             num_votes_all: 0,
+            num_votes_missing: 0,
+            percentage_n_vote: 0,
+            percentage_n_missing: 0,
+            switchGraph: 0,
             options: {
                 scales: {
                     yAxes: [{
@@ -195,30 +208,42 @@ export default{
 
                     axios.get('api/elections/'+this.electionId+'/number_of_votes')
                     .then(response => {
-                        this.votingOptionsAux = response.data
+                        let votingOptionsAux = response.data
 
-                        this.votingOptionsAux.forEach(voting_option => {
+                        votingOptionsAux.sort((a,b) => {
+                            if(a.name < b.name) { return -1; }
+                            if(a.name > b.name) { return 1; }
+                            return 0;
+                        })
+
+                         votingOptionsAux.forEach(voting_option => {
                             this.countLabels.push(voting_option.name.toUpperCase())
                             this.numberVotes.push(voting_option.num_votes)
                             this.num_votes_all += voting_option.num_votes
                             this.colors.push("#"+Math.floor(Math.random()*16777215).toString(16))
                         })
 
+                        this.countLabels.forEach((element,index) => {
+                            if(element == "NULL" || element == "BLANK"){
+                                this.countLabels.splice(index,1)[0]
+                                let numVotes = this.numberVotes.splice(index,1)[0]
+
+                                console.log(numVotes)
+
+                                this.countLabels.push(element)
+                                this.numberVotes.push(numVotes)
+                            }
+                        })
+
                         axios.get('api/elections/'+this.electionId+'/poll_book')
                         .then(response => {
                             this.pollBookAux = response.data
-                            var num_votes_missing = this.pollBookAux.length - this.num_votes_all
+                            this.num_total_votes = this.pollBookAux.length
+                            this.num_votes_missing = this.num_total_votes - this.num_votes_all
 
-                            this.datacollection2 = {
-                                labels: ["Submitted Votes","Votes Missing"],
-                                datasets: [
-                                    {
-                                        label: 'Data',
-                                        backgroundColor: "#3b5ce1",
-                                        data: [this.num_votes_all, num_votes_missing]
-                                    }
-                                ]
-                            }
+                            this.percentage_n_vote = (this.num_votes_all * 100) / this.num_total_votes
+                            this.percentage_n_missing = (this.num_votes_missing * 100) / this.num_total_votes
+
                             this.user =  this.$store.getters.user
 
                             axios.get('api/votes/'+this.user.voter_id+'/election/'+this.election.election_id)
@@ -231,8 +256,6 @@ export default{
                                 }else{
                                     this.alreadyVote = true
                                 }
-
-                                console.log(this.alreadyVote)
 
                                 this.isLoading = false
                             })
@@ -284,7 +307,7 @@ export default{
                 labels: this.countLabels,
                 datasets: [
                     {
-                        label: 'Data One',
+                        label: 'Votes',
                         backgroundColor: this.colors,
                         data: this.numberVotes
                     }
@@ -308,7 +331,7 @@ export default{
 </script>
 <style>
 .small {
-    max-width: 600px;
+    max-width: 500px;
     margin:  30px auto;
 }
 </style>
