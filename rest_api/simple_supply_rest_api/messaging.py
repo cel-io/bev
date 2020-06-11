@@ -285,17 +285,24 @@ class Messenger(object):
         # Send transaction to validator
         submit_request = client_batch_submit_pb2.ClientBatchSubmitRequest(
             batches=[batch])
-        await self._connection.send(
+        res = await self._connection.send(
             validator_pb2.Message.CLIENT_BATCH_SUBMIT_REQUEST,
-            submit_request.SerializeToString())
+            submit_request.SerializeToString(),
+            500
+        )
+
+        submit_response = client_batch_submit_pb2.ClientBatchSubmitResponse()
+        submit_response.ParseFromString(res.content)
 
         # Send status request to validator
         batch_id = batch.header_signature
         status_request = client_batch_submit_pb2.ClientBatchStatusRequest(
-            batch_ids=[batch_id], wait=True)
+            batch_ids=[batch_id], wait=True, timeout=500)
         validator_response = await self._connection.send(
             validator_pb2.Message.CLIENT_BATCH_STATUS_REQUEST,
-            status_request.SerializeToString())
+            status_request.SerializeToString(),
+            500
+        )
 
         # Parse response
         status_response = client_batch_submit_pb2.ClientBatchStatusResponse()
@@ -307,4 +314,6 @@ class Messenger(object):
         elif status == client_batch_submit_pb2.ClientBatchStatus.PENDING:
             raise ApiInternalError('Transaction submitted but timed out')
         elif status == client_batch_submit_pb2.ClientBatchStatus.UNKNOWN:
-            raise ApiInternalError('Something went wrong. Try again later')
+            raise ApiInternalError('Something went wrong. Try again later ' + str(status_response
+                                                                                  .batch_statuses[0].
+                                                                                  invalid_transactions[0].message))

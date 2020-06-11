@@ -39,6 +39,20 @@
             </div>            
             <router-view @title="onTitle" @back="onBackButton"></router-view>
         </div>
+        <footer class="footer volby-footer">
+            <div class="columns is-vcentered has-text-centered">
+                <div class="column is-3">
+                    <img class="image is-horizontal-center" width="50%" src="img/ipleiria.png" />
+                </div>
+                <div class="column is-6">
+                    <p>Copyright © 2020 Bernardo Figueiredo and Célio Mendes @ IPLeiria.</p>
+                    <p>All Rights Reserved</p>
+                </div>
+                <div class="column is-3">
+                    <b-button type="is-text" tag="router-link" to="/about" target='_blank'>About Volby</b-button>
+                </div>
+            </div>
+        </footer>
     </div>
 </template>
 <script>
@@ -61,12 +75,12 @@ export default{
             axios.post("api/logout")
             .then(response => {
                 this.$store.commit('logout')
-                this.$router.push("/home").catch(e => {})
+                this.$router.push("/").catch(e => {})
             })
             .catch(error => {
                 if(error.response.status == 401){
                     this.$store.commit('logout')
-                    this.$router.push("/home").catch(e => {})
+                    this.$router.push("/").catch(e => {})
                 }else{
                     console.log(error)
                 }                                

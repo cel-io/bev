@@ -49,16 +49,13 @@ export default{
                     type: 'is-warning',
                     hasIcon: true,
                     onConfirm: () => {
-                        this.$buefy.toast.open('Vote submitted!')
-
                         axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                         .then(response => {
                             this.$router.push("/dashboard")
                             this.$buefy.toast.open({
-                                duration: 5000,
-                                message: 'Vote submitted',
-                                position: 'is-top-right',
-                                type: 'is-sucess'
+                                duration: 3000,
+                                message: 'Vote submitted!',
+                                type: 'is-success'
                             })
                         })
                         .catch(error => {
@@ -72,10 +69,9 @@ export default{
                 .then(response => {
                     this.$router.push("/dashboard")
                     this.$buefy.toast.open({
-                        duration: 5000,
-                        message: 'Vote submitted',
-                        position: 'is-top-right',
-                        type: 'is-sucess'
+                        duration: 3000,
+                        message: 'Vote submitted!',
+                        type: 'is-success'
                     })
                 })
                 .catch(error => {

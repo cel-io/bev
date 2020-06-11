@@ -14,6 +14,7 @@ import CreateVote from './components/createVote'
 import Elections from './components/elections.vue'
 import UpdateVote from './components/updateVote'
 import Election from './components/election'
+import About from './components/about'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -32,6 +33,7 @@ const routes = [
     {path: '/', component: Home, name: 'home'},
     {path: '/login', component: Login, name: 'login'},
     {path: '/register', component: Register, name: 'register'},
+    {path: '/about', component: About, name: 'about'},
     {path: '',component: MainLayout, redirect: 'dashboard',
         children: [
             {path: 'dashboard', component: Dashboard, name: 'dashboard'},

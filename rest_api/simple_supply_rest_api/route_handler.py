@@ -66,7 +66,7 @@ class RouteHandler(object):
         for voting_option in voting_options:
             voting_option_id = uuid.uuid1().hex
 
-            self._messenger.send_create_voting_option_transaction(
+            await self._messenger.send_create_voting_option_transaction(
                 private_key=private_key,
                 voting_option_id=voting_option_id,
                 name=voting_option.get('name'),
@@ -307,6 +307,13 @@ class RouteHandler(object):
                 '{} was not found'.format(election_id))
 
         return json_response(poll_book)
+
+    async def count_poll_registrations(self, request):
+        private_key, public_key = await self._authorize(request)
+        election_id = request.match_info.get('electionId', '')
+        count_poll_book = await self._database.count_poll_book(election_id=election_id)
+
+        return json_response(count_poll_book)
 
     async def list_voting_options_election(self, request):
         private_key, public_key = await self._authorize(request)

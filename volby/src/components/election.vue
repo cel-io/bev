@@ -25,7 +25,7 @@
                             <b-button v-else-if="!this.alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
                         </div>
                         <div class="column is-6 has-text-right" v-else>
-                            <b-tag type="is-info" rounded>Terminated</b-tag>
+                            <b-tag>Terminated</b-tag>
                         </div>
                     </div>
                     <div class="columns">
@@ -87,12 +87,12 @@
                                                     <strong>Results - Total Votes</strong>
                                                 </div>
                                                 <div v-if="this.switchGraph" class="small">
-                                                    <pie-chart :chart-data="datacollection1"></pie-chart>
+                                                    <pie-chart :chart-data="datacollectionPie"></pie-chart>
                                                 </div>
                                                 <div v-else class="small">
-                                                    <bar-chart :chart-data="datacollection1"></bar-chart>
+                                                    <bar-chart :chart-data="datacollectionBar"></bar-chart>
                                                 </div>
-                                                <b-switch v-model="switchGraph"> Show BarChart </b-switch>
+                                                <b-switch v-model="switchGraph"> Show Pie Chart </b-switch>
                                             </div>
                                             <br>
                                             <div class="column is-6">
@@ -103,8 +103,39 @@
                                                     <strong>Results - Percentage of Votes Submitted</strong>
                                                 </div>
                                                 <div>
-                                                    <span class="title is-5"> Votes Submitted - {{ this.percentage_n_vote }} % </span>
-                                                    <span class="title is-5"> Votes Missing - {{ this.percentage_n_missing }} % </span>
+                                                    <div class="columns">
+                                                        <div class="column is-6">
+                                                            <h6 class="title is-6">Participation Rate</h6>
+                                                            <b-message type="is-success" class="shadow">
+                                                                <h4 class="title is-4">{{ this.percentage_n_vote }} % Of Voters</h4>
+                                                            </b-message>
+                                                        </div>
+                                                        <div class="column is-6">
+                                                            <h6 class="title is-6">Abstention Rate</h6>
+                                                            <b-message type="is-danger" class="shadow">
+                                                                <h4 class="title is-4">{{ this.percentage_n_missing }} % Of Voters</h4>
+                                                            </b-message>
+                                                        </div>
+                                                    </div>
+                                                    <div class="columns">
+                                                        <div class="column is-6">
+                                                            <h6 class="title is-6">Participation Count</h6>
+                                                            <b-message type="is-success" class="shadow">
+                                                                <h4 class="title is-4">{{ this.num_votes_all }} Voters</h4>
+                                                            </b-message>
+                                                        </div>
+                                                        <div class="column is-6">
+                                                            <h6 class="title is-6">Abstention Count</h6>
+                                                            <b-message type="is-danger" class="shadow">
+                                                                <h4 class="title is-4">{{ this.num_votes_missing }} Voters</h4>
+                                                            </b-message>
+                                                        </div>
+                                                    </div>
+                                                    <div class="columns">
+                                                        <div class="column is-12">
+                                                            <h6 class="title is-6">Total Number of Poll Book Registrations: {{this.num_total_votes}}</h6>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -142,11 +173,11 @@ export default{
             isLoading: true,
             currentTimestamp: Math.floor(new Date().getTime() / 1000),
             activeTab: 0,
-            datacollection1: null,
+            datacollectionPie: null,
+            datacollectionBar: null,
             countLabels: [],
             numberVotes: [],
             colors:[],
-            pollBookAux: [],
             num_votes_all: 0,
             num_votes_missing: 0,
             percentage_n_vote: 0,
@@ -188,8 +219,6 @@ export default{
                     this.canUpdate = false
                 }
 
-                console.log(this.election)
-
                 axios.get('api/elections/'+ this.electionId +'/voting_options')
                 .then(response => {
                     this.votingOptions = response.data
@@ -228,28 +257,23 @@ export default{
                                 this.countLabels.splice(index,1)[0]
                                 let numVotes = this.numberVotes.splice(index,1)[0]
 
-                                console.log(numVotes)
-
                                 this.countLabels.push(element)
                                 this.numberVotes.push(numVotes)
                             }
                         })
 
-                        axios.get('api/elections/'+this.electionId+'/poll_book')
+                        axios.get('api/elections/'+this.electionId+'/poll_book/count')
                         .then(response => {
-                            this.pollBookAux = response.data
-                            this.num_total_votes = this.pollBookAux.length
+                            console.log(response.data)
+                            this.num_total_votes = response.data.count
                             this.num_votes_missing = this.num_total_votes - this.num_votes_all
 
                             this.percentage_n_vote = (this.num_votes_all * 100) / this.num_total_votes
                             this.percentage_n_missing = (this.num_votes_missing * 100) / this.num_total_votes
 
-                            this.user =  this.$store.getters.user
-
                             axios.get('api/votes/'+this.user.voter_id+'/election/'+this.election.election_id)
                             .then(response => {
                                 this.vote = response.data
-                                console.log(this.vote)
 
                                 if(this.vote == null){
                                     this.alreadyVote = false
@@ -303,12 +327,22 @@ export default{
             return timestampToDate(timestamp)
         },
         fillData () {
-            this.datacollection1 = {
+            this.datacollectionPie = {
                 labels: this.countLabels,
                 datasets: [
                     {
                         label: 'Votes',
                         backgroundColor: this.colors,
+                        data: this.numberVotes
+                    }
+                ]
+            },
+            this.datacollectionBar = {
+                labels: this.countLabels,
+                datasets: [
+                    {
+                        label: 'Votes',
+                        backgroundColor: '#de4937',
                         data: this.numberVotes
                     }
                 ]
