@@ -16,7 +16,21 @@
                     </div>
                 </div>
             </div>
-        </div>        
+        </div>
+        <footer class="footer volby-footer has-margin-top-100">
+            <div class="columns is-vcentered has-text-centered">
+                <div class="column is-3">
+                    <img class="image is-horizontal-center" width="50%" src="img/ipleiria.png" />
+                </div>
+                <div class="column is-6">
+                    <p>Copyright © 2020 Bernardo Figueiredo and Célio Mendes @ IPLeiria.</p>
+                    <p>All Rights Reserved</p>
+                </div>
+                <div class="column is-3">
+                    <b-button type="is-text" tag="router-link" to="/about" target='_blank'>About Volby</b-button>
+                </div>
+            </div>
+        </footer>
     </div>
 </template>
 <script>

@@ -14,7 +14,7 @@
                         <div class="columns has-margin-top-10 has-text-centered">
                             <div class="column is-12">
                                 <p>Want to be part of this project? Check out our <a href="https://github.com/celio-jpeg/bev" target="_blank">repository at GitHub.</a></p>
-                            </div>                            
+                            </div>
                         </div>
                         <div class="columns">
                             <div class="column">
@@ -37,6 +37,27 @@
                         </div>
                     </div>
                     <div class="has-margin-top-30">
+                        <div class="columns">
+                            <div class="column">
+                                <p>Current Supervisors:</p>
+                            </div>
+                        </div>
+                        <div class="columns is-centered">
+                            <div class="column is-3 has-text-centered">
+                                <figure class="image is-64x64 is-horizontal-center">
+                                    <img class="image is-rounded" src="img/catarina.jpg" >
+                                </figure>
+                                <a href="https://github.com/catarinareis" target="_blank">Catarina Reis</a>
+                            </div>
+                            <div class="column is-3 has-text-centered">
+                                <figure class="image is-64x64 is-horizontal-center">
+                                    <img class="image is-rounded" src="img/marisa.jpg" >
+                                </figure>
+                                <a href="https://github.com/marisamax" target="_blank">Marisa Maximiano</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="has-margin-top-30">
                         <h4 id="home_subtitle">In Association With</h4>
                         <div class="columns">
                             <img class="image is-horizontal-center" width="50%" src="img/ipleiria.png" />
@@ -44,7 +65,7 @@
                     </div>
                 </div>
             </div>
-        </div>        
+        </div>
     </div>
 </template>
 <script>

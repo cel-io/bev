@@ -15,6 +15,7 @@
                             <span class="is-size-3 has-margin-right-5">{{election.name}}</span>
                         </div>
                         <div class="column is-6 has-text-right" v-if="election.end_timestamp > currentTimestamp">
+                            <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Live</b-tag>
                             <b-tooltip v-if="!this.canUpdate && this.alreadyVote" type="is-dark" label="You already have submitted a vote. The option multible votes is disabled for this election">
                                 <b-tag class="has-margin-top-5 has-margin-right-5">Can't Vote any more.</b-tag>
                             </b-tooltip>
@@ -23,9 +24,6 @@
                             </b-tooltip>
                             <b-button v-if="this.canUpdate && this.alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
                             <b-button v-else-if="!this.alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
-                        </div>
-                        <div class="column is-6 has-text-right" v-else>
-                            <b-tag>Terminated</b-tag>
                         </div>
                     </div>
                     <div class="columns">
@@ -81,26 +79,20 @@
                                         <div class="columns">
                                             <div class="column is-6">
                                                 <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
-                                                    <strong>Live Results - Total Votes</strong>
+                                                    <strong>Total Votes</strong>
                                                 </div>
-                                                <div class="title is-3" v-else>
-                                                    <strong>Results - Total Votes</strong>
-                                                </div>
-                                                <div v-if="this.switchGraph" class="small">
+                                                <div v-if="this.switchGraph" class="small_chart">
                                                     <pie-chart :chart-data="datacollectionPie"></pie-chart>
                                                 </div>
-                                                <div v-else class="small">
-                                                    <bar-chart :chart-data="datacollectionBar"></bar-chart>
+                                                <div v-else class="small_chart">
+                                                    <bar-chart :chart-data="datacollectionBar" :options="options"></bar-chart>
                                                 </div>
                                                 <b-switch v-model="switchGraph"> Show Pie Chart </b-switch>
                                             </div>
                                             <br>
                                             <div class="column is-6">
                                                 <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
-                                                    <strong>Live Results - Number of Votes Submitted</strong>
-                                                </div>
-                                                <div class="title is-3" v-else>
-                                                    <strong>Results - Percentage of Votes Submitted</strong>
+                                                    <strong>Votes Submitted</strong>
                                                 </div>
                                                 <div>
                                                     <div class="columns">
@@ -152,6 +144,7 @@
 </template>
 <script>
 import {timestampToDate} from '../helpers.js'
+import { Line } from 'vue-chartjs'
 import PieChart from './Charts/PieChart.js'
 import BarChart from './Charts/BarChart.js'
 
@@ -175,6 +168,7 @@ export default{
             activeTab: 0,
             datacollectionPie: null,
             datacollectionBar: null,
+            options: null,
             countLabels: [],
             numberVotes: [],
             colors:[],
@@ -182,29 +176,7 @@ export default{
             num_votes_missing: 0,
             percentage_n_vote: 0,
             percentage_n_missing: 0,
-            switchGraph: 0,
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        },
-                        gridLines: {
-                            display: true
-                        }
-                    }],
-                    xAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        barPercentage: 0.4
-                    }]
-                },
-                responsive: true
-            },
+            switchGraph: 0
         }
     },
     methods: {
@@ -245,7 +217,7 @@ export default{
                             return 0;
                         })
 
-                         votingOptionsAux.forEach(voting_option => {
+                        votingOptionsAux.forEach(voting_option => {
                             this.countLabels.push(voting_option.name.toUpperCase())
                             this.numberVotes.push(voting_option.num_votes)
                             this.num_votes_all += voting_option.num_votes
@@ -346,6 +318,30 @@ export default{
                         data: this.numberVotes
                     }
                 ]
+            },
+            this.options = {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: false
+                        }
+                    }]
+                },
+                legend: {
+                    display: false
+                },
+                responsive: true,
             }
         },
         getRandomInt () {
@@ -363,9 +359,3 @@ export default{
     }
 }
 </script>
-<style>
-.small {
-    max-width: 500px;
-    margin:  30px auto;
-}
-</style>
