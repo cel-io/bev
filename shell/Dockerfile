@@ -43,7 +43,8 @@ RUN pip3 install \
     psycopg2-binary \
     pycrypto \
     pylint \
-    pycodestyle
+    pycodestyle \
+    python-dotenv
 
 WORKDIR /project/sawtooth-simple-supply
 

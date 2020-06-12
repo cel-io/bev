@@ -16,8 +16,11 @@
                 <b-navbar-item tag="router-link" to="/elections">
                     Elections
                 </b-navbar-item>
-                <b-navbar-item tag="router-link" to="/newelection">
+                <b-navbar-item v-if="user.type == 'ADMIN' || user.type == 'SUPERADMIN'" tag="router-link" to="/newelection">
                     New Election
+                </b-navbar-item>
+                <b-navbar-item v-if="user.type == 'SUPERADMIN'" tag="router-link" to="/superadmins">
+                    Super Admins
                 </b-navbar-item>
             </template>
 
@@ -30,14 +33,16 @@
                 </b-navbar-dropdown>
             </template>
         </b-navbar>
-        <div class="container is-fluid section has-padding-top-0">
-            <div class="is-flex is-vcentered has-margin-bottom-30">
-                <b-button class="has-margin-top-15 has-margin-right-15" v-if="backRedirect" tag="router-link" :to="backRedirect" rounded type="is-info" size="is-small" icon-left="arrow-left"></b-button>
-                <h1 class="title is-1">
-                    {{title}}
-                </h1>
-            </div>            
-            <router-view @title="onTitle" @back="onBackButton"></router-view>
+        <div class="section">
+            <div class="container main has-padding-top-0">
+                <div class="is-flex is-vcentered has-margin-bottom-30">
+                    <b-button class="has-margin-top-15 has-margin-right-15" v-if="backRedirect" tag="router-link" :to="backRedirect" rounded type="is-info" size="is-small" icon-left="arrow-left"></b-button>
+                    <h1 class="title is-1">
+                        {{title}}
+                    </h1>
+                </div>            
+                <router-view @title="onTitle" @back="onBackButton"></router-view>
+            </div>
         </div>
         <footer class="footer volby-footer">
             <div class="columns is-vcentered has-text-centered">
