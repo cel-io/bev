@@ -174,6 +174,16 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
+    async def is_superadmin_created(self):
+        fetch = """
+            SELECT voter_id
+            FROM voters
+            WHERE type='SUPERADMIN'
+        """
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
 
     async def fetch_election_resource(self, election_id=None):
         fetch = """

@@ -15,6 +15,7 @@ import Elections from './components/elections.vue'
 import UpdateVote from './components/updateVote'
 import Election from './components/election'
 import About from './components/about'
+import SuperAdmins from './components/superadmins'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -26,6 +27,22 @@ const authGuard = (to, from, next) => {
         }
     }else{
         next({name: "login"})
+    }
+}
+
+const adminGuard = (to, from, next) => {
+    if(store.getters.user.type == 'ADMIN'){
+        next()
+    }else{
+        next({name: "dashboard"})
+    }
+}
+
+const superadminGuard = (to, from, next) => {
+    if(store.getters.user.type == 'SUPERADMIN'){
+        next()
+    }else{
+        next({name: "dashboard"})
     }
 }
 
@@ -41,7 +58,8 @@ const routes = [
             {path: 'elections', component: Elections, name: 'elections'},
             {path: 'election/:electionId/vote', component: CreateVote, name: 'createVote'},
             {path: 'vote/:voteId/update', component: UpdateVote, name: 'updateVote'},
-            {path: 'election/:electionId', component: Election, name: 'election'}
+            {path: 'election/:electionId', component: Election, name: 'election'},
+            {path: 'superadmins', component: SuperAdmins, name: 'superadmins', beforeEnter: superadminGuard}
         ],
         beforeEnter: authGuard
     }

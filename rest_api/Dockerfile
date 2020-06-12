@@ -34,7 +34,8 @@ RUN pip3 install \
     diskcache \
     itsdangerous \
     pycrypto \
-    psycopg2-binary
+    psycopg2-binary \
+    python-dotenv
 
 
 WORKDIR /project/bev

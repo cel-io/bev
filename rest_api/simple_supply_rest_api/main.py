@@ -3,6 +3,12 @@ import argparse
 import asyncio
 import logging
 import sys
+import datetime
+import time
+import os
+
+import bcrypt
+from Crypto.Cipher import AES
 
 from zmq.asyncio import ZMQEventLoop
 
@@ -13,6 +19,9 @@ from aiohttp import web
 from simple_supply_rest_api.route_handler import RouteHandler
 from simple_supply_rest_api.database import Database
 from simple_supply_rest_api.messaging import Messenger
+
+from os.path import join, dirname
+from dotenv import load_dotenv
 
 LOGGER = logging.getLogger(__name__)
 
@@ -64,13 +73,11 @@ def parse_args(args):
 
 def start_rest_api(host, port, messenger, database):
     loop = asyncio.get_event_loop()
-    asyncio.ensure_future(database.connect())
+    loop.run_until_complete(database.connect())
 
     app = web.Application(loop=loop)
-    # WARNING: UNSAFE KEY STORAGE
-    # In a production application these keys should be passed in more securely
-    app['aes_key'] = 'ffffffffffffffffffffffffffffffff'
-    app['secret_key'] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    app['aes_key'] = os.environ.get("AES_KEY")
+    app['secret_key'] = os.environ.get("SECRET_KEY")
 
     messenger.open_validator_connection()
 
@@ -110,12 +117,62 @@ def start_rest_api(host, port, messenger, database):
     # app.router.add_post('/records/{record_id}/update', handler.update_record)
 
     LOGGER.info('Starting Simple Supply REST API on %s:%s', host, port)
+    loop.run_until_complete(create_superadmins(messenger, database))
     web.run_app(
         app,
         host=host,
         port=port,
         access_log=LOGGER,
         access_log_format='%r: %s status, %b size, in %Tf s')
+
+
+async def create_superadmins(messenger, database):
+    if await database.is_superadmin_created() is not None:
+        return
+
+    superadmins = os.environ.get("SUPERADMINS").split()
+    superadmins_passwords = os.environ.get("SUPERADMINS_PASSWORDS").split()
+
+    superadmins_size = len(superadmins)
+    i = 0
+
+    if superadmins_size != len(superadmins_passwords):
+        LOGGER.exception("Superadmin passwords must be the same number as superadmin IDs")
+        sys.exit(1)
+
+    while i < superadmins_size:
+        public_key, private_key = messenger.get_new_key_pair()
+
+        await messenger.send_create_voter_transaction(
+            private_key=private_key,
+            voter_id=superadmins[i],
+            public_key=public_key,
+            name=superadmins[i],
+            created_at=get_time(),
+            type='SUPERADMIN')
+
+        encrypted_private_key = encrypt_private_key(os.environ.get("AES_KEY"), public_key, private_key)
+        hashed_password = hash_password(superadmins_passwords[i])
+
+        await database.create_auth_entry(public_key, encrypted_private_key, hashed_password)
+        i += 1
+
+    LOGGER.info('Created Super Admin accounts')
+
+
+def encrypt_private_key(aes_key, public_key, private_key):
+    init_vector = bytes.fromhex(public_key[:32])
+    cipher = AES.new(bytes.fromhex(aes_key), AES.MODE_CBC, init_vector)
+    return cipher.encrypt(private_key)
+
+
+def hash_password(password):
+    return bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
+
+
+def get_time():
+    dts = datetime.datetime.utcnow()
+    return round(time.mktime(dts.timetuple()) + dts.microsecond / 1e6)
 
 
 def main():
@@ -147,6 +204,9 @@ def main():
             print("Unable to parse binding {}: Must be in the format"
                   " host:port".format(opts.bind))
             sys.exit(1)
+
+        dotenv_path = join(dirname(__file__), '.env')
+        load_dotenv(dotenv_path)
 
         start_rest_api(host, port, messenger, database)
     except Exception as err:  # pylint: disable=broad-except
