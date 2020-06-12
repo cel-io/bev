@@ -210,6 +210,20 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchall()
 
+    async def fetch_poll_book_registration(self, election_id=None, voter_id=None):
+        fetch = """
+                       SELECT * FROM poll_registrations
+                       WHERE election_id='{0}'
+                       AND voter_id='{1}'
+                       AND status='1'
+                       AND ({2}) >= start_block_num
+                       AND ({2}) < end_block_num;
+                       """.format(election_id, voter_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
     async def count_poll_book(self, election_id=None):
         fetch = """
             SELECT COUNT(*)

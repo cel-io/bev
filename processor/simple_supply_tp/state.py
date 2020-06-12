@@ -308,6 +308,56 @@ class SimpleSupplyState(object):
         updated_state[address] = data
         self._context.set_state(updated_state, timeout=self._timeout)
 
+    def update_voting_option(self,
+                             voting_option_id,
+                             name,
+                             description,
+                             election_id,
+                             status):
+
+        address = addresser.get_voting_option_address(voting_option_id)
+        container = votingOption_pb2.VotingOptionContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+            for voting_option in container.entries:
+                if voting_option.voting_option_id == voting_option_id:
+                    voting_option.name = name
+                    voting_option.description = description
+                    voting_option.election_id = election_id
+                    voting_option.status = status
+
+        data = container.SerializeToString()
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
+    def update_poll_registration(self,
+                                 voter_id,
+                                 name,
+                                 election_id,
+                                 status):
+
+        address = addresser.get_poll_registration_address(voter_id)
+        container = pollRegistration_pb2.PollRegistrationContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+            for poll_registration in container.entries:
+                if poll_registration.voter_id == voter_id:
+                    poll_registration.name = name
+                    poll_registration.election_id = election_id
+                    poll_registration.status = status
+
+        data = container.SerializeToString()
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
     def get_agent(self, public_key):
         """Gets the agent associated with the public_key
 

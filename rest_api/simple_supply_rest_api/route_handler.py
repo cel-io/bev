@@ -354,6 +354,70 @@ class RouteHandler(object):
 
         return json_response(voting_options)
 
+    async def update_voting_option_status(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        body = await decode_request(request)
+        required_fields = []
+        validate_fields(required_fields, body)
+
+        voting_option_id = request.match_info.get('votingOptionId', '')
+        voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+
+        if voting_option is None:
+            raise ApiNotFound(
+                'Voting Option with the voting option id '
+                '{} was not found'.format(voting_option_id))
+
+        if voting_option.get('status') is True:
+            status = 0
+        else:
+            status = 1
+
+        await self._messenger.send_update_voting_option_status_transaction(
+            private_key=private_key,
+            voting_option_id=voting_option_id,
+            name=voting_option.get('name'),
+            description=voting_option.get('description'),
+            election_id=voting_option.get('election_id'),
+            status=status,
+            timestamp=get_time())
+
+        return json_response(
+            {'data': 'Update Voting Option Status transaction submitted'})
+
+    async def update_poll_book_status(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        body = await decode_request(request)
+        required_fields = ['election_id']
+        validate_fields(required_fields, body)
+
+        voterId = request.match_info.get('voterId', '')
+        voter_poll_book = await self._database.fetch_poll_book_registration(election_id=body.get('election_id'),
+                                                                            voter_id=voterId)
+
+        if voter_poll_book is None:
+            raise ApiNotFound(
+                'Voter with the voter id '
+                '{} was not found'.format(voterId))
+
+        if voter_poll_book.get('status') is True:
+            status = 0
+        else:
+            status = 1
+
+        await self._messenger.send_update_voter_poll_book_status_transaction(
+            private_key=private_key,
+            voter_id=voterId,
+            name=voter_poll_book.get('name'),
+            election_id=body.get('election_id'),
+            status=status,
+            timestamp=get_time())
+
+        return json_response(
+            {'data': 'Update Voting Option Status transaction submitted'})
+
     async def list_elections_current(self, request):
         private_key, public_key = await self._authorize(request)
 
