@@ -266,6 +266,14 @@ class SimpleSupplyState(object):
 
     def update_election(self,
                         election_id,
+                        name,
+                        description,
+                        start_timestamp,
+                        end_timestamp,
+                        results_permission,
+                        can_change_vote,
+                        can_show_realtime,
+                        admin_id,
                         status,
                         timestamp):
 
@@ -278,6 +286,14 @@ class SimpleSupplyState(object):
             container.ParseFromString(state_entries[0].data)
             for election in container.entries:
                 if election.election_id == election_id:
+                    election.name = name
+                    election.description = description
+                    election.start_timestamp = start_timestamp
+                    election.end_timestamp = end_timestamp
+                    election.results_permission = results_permission
+                    election.can_change_vote = can_change_vote
+                    election.can_show_realtime = can_show_realtime
+                    election.admin_id = admin_id
                     election.status = status
                     election.timestamp = timestamp
 

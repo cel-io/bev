@@ -332,7 +332,7 @@ def make_update_election_transaction(transaction_signer,
                                      admin_id,
                                      status,
                                      timestamp):
-    """Make a CreateElectionAction transaction and wrap it in a batch
+    """Make a UpdateElectionAction transaction and wrap it in a batch
 
     Args:
         transaction_signer (sawtooth_signing.Signer): The transaction key pair

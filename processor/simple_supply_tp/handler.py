@@ -203,6 +203,14 @@ def _update_election(state, public_key, payload):
 
     state.update_election(
         election_id=payload.data.election_id,
+        name=payload.data.name,
+        description=payload.data.description,
+        start_timestamp=payload.data.start_timestamp,
+        end_timestamp=payload.data.end_timestamp,
+        results_permission=payload.data.results_permission,
+        can_change_vote=payload.data.can_change_vote,
+        can_show_realtime=payload.data.can_show_realtime,
+        admin_id=payload.data.admin_id,
         status=payload.data.status,
         timestamp=payload.timestamp
     )

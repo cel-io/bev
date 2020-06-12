@@ -229,7 +229,9 @@ class RouteHandler(object):
         private_key, public_key = await self._authorize(request)
 
         body = await decode_request(request)
-        required_fields = ['voting_option_id']
+        required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
+                           'results_permission', 'can_change_vote', 'can_show_realtime',
+                           'voting_options', 'poll_book']
         validate_fields(required_fields, body)
 
         electionId = request.match_info.get('electionId', '')
@@ -243,30 +245,25 @@ class RouteHandler(object):
 
         current_time = get_time()
 
-        if election.get(start_timestamp) > current_time:
+        if election.get('start_timestamp') < current_time:
             raise ApiInternalError(
                 'Election with the election id '
                 '{} already start.'.format(electionId))
 
         admin = await self._database.fetch_voter_resource(public_key=public_key)
 
-        if election.get('status') == 1:
-            status = 0
-        else:
-            status = 1
-
         await self._messenger.send_update_election_transaction(
             private_key=private_key,
             election_id=electionId,
-            name=election.get('name'),
-            description=election.get('description'),
-            start_timestamp=election.get('start_timestamp'),
-            end_timestamp=election.get('end_timestamp'),
-            results_permission=election.get('results_permission'),
-            can_change_vote=election.get('can_change_vote'),
-            can_show_realtime=election.get('can_show_realtime'),
+            name=body.get('name'),
+            description=body.get('description'),
+            start_timestamp=body.get('start_timestamp'),
+            end_timestamp=body.get('end_timestamp'),
+            results_permission=body.get('results_permission'),
+            can_change_vote=body.get('can_change_vote'),
+            can_show_realtime=body.get('can_show_realtime'),
             admin_id=admin.get('voter_id'),
-            status=status,
+            status=body.get('status'),
             timestamp=get_time())
 
         return json_response(
