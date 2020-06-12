@@ -416,7 +416,7 @@ class RouteHandler(object):
             timestamp=get_time())
 
         return json_response(
-            {'data': 'Update Voting Option Status transaction submitted'})
+            {'data': 'Update Poll Registration Status transaction submitted'})
 
     async def list_elections_current(self, request):
         private_key, public_key = await self._authorize(request)
