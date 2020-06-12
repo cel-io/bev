@@ -201,7 +201,7 @@ class Database(object):
         fetch = """
                     SELECT * FROM poll_registrations
                     WHERE election_id='{0}'
-                    AND status=1
+                    AND status='1'
                     AND ({1}) >= start_block_num
                     AND ({1}) < end_block_num;
                     """.format(election_id, LATEST_BLOCK_NUM)
@@ -215,7 +215,7 @@ class Database(object):
             SELECT COUNT(*)
             FROM poll_registrations
             WHERE election_id='{0}'
-            AND status=1
+            AND status='1'
             AND ({1}) >= start_block_num
             AND ({1}) < end_block_num;
         """.format(election_id, LATEST_BLOCK_NUM)
@@ -228,7 +228,7 @@ class Database(object):
         fetch = """
            SELECT * FROM voting_options 
            WHERE voting_option_id='{0}'
-           AND status=1
+           AND status='1'
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
            """.format(voting_option_id, LATEST_BLOCK_NUM)
@@ -251,7 +251,7 @@ class Database(object):
         fetch = """
            SELECT * FROM voting_options 
            WHERE election_id='{0}'
-           AND status=1
+           AND status='1'
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
                """.format(election_id, LATEST_BLOCK_NUM)

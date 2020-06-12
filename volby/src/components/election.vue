@@ -251,9 +251,6 @@ export default{
                                     this.alreadyVote = true
                                 }
 
-                                console.log(this.vote)
-                                console.log(this.alreadyVote)
-
                                 this.isLoading = false
                             })
                             .catch(error => {

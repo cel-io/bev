@@ -268,6 +268,33 @@ class RouteHandler(object):
             status=body.get('status'),
             timestamp=get_time())
 
+        for voting_option in body.get('voting_options'):
+            voting_option_id = uuid.uuid1().hex
+
+            await self._messenger.send_create_voting_option_transaction(
+                private_key=private_key,
+                voting_option_id=voting_option_id,
+                name=voting_option.get('name'),
+                description=voting_option.get('description'),
+                election_id=electionId,
+                status=1,
+                timestamp=get_time()
+            )
+
+            await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
+                                                                        name=voting_option.get('name'),
+                                                                        election_id=electionId)
+
+        for poll_book in body.get('poll_book'):
+            await self._messenger.send_create_poll_registration_transaction(
+                private_key=private_key,
+                voter_id=poll_book.get('id'),
+                name=poll_book.get('name'),
+                election_id=electionId,
+                status=1,
+                timestamp=get_time()
+            )
+
         return json_response(
             {'data': 'Update Election transaction submitted'})
 
