@@ -102,6 +102,7 @@ message CreateVotingOptionAction{
     string description = 3;
 
     string election_id = 4;
+    bool status = 5;
 }
 
 message CreatePollRegistrationAction{
@@ -109,6 +110,7 @@ message CreatePollRegistrationAction{
     string name = 2;
 
     string election_id = 3;
+    bool status = 4;
 }
 
 message CreateVoterAction{

@@ -142,7 +142,8 @@ def _create_voting_option(state, public_key, payload):
         voting_option_id=payload.data.voting_option_id,
         name=payload.data.name,
         description=payload.data.description,
-        election_id=payload.data.election_id
+        election_id=payload.data.election_id,
+        status=payload.data.status
     )
 
 
@@ -154,7 +155,8 @@ def _create_poll_registration(state, public_key, payload):
     state.set_poll_registration(
         voter_id=payload.data.voter_id,
         name=payload.data.name,
-        election_id=payload.data.election_id
+        election_id=payload.data.election_id,
+        status=payload.data.status
     )
 
 

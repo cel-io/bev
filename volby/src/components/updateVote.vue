@@ -2,7 +2,7 @@
     <div>
         <section>
             <div class="card box has-margin-bottom-40">
-                <div class="card-content has-padding-bottom-0">
+                <div class="card-content has-padding-bottom-30">
                     <b-field class="title is-1 has-text-centered">
                         <h1 ><strong>{{ this.election.name }}</strong></h1>
                     </b-field>
@@ -95,7 +95,7 @@ export default{
                         position: 'is-top-right',
                         type: 'is-sucess'
                     })
-                    this.$router.push('/eletions')                    
+                    this.$router.push('/elections')
                 })
                 .catch(error => {
                     console.log(error)
@@ -112,7 +112,7 @@ export default{
             axios.get('api/elections/'+ this.old_vote.election_id)
             .then(response => {
                 this.election = response.data
-                
+
                 axios.get('api/elections/'+ this.old_vote.election_id +'/voting_options')
                 .then(response => {
                     this.voting_options_array = response.data

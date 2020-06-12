@@ -117,8 +117,7 @@ export default{
             paginationPosition: 'bottom',
             currentTimestamp: Math.floor(new Date().getTime() / 1000),
             canUpdate: false,
-            alreadyVote: false,
-            user: {}
+            alreadyVote: false
         }
     },
     methods:{

@@ -88,6 +88,7 @@ class Messenger(object):
                                                     name,
                                                     description,
                                                     election_id,
+                                                    status,
                                                     timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
@@ -99,6 +100,7 @@ class Messenger(object):
             name=name,
             description=description,
             election_id=election_id,
+            status=status,
             timestamp=timestamp
         )
 
@@ -109,6 +111,7 @@ class Messenger(object):
                                                         voter_id,
                                                         name,
                                                         election_id,
+                                                        status,
                                                         timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
@@ -119,6 +122,7 @@ class Messenger(object):
             voter_id=voter_id,
             name=name,
             election_id=election_id,
+            status=status,
             timestamp=timestamp
         )
 

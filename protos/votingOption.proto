@@ -6,6 +6,7 @@ message VotingOption{
     string description = 3;
 
     string election_id = 4;
+    bool status = 5;
 }
 
 message VotingOptionContainer {

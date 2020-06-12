@@ -82,6 +82,7 @@ def make_create_voting_option_transaction(transaction_signer,
                                           name,
                                           description,
                                           election_id,
+                                          status,
                                           timestamp):
     """Make a CreateVotingOptionAction transaction and wrap it in a batch
 
@@ -92,6 +93,7 @@ def make_create_voting_option_transaction(transaction_signer,
         name (str): Name of the voting option
         description (str): Description of the voting option
         election_id (str):  Unique ID of the election
+        status (bool): Defines if the voting option is activated or disable
         timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
@@ -110,7 +112,8 @@ def make_create_voting_option_transaction(transaction_signer,
         voting_option_id=voting_option_id,
         name=name,
         description=description,
-        election_id=election_id)
+        election_id=election_id,
+        status=status)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_VOTING_OPTION,
@@ -132,6 +135,7 @@ def make_create_poll_registration_transaction(transaction_signer,
                                               voter_id,
                                               name,
                                               election_id,
+                                              status,
                                               timestamp):
     """Make a CreatePollRegistrationAction transaction and wrap it in a batch
 
@@ -141,6 +145,7 @@ def make_create_poll_registration_transaction(transaction_signer,
         voter_id (str): Unique ID of the voter
         name (str): Name of the voter
         election_id (str):  Unique ID of the election
+        status (bool): Defines if the user in poll registration is activated or disable
         timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
@@ -158,7 +163,8 @@ def make_create_poll_registration_transaction(transaction_signer,
     action = payload_pb2.CreatePollRegistrationAction(
         voter_id=voter_id,
         name=name,
-        election_id=election_id)
+        election_id=election_id,
+        status=status)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_POLL_REGISTRATION,

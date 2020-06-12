@@ -72,6 +72,7 @@ class RouteHandler(object):
                 name=voting_option.get('name'),
                 description=voting_option.get('description'),
                 election_id=election_id,
+                status=1,
                 timestamp=get_time()
             )
 
@@ -85,6 +86,7 @@ class RouteHandler(object):
                 voter_id=poll_book.get('id'),
                 name=poll_book.get('name'),
                 election_id=election_id,
+                status=1,
                 timestamp=get_time()
             )
 

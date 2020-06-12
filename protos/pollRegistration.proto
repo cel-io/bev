@@ -4,6 +4,7 @@ message PollRegistration{
     string voter_id = 1;
     string name = 2;
     string election_id = 3;
+    bool status = 4;
 }
 
 message PollRegistrationContainer {

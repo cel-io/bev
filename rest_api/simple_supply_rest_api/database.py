@@ -174,7 +174,6 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
-
     async def fetch_election_resource(self, election_id=None):
         fetch = """
                  SELECT e.*, v.name AS "admin_name"
@@ -202,6 +201,7 @@ class Database(object):
         fetch = """
                     SELECT * FROM poll_registrations
                     WHERE election_id='{0}'
+                    AND status=1
                     AND ({1}) >= start_block_num
                     AND ({1}) < end_block_num;
                     """.format(election_id, LATEST_BLOCK_NUM)
@@ -215,6 +215,7 @@ class Database(object):
             SELECT COUNT(*)
             FROM poll_registrations
             WHERE election_id='{0}'
+            AND status=1
             AND ({1}) >= start_block_num
             AND ({1}) < end_block_num;
         """.format(election_id, LATEST_BLOCK_NUM)
@@ -227,6 +228,7 @@ class Database(object):
         fetch = """
            SELECT * FROM voting_options 
            WHERE voting_option_id='{0}'
+           AND status=1
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
            """.format(voting_option_id, LATEST_BLOCK_NUM)
@@ -248,7 +250,8 @@ class Database(object):
     async def fetch_election_voting_options_resource(self, election_id=None):
         fetch = """
            SELECT * FROM voting_options 
-           WHERE election_id='{0}' 
+           WHERE election_id='{0}'
+           AND status=1
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
                """.format(election_id, LATEST_BLOCK_NUM)

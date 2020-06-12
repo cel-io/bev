@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS blocks (
 );
 """
 
-
 CREATE_AUTH_STMTS = """
 CREATE TABLE IF NOT EXISTS auth (
     public_key            varchar PRIMARY KEY,
@@ -39,7 +38,6 @@ CREATE TABLE IF NOT EXISTS auth (
     encrypted_private_key varchar
 )
 """
-
 
 CREATE_RECORD_STMTS = """
 CREATE TABLE IF NOT EXISTS records (
@@ -49,7 +47,6 @@ CREATE TABLE IF NOT EXISTS records (
     end_block_num    bigint
 );
 """
-
 
 CREATE_RECORD_LOCATION_STMTS = """
 CREATE TABLE IF NOT EXISTS record_locations (
@@ -62,7 +59,6 @@ CREATE TABLE IF NOT EXISTS record_locations (
     end_block_num    bigint
 );
 """
-
 
 CREATE_RECORD_OWNER_STMTS = """
 CREATE TABLE IF NOT EXISTS record_owners (
@@ -132,6 +128,7 @@ CREATE TABLE IF NOT EXISTS voting_options (
     name             varchar,
     description      varchar,
     election_id      varchar,
+    status           boolean,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -166,6 +163,7 @@ CREATE TABLE IF NOT EXISTS poll_registrations (
     voter_id         varchar,
     name             varchar,
     election_id      varchar,
+    status           boolean,
     start_block_num  bigint,
     end_block_num    bigint
 );
@@ -460,14 +458,16 @@ class Database(object):
            name, 
            description, 
            election_id,
+           status,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}');
            """.format(
             voting_option_dict['voting_option_id'],
             voting_option_dict['name'],
             voting_option_dict['description'],
             voting_option_dict['election_id'],
+            voting_option_dict['status'],
             voting_option_dict['start_block_num'],
             voting_option_dict['end_block_num'])
 
@@ -489,13 +489,15 @@ class Database(object):
            voter_id, 
            name, 
            election_id,
+           status,
            start_block_num,
            end_block_num)
-           VALUES ('{}', '{}', '{}', '{}', '{}');
+           VALUES ('{}', '{}', '{}', '{}',  '{}', '{}');
            """.format(
             poll_registration_dict['voter_id'],
             poll_registration_dict['name'],
             poll_registration_dict['election_id'],
+            poll_registration_dict['status'],
             poll_registration_dict['start_block_num'],
             poll_registration_dict['end_block_num'])
 
