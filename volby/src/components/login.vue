@@ -10,26 +10,26 @@
                         <div class="columns is-centered">
                             <div class="column is-5">
                                 <div class="card box has-padding-top-0 has-padding-left-0 has-padding-right-0 has-padding-bottom-0<">
-                                    <form @click.prevent="handleSubmit(submit)">
                                     <div class="card-content">
                                         <b-message v-show="isInvalidLogin" type="is-danger">
                                             Invalid email or password.
                                         </b-message>
                                         <validation-observer ref="observer" v-slot="{handleSubmit}">
-                                            <validation-provider rules="required" name="Email" v-slot="validationContext">
-                                                <b-field label="Email" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                                    <b-input rounded v-model="email"></b-input>
-                                                </b-field>
-                                            </validation-provider>
-                                            <validation-provider rules="required" name="Password" v-slot="validationContext">
-                                                <b-field label="Password" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                                    <b-input rounded type="password" v-model="password"></b-input>
-                                                </b-field>
-                                            </validation-provider>
-                                            <b-button class="has-margin-top-20" type="is-primary" expanded rounded @click.prevent="handleSubmit(submit)">Login</b-button>
+                                            <form @submit.prevent="handleSubmit(submit)">
+                                                <validation-provider rules="required" name="Email" v-slot="validationContext">
+                                                    <b-field label="Email" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <b-input rounded v-model="email"></b-input>
+                                                    </b-field>
+                                                </validation-provider>
+                                                <validation-provider rules="required" name="Password" v-slot="validationContext">
+                                                    <b-field label="Password" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <b-input rounded type="password" v-model="password"></b-input>
+                                                    </b-field>
+                                                </validation-provider>
+                                                <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit">Login</b-button>
+                                            </form>
                                         </validation-observer>
                                     </div>
-                                </form>
                                 </div>
                             </div>
                         </div>

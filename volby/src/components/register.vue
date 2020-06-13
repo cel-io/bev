@@ -15,6 +15,7 @@
                                             The email is already taken. Please, choose another one.
                                         </b-message>
                                         <validation-observer ref="observer" v-slot="{handleSubmit}">
+                                            <form @submit.prevent="handleSubmit(submit)">
                                             <validation-provider rules="required|min:2|alpha_spaces" name="Name" v-slot="validationContext">
                                                 <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                     <b-input rounded v-model="name"></b-input>
@@ -35,7 +36,8 @@
                                                     <b-input rounded type="password" v-model="confirmation"></b-input>
                                                 </b-field>
                                             </validation-provider>
-                                            <b-button class="has-margin-top-20" type="is-primary" expanded rounded @click.prevent="handleSubmit(submit)">Register</b-button>
+                                            <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit">Register</b-button>
+                                        </form>
                                         </validation-observer>
                                     </div>
                                 </div>
