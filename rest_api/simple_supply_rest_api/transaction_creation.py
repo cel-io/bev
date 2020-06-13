@@ -223,6 +223,54 @@ def make_create_voter_transaction(transaction_signer,
         batch_signer=batch_signer)
 
 
+def make_update_voter_transaction(transaction_signer,
+                                  batch_signer,
+                                  voter_id,
+                                  public_key,
+                                  name,
+                                  created_at,
+                                  type):
+    """Make a UpdateVoterTransaction transaction and wrap it in a batch
+
+       Args:
+           transaction_signer (sawtooth_signing.Signer): The transaction key pair
+           batch_signer (sawtooth_signing.Signer): The batch key pair
+           voter_id (str): Unique ID of the voter
+           public_key (str): Public Key of the voter
+           name (str): Name of the voter
+           created_at (int):  Unix UTC timestamp of when the election is created
+           type (str): Type of the voter
+
+       Returns:
+           batch_pb2.Batch: The transaction wrapped in a batch
+       """
+
+    inputs = [addresser.get_voter_address(transaction_signer.get_public_key().as_hex())]
+
+    outputs = [addresser.get_voter_address(public_key)]
+
+    action = payload_pb2.UpdateVoterAction(
+        voter_id=voter_id,
+        public_key=public_key,
+        name=name,
+        created_at=created_at,
+        type=type)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.UPDATE_VOTER,
+        update_voter=action,
+        timestamp=created_at
+    )
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
 def make_create_vote_transaction(transaction_signer,
                                  batch_signer,
                                  vote_id,

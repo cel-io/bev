@@ -65,6 +65,11 @@ class BevPayload(object):
                 payload_pb2.BevPayload.UPDATE_ELECTION:
             return self._transaction.update_election
 
+        if self._transaction.HasField('update_voter') and \
+            self._transaction.action == \
+                payload_pb2.BevPayload.UPDATE_VOTER:
+            return self._transaction.update_voter
+
         if self._transaction.HasField('create_agent') and \
             self._transaction.action == \
                 payload_pb2.BevPayload.CREATE_AGENT:

@@ -15,7 +15,7 @@ import Elections from './components/elections.vue'
 import UpdateVote from './components/updateVote'
 import Election from './components/election'
 import About from './components/about'
-import SuperAdmins from './components/superadmins'
+import Admins from './components/admins'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -59,7 +59,7 @@ const routes = [
             {path: 'election/:electionId/vote', component: CreateVote, name: 'createVote'},
             {path: 'vote/:voteId/update', component: UpdateVote, name: 'updateVote'},
             {path: 'election/:electionId', component: Election, name: 'election'},
-            {path: 'superadmins', component: SuperAdmins, name: 'superadmins', beforeEnter: superadminGuard}
+            {path: 'admins', component: Admins, name: 'admins', beforeEnter: superadminGuard}
         ],
         beforeEnter: authGuard
     }
