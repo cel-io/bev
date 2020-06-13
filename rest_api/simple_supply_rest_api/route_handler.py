@@ -163,8 +163,7 @@ class RouteHandler(object):
             created_at=get_time(),
             type='ADMIN')
 
-        user.update({'type': 'ADMIN'})
-        return json_response({'voter': user})
+        return json_response({'voter': {'voter_id': voter_id, 'name': voter.get('name'), 'type': 'ADMIN'}})
 
     async def create_vote(self, request):
         body = await decode_request(request)
@@ -486,6 +485,18 @@ class RouteHandler(object):
         past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
 
         return json_response(past_elections_list)
+
+    async def list_admins(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        if user.get('type') != 'SUPERADMIN':
+            raise ApiUnauthorized(
+                'Unauthorized'
+            )
+
+        admin_list = await self._database.fetch_admins_resources()
+
+        return json_response(admin_list)
 
     async def list_vote(self, request):
         private_key, public_key, user = await self._authorize(request)

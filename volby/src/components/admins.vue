@@ -37,7 +37,40 @@
                 <h3 class="title is-3">Current Admins</h3>
                 <div class="card box">
                     <div class="card-content">
+                        <template v-if="isLoadingList">
+                            <div class="columns is-centered">
+                                <div class="column is-12 has-text-centered">
+                                    <b-icon pack="fas" icon="sync-alt" size="is-large" custom-class="fa-spin"></b-icon>
+                                </div>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <b-table :data="admins"
+                                :paginated="isPaginated"
+                                :per-page="perPage"
+                                :current-page.sync="currentPage"
+                                :pagination-simple="isPaginationSimple"
+                                :pagination-position="paginationPosition"
+                                default-sort="type"
+                                :default-sort-direction="'desc'"
+                                aria-next-label="Next page"
+                                aria-previous-label="Previous page"
+                                aria-page-label="Page"
+                                aria-current-label="Current page">
 
+                                <template slot-scope="props">
+                                    <b-table-column field="voter_id" label="Voter ID" sortable>
+                                        {{ props.row.voter_id }}
+                                    </b-table-column>
+                                    <b-table-column field="name" label="Name" sortable>
+                                        {{ props.row.name }}
+                                    </b-table-column>
+                                    <b-table-column field="type" label="Type" sortable>
+                                        <b-tag type="is-volby">{{props.row.type}}</b-tag>
+                                    </b-table-column>
+                                </template>
+                            </b-table>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -54,7 +87,12 @@ export default {
             isNotFound: false,
             isAlreadyAdmin: false,
             isLoadingPromote: false,
-            isLoadingList: true
+            isLoadingList: true,
+            isPaginated: true,
+            perPage: 10,
+            currentPage: 1,
+            isPaginationSimple: false,
+            paginationPosition: 'bottom'
         }
     },
     methods: {
@@ -80,6 +118,10 @@ export default {
             })
             .then(response => {
                 this.admins.push(response.data.voter)
+
+                this.voterId = ""
+                this.$refs.observer.reset()
+
                 this.$buefy.toast.open({
                     duration: 3000,
                     message: 'Admin added!',
@@ -106,7 +148,18 @@ export default {
             })
         },
         getAdmins(){
-
+            axios.get('api/voters/admins')
+            .then(response => {
+                this.admins = response.data
+                this.isLoadingList = false
+            })
+            .catch(error => {
+                console.log(error)
+                if(error.response.status == 401){
+                    this.$store.commit("logout")
+                    this.$router.push("/login")
+                }
+            })
         }
     },
     created(){
