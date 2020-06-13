@@ -29,6 +29,26 @@
                     <div class="columns">
                         <div class="column is-12">
                             <b-tabs v-model="activeTab" expanded>
+                                <b-tab-item label="My Vote">
+                                    <br>
+                                    <div v-if="!this.alreadyVote" class="has-text-centered" >
+                                        <span>No Votes made.</span>
+                                    </div>
+                                    <div v-else class="card box">
+                                        <div class="card-content">
+                                            <div class="columns">
+                                                <div class="column">
+                                                    <span class="has-text-weight-bold">Name: </span> {{my_voting_option.name}}
+                                                </div>
+                                            </div>
+                                            <div class="columns">
+                                                <div class="column">
+                                                    <span class="has-text-weight-bold">Description: </span> {{my_voting_option.description}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </b-tab-item>
                                 <b-tab-item label="Informations">
                                     <div class="columns">
                                         <div class="column is-12">
@@ -171,6 +191,7 @@ export default{
             countLabels: [],
             numberVotes: [],
             colors:[],
+            my_voting_option:{},
             num_votes_all: 0,
             num_votes_missing: 0,
             percentage_n_vote: 0,
@@ -252,6 +273,24 @@ export default{
                                 }
 
                                 this.isLoading = false
+
+                                if(this.vote != null){
+
+                                    axios.get('api/voting_options/'+this.vote.voting_option_id)
+                                    .then(response => {
+                                        this.my_voting_option = response.data
+
+                                        this.isLoading = false
+                                    })
+                                    .catch(error => {
+                                        console.log(error)
+                                        if(error.response.status == 401){
+                                            this.$store.commit("logout")
+                                            this.$router.push("/login")
+                                        }
+                                    })
+
+                                }
                             })
                             .catch(error => {
                                 console.log(error)

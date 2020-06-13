@@ -94,6 +94,7 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_post('/elections', handler.create_election)
     app.router.add_put('/elections/{electionId}/update', handler.update_election)
 
+    app.router.add_get('/voting_options/{votingOptionId}', handler.get_voting_option)
     app.router.add_put('/voting_options/{votingOptionId}/status', handler.update_voting_option_status)
     app.router.add_put('/poll_book/{voterId}/status', handler.update_poll_book_status)
 

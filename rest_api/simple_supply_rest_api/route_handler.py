@@ -354,6 +354,19 @@ class RouteHandler(object):
 
         return json_response(voting_options)
 
+    async def get_voting_option(self, request):
+        private_key, public_key = await self._authorize(request)
+
+        voting_option_id = request.match_info.get('votingOptionId', '')
+        voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+
+        if voting_option is None:
+            raise ApiNotFound(
+                'Voting Option with the voting option id '
+                '{} was not found'.format(voting_option_id))
+
+        return json_response(voting_option)
+
     async def update_voting_option_status(self, request):
         private_key, public_key = await self._authorize(request)
 
@@ -455,8 +468,8 @@ class RouteHandler(object):
 
         voter_id = request.match_info.get('voterId', '')
         election_id = request.match_info.get('electionId', '')
-        vote = await self._database.fetch_vote_in_election_resource(voter_id=voter_id,
-                                                                    election_id=election_id)
+        vote = await self._database.fetch_my_vote__election_resource(voter_id=voter_id,
+                                                                     election_id=election_id)
 
         return json_response(vote)
 

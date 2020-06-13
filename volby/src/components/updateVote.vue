@@ -21,8 +21,9 @@
                     <b-field class="is-pulled-right">
                         <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
                     </b-field>
+                </div>
             </div>
-        </div>
+        </section>
     </div>
 </template>
 <script>
