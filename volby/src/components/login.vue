@@ -16,7 +16,7 @@
                                             Invalid email or password.
                                         </b-message>
                                         <validation-observer ref="observer" v-slot="{handleSubmit}">
-                                            <validation-provider rules="required|email" name="Email" v-slot="validationContext">
+                                            <validation-provider rules="required" name="Email" v-slot="validationContext">
                                                 <b-field label="Email" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                     <b-input rounded v-model="email"></b-input>
                                                 </b-field>

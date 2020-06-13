@@ -79,8 +79,7 @@ export default{
             axios.post('api/voters',{
                 name: this.name,
                 voter_id: this.email,
-                password: this.password,
-                type: 'VOTER'
+                password: this.password
             })
             .then(response => {
                 axios.defaults.headers.common.Authorization = "Bearer " + response.data.accessToken

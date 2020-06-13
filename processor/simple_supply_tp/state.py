@@ -212,6 +212,39 @@ class SimpleSupplyState(object):
         updated_state[address] = data
         self._context.set_state(updated_state, timeout=self._timeout)
 
+    def update_voter(self,
+                     voter_id,
+                     public_key,
+                     name,
+                     created_at,
+                     type):
+        """Updates new voter in state
+
+        Args:
+            voter_id (str): The email of the voter
+            public_key (str): The public key of the voter
+            name (str): The human-readable name of the voter
+            created_at (int): Unix UTC timestamp of when the agent was created
+            type (str): The type of user of the voter
+        """
+        address = addresser.get_voter_address(public_key)
+        container = voter_pb2.VoterContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+            for voter in container.entries:
+                if voter.public_key == public_key:
+                    voter.voter_id = voter_id
+                    voter.name = name
+                    voter.created_at = created_at
+                    voter.type = type
+
+        data = container.SerializeToString()
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
     def set_vote(self,
                  vote_id,
                  timestamp,

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-navbar :shadow="true" :spaced="true" class="has-margin-bottom-20">
+        <b-navbar :shadow="true" :spaced="true">
             <template slot="brand">
                 <b-navbar-item tag="router-link" :to="{ path: '/' }">
                     <img
@@ -19,14 +19,14 @@
                 <b-navbar-item v-if="user.type == 'ADMIN' || user.type == 'SUPERADMIN'" tag="router-link" to="/newelection">
                     New Election
                 </b-navbar-item>
-                <b-navbar-item v-if="user.type == 'SUPERADMIN'" tag="router-link" to="/superadmins">
-                    Super Admins
+                <b-navbar-item v-if="user.type == 'SUPERADMIN'" tag="router-link" to="/admins">
+                    Admins
                 </b-navbar-item>
             </template>
 
             <template slot="end">
                 <b-navbar-dropdown>
-                    <template slot="label"><span class="has-margin-right-10">{{user.name}}</span> <b-tag type="is-volby" rounded>{{user.type}}</b-tag></template>
+                    <template slot="label"><span class="has-margin-right-10">{{user.name}}</span> <b-tag type="is-volby">{{user.type}}</b-tag></template>
                     <b-navbar-item @click="logout">
                         Logout
                     </b-navbar-item>

@@ -301,6 +301,14 @@ class Database(object):
                WHERE end_block_num >= {}
                """.format(block_num)
 
+        delete_voters = """
+                       DELETE FROM voters WHERE start_block_num >= {}
+                       """.format(block_num)
+        update_voters = """
+                       UPDATE voters SET end_block_num = null
+                       WHERE end_block_num >= {}
+                       """.format(block_num)
+
         delete_agents = """
         DELETE FROM agents WHERE start_block_num >= {}
         """.format(block_num)
@@ -339,6 +347,8 @@ class Database(object):
             cursor.execute(delete_records)
             cursor.execute(update_records)
             cursor.execute(delete_blocks)
+            cursor.execute(update_voters)
+            cursor.execute(delete_voters)
 
     def fetch_last_known_blocks(self, count):
         """Fetches the specified number of most recent blocks
