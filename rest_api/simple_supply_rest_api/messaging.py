@@ -30,6 +30,10 @@ from simple_supply_rest_api.transaction_creation import \
     make_update_election_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_update_voter_transaction
+from simple_supply_rest_api.transaction_creation import \
+    make_update_voting_option_status_transaction
+from simple_supply_rest_api.transaction_creation import \
+    make_update_poll_book_status_transaction
 
 
 
@@ -90,6 +94,7 @@ class Messenger(object):
                                                     name,
                                                     description,
                                                     election_id,
+                                                    status,
                                                     timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
@@ -101,6 +106,7 @@ class Messenger(object):
             name=name,
             description=description,
             election_id=election_id,
+            status=status,
             timestamp=timestamp
         )
 
@@ -111,6 +117,7 @@ class Messenger(object):
                                                         voter_id,
                                                         name,
                                                         election_id,
+                                                        status,
                                                         timestamp):
         transaction_signer = self._crypto_factory.new_signer(
             secp256k1.Secp256k1PrivateKey.from_hex(private_key))
@@ -121,6 +128,7 @@ class Messenger(object):
             voter_id=voter_id,
             name=name,
             election_id=election_id,
+            status=status,
             timestamp=timestamp
         )
 
@@ -234,6 +242,48 @@ class Messenger(object):
             timestamp=timestamp)
         await self._send_and_wait_for_commit(batch)
 
+    async def send_update_voting_option_status_transaction(self,
+                                                           private_key,
+                                                           voting_option_id,
+                                                           name,
+                                                           description,
+                                                           election_id,
+                                                           status,
+                                                           timestamp):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_update_voting_option_status_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            voting_option_id=voting_option_id,
+            name=name,
+            description=description,
+            election_id=election_id,
+            status=status,
+            timestamp=timestamp)
+        await self._send_and_wait_for_commit(batch)
+
+    async def send_update_voter_poll_book_status_transaction(self,
+                                                             private_key,
+                                                             voter_id,
+                                                             name,
+                                                             election_id,
+                                                             status,
+                                                             timestamp):
+        transaction_signer = self._crypto_factory.new_signer(
+            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
+
+        batch = make_update_poll_book_status_transaction(
+            transaction_signer=transaction_signer,
+            batch_signer=self._batch_signer,
+            voter_id=voter_id,
+            name=name,
+            election_id=election_id,
+            status=status,
+            timestamp=timestamp)
+        await self._send_and_wait_for_commit(batch)
+
     # ------------------------------------------------------------
     # ------------------------------------------------------------
     # ------------------------------------------------------------
@@ -336,6 +386,4 @@ class Messenger(object):
         elif status == client_batch_submit_pb2.ClientBatchStatus.PENDING:
             raise ApiInternalError('Transaction submitted but timed out')
         elif status == client_batch_submit_pb2.ClientBatchStatus.UNKNOWN:
-            raise ApiInternalError('Something went wrong. Try again later ' + str(status_response
-                                                                                  .batch_statuses[0].
-                                                                                  invalid_transactions[0].message))
+            raise ApiInternalError('Something went wrong. Try again later ')

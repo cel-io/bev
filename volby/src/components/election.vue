@@ -158,7 +158,6 @@ export default{
             title: "Election",
             electionId: this.$route.params.electionId,
             election: {},
-            user: {},
             vote:{},
             canUpdate: false,
             alreadyVote: false,
@@ -236,14 +235,13 @@ export default{
 
                         axios.get('api/elections/'+this.electionId+'/poll_book/count')
                         .then(response => {
-                            console.log(response.data)
                             this.num_total_votes = response.data.count
                             this.num_votes_missing = this.num_total_votes - this.num_votes_all
 
                             this.percentage_n_vote = (this.num_votes_all * 100) / this.num_total_votes
                             this.percentage_n_missing = (this.num_votes_missing * 100) / this.num_total_votes
 
-                            axios.get('api/votes/'+this.user.voter_id+'/election/'+this.election.election_id)
+                            axios.get('api/votes/'+this.$parent.user.voter_id+'/election/'+this.election.election_id)
                             .then(response => {
                                 this.vote = response.data
 

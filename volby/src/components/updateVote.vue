@@ -1,25 +1,26 @@
 <template>
     <div>
-        <div class="card box has-margin-bottom-40">
-            <div class="card-content has-padding-bottom-0">
-                <b-field class="title is-1 has-text-centered">
-                    <h1 ><strong>{{ this.election.name }}</strong></h1>
-                </b-field>
-                <b-field class="title is-5 has-text-centered">
-                    <span>{{ this.election.description }}</span>
-                </b-field>
-                <p class="content title is-6">
-                    <b> Voting Options: </b>
-                </p>
-                <b-field v-for="(voting_option, index) in this.voting_options_array" :key="index">
-                    <b-radio v-model="votingOptionSelectedId" type="is-sucess" name="name" :native-value="voting_option.voting_option_id">
-                        {{ (voting_option.name).toUpperCase() }}
-                    </b-radio>
-                    <hr v-if="voting_option == voting_options_array[voting_options_array.length - 2]">
-                </b-field >
-                <b-field class="is-pulled-right">
-                    <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
-                </b-field>
+        <section>
+            <div class="card box has-margin-bottom-40">
+                <div class="card-content has-padding-bottom-30">
+                    <b-field class="title is-1 has-text-centered">
+                        <h1 ><strong>{{ this.election.name }}</strong></h1>
+                    </b-field>
+                    <b-field class="title is-5 has-text-centered">
+                        <span>{{ this.election.description }}</span>
+                    </b-field>
+                    <p class="content title is-6">
+                        <b> Voting Options: </b>
+                    </p>
+                    <b-field v-for="(voting_option, index) in this.voting_options_array" :key="index">
+                        <b-radio v-model="votingOptionSelectedId" type="is-sucess" name="name" :native-value="voting_option.voting_option_id">
+                            {{ (voting_option.name).toUpperCase() }}
+                        </b-radio>
+                        <hr v-if="voting_option == voting_options_array[voting_options_array.length - 2]">
+                    </b-field >
+                    <b-field class="is-pulled-right">
+                        <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
+                    </b-field>
             </div>
         </div>
     </div>
@@ -93,7 +94,7 @@ export default{
                         position: 'is-top-right',
                         type: 'is-sucess'
                     })
-                    this.$router.push('/eletions')                    
+                    this.$router.push('/elections')
                 })
                 .catch(error => {
                     console.log(error)
@@ -110,7 +111,7 @@ export default{
             axios.get('api/elections/'+ this.old_vote.election_id)
             .then(response => {
                 this.election = response.data
-                
+
                 axios.get('api/elections/'+ this.old_vote.election_id +'/voting_options')
                 .then(response => {
                     this.voting_options_array = response.data

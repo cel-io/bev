@@ -58,12 +58,12 @@ class Database(object):
 
     async def fetch_current_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
-                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}' 
-                    AND election_id=e.election_id LIMIT 1) 
+                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}'
+                    AND election_id=e.election_id LIMIT 1)
                     IS NOT NULL AS "voted"
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                 AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
-                AND start_timestamp <= {1} 
+                AND start_timestamp <= {1}
                 AND end_timestamp >= {1}
                 AND ({2}) >= e.start_block_num
                 AND ({2}) < e.end_block_num
@@ -76,9 +76,9 @@ class Database(object):
 
     async def fetch_past_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
-                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}' 
-                    AND election_id=e.election_id LIMIT 1) 
-                    IS NOT NULL AS "voted" 
+                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}'
+                    AND election_id=e.election_id LIMIT 1)
+                    IS NOT NULL AS "voted"
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                 AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND end_timestamp < {1}
@@ -212,6 +212,7 @@ class Database(object):
         fetch = """
                     SELECT * FROM poll_registrations
                     WHERE election_id='{0}'
+                    AND status='1'
                     AND ({1}) >= start_block_num
                     AND ({1}) < end_block_num;
                     """.format(election_id, LATEST_BLOCK_NUM)
@@ -220,11 +221,26 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchall()
 
+    async def fetch_poll_book_registration(self, election_id=None, voter_id=None):
+        fetch = """
+                       SELECT * FROM poll_registrations
+                       WHERE election_id='{0}'
+                       AND voter_id='{1}'
+                       AND status='1'
+                       AND ({2}) >= start_block_num
+                       AND ({2}) < end_block_num;
+                       """.format(election_id, voter_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
     async def count_poll_book(self, election_id=None):
         fetch = """
             SELECT COUNT(*)
             FROM poll_registrations
             WHERE election_id='{0}'
+            AND status='1'
             AND ({1}) >= start_block_num
             AND ({1}) < end_block_num;
         """.format(election_id, LATEST_BLOCK_NUM)
@@ -235,8 +251,9 @@ class Database(object):
 
     async def fetch_voting_option_resource(self, voting_option_id=None):
         fetch = """
-           SELECT * FROM voting_options 
+           SELECT * FROM voting_options
            WHERE voting_option_id='{0}'
+           AND status='1'
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
            """.format(voting_option_id, LATEST_BLOCK_NUM)
@@ -247,7 +264,7 @@ class Database(object):
 
     async def fetch_voting_option_num_vote_resource(self, voting_option_id=None):
         fetch = """
-              SELECT * FROM count_votes 
+              SELECT * FROM count_votes
               WHERE voting_option_id='{0}';
               """.format(voting_option_id)
 
@@ -257,8 +274,9 @@ class Database(object):
 
     async def fetch_election_voting_options_resource(self, election_id=None):
         fetch = """
-           SELECT * FROM voting_options 
-           WHERE election_id='{0}' 
+           SELECT * FROM voting_options
+           WHERE election_id='{0}'
+           AND status='1'
            AND ({1}) >= start_block_num
            AND ({1}) < end_block_num;
                """.format(election_id, LATEST_BLOCK_NUM)
@@ -280,7 +298,7 @@ class Database(object):
 
     async def fetch_votes_resource(self, vote_id=None):
         fetch = """
-           SELECT * FROM votes 
+           SELECT * FROM votes
            WHERE vote_id='{0}';
            """.format(vote_id)
 
@@ -290,7 +308,7 @@ class Database(object):
 
     async def fetch_vote_in_election_resource(self, voter_id=None, election_id=None):
         fetch = """
-              SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes 
+              SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes
                                                    WHERE voter_id='{0}' AND election_id='{1}')
               AND ({2}) >= start_block_num
               AND ({2}) < end_block_num;

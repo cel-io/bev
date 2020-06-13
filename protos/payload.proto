@@ -16,6 +16,8 @@ message BevPayload{
         UPDATE_VOTE = 9;
         UPDATE_ELECTION = 10;
         UPDATE_VOTER = 11;
+        UPDATE_VOTING_OPTION = 12;
+        UPDATE_POLL_REGISTRATION = 13;
     }
 
     // Whether the payload contains a create agent, create record,
@@ -36,9 +38,11 @@ message BevPayload{
     UpdateVoteAction update_vote = 11;
     UpdateElectionAction update_election = 12;
     UpdateVoterAction update_voter = 13;
+    UpdateVotingOptionAction update_voting_option = 14;
+    UpdatePollRegistrationAction update_poll_registration = 15;
 
     // Approximately when transaction was submitted, as a Unix UTC timestamp
-    uint64 timestamp = 14;
+    uint64 timestamp = 16;
 }
 
 
@@ -104,6 +108,7 @@ message CreateVotingOptionAction{
     string description = 3;
 
     string election_id = 4;
+    bool status = 5;
 }
 
 message CreatePollRegistrationAction{
@@ -111,6 +116,7 @@ message CreatePollRegistrationAction{
     string name = 2;
 
     string election_id = 3;
+    bool status = 4;
 }
 
 message CreateVoterAction{
@@ -179,4 +185,21 @@ message UpdateVoterAction {
     }
 
     Type type = 5;
+}
+
+message UpdateVotingOptionAction{
+    string voting_option_id = 1;
+    string name = 2;
+    string description = 3;
+
+    string election_id = 4;
+    bool status = 5;
+}
+
+message UpdatePollRegistrationAction{
+    string voter_id = 1;
+    string name = 2;
+
+    string election_id = 3;
+    bool status = 4;
 }

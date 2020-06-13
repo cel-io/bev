@@ -114,6 +114,16 @@ class SimpleSupplyHandler(TransactionHandler):
                 state=state,
                 public_key=header.signer_public_key,
                 payload=payload)
+        elif payload.action == payload_pb2.BevPayload.UPDATE_VOTING_OPTION:
+            _update_voting_option(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
+        elif payload.action == payload_pb2.BevPayload.UPDATE_POLL_REGISTRATION:
+            _update_poll_registration(
+                state=state,
+                public_key=header.signer_public_key,
+                payload=payload)
         else:
             raise InvalidTransaction('Unhandled action')
 
@@ -147,7 +157,8 @@ def _create_voting_option(state, public_key, payload):
         voting_option_id=payload.data.voting_option_id,
         name=payload.data.name,
         description=payload.data.description,
-        election_id=payload.data.election_id
+        election_id=payload.data.election_id,
+        status=payload.data.status
     )
 
 
@@ -159,7 +170,8 @@ def _create_poll_registration(state, public_key, payload):
     state.set_poll_registration(
         voter_id=payload.data.voter_id,
         name=payload.data.name,
-        election_id=payload.data.election_id
+        election_id=payload.data.election_id,
+        status=payload.data.status
     )
 
 
@@ -220,8 +232,43 @@ def _update_election(state, public_key, payload):
 
     state.update_election(
         election_id=payload.data.election_id,
+        name=payload.data.name,
+        description=payload.data.description,
+        start_timestamp=payload.data.start_timestamp,
+        end_timestamp=payload.data.end_timestamp,
+        results_permission=payload.data.results_permission,
+        can_change_vote=payload.data.can_change_vote,
+        can_show_realtime=payload.data.can_show_realtime,
+        admin_id=payload.data.admin_id,
         status=payload.data.status,
         timestamp=payload.timestamp
+    )
+
+
+def _update_voting_option(state, public_key, payload):
+    if state.get_voter(public_key) is None:
+        raise InvalidTransaction('Agent with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.update_voting_option(
+        voting_option_id=payload.data.voting_option_id,
+        name=payload.data.name,
+        description=payload.data.description,
+        election_id=payload.data.election_id,
+        status=payload.data.status
+    )
+
+
+def _update_poll_registration(state, public_key, payload):
+    if state.get_voter(public_key) is None:
+        raise InvalidTransaction('Agent with the public key {} does '
+                                 'not exist'.format(public_key))
+
+    state.update_poll_registration(
+        voter_id=payload.data.voter_id,
+        name=payload.data.name,
+        election_id=payload.data.election_id,
+        status=payload.data.status
     )
 
 

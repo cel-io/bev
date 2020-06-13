@@ -82,6 +82,7 @@ def make_create_voting_option_transaction(transaction_signer,
                                           name,
                                           description,
                                           election_id,
+                                          status,
                                           timestamp):
     """Make a CreateVotingOptionAction transaction and wrap it in a batch
 
@@ -92,6 +93,7 @@ def make_create_voting_option_transaction(transaction_signer,
         name (str): Name of the voting option
         description (str): Description of the voting option
         election_id (str):  Unique ID of the election
+        status (bool): Defines if the voting option is activated or disable
         timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
@@ -110,7 +112,8 @@ def make_create_voting_option_transaction(transaction_signer,
         voting_option_id=voting_option_id,
         name=name,
         description=description,
-        election_id=election_id)
+        election_id=election_id,
+        status=status)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_VOTING_OPTION,
@@ -132,6 +135,7 @@ def make_create_poll_registration_transaction(transaction_signer,
                                               voter_id,
                                               name,
                                               election_id,
+                                              status,
                                               timestamp):
     """Make a CreatePollRegistrationAction transaction and wrap it in a batch
 
@@ -141,6 +145,7 @@ def make_create_poll_registration_transaction(transaction_signer,
         voter_id (str): Unique ID of the voter
         name (str): Name of the voter
         election_id (str):  Unique ID of the election
+        status (bool): Defines if the user in poll registration is activated or disable
         timestamp (int): Unix UTC timestamp of when the election is created
 
     Returns:
@@ -158,7 +163,8 @@ def make_create_poll_registration_transaction(transaction_signer,
     action = payload_pb2.CreatePollRegistrationAction(
         voter_id=voter_id,
         name=name,
-        election_id=election_id)
+        election_id=election_id,
+        status=status)
 
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.CREATE_POLL_REGISTRATION,
@@ -380,7 +386,7 @@ def make_update_election_transaction(transaction_signer,
                                      admin_id,
                                      status,
                                      timestamp):
-    """Make a CreateElectionAction transaction and wrap it in a batch
+    """Make a UpdateElectionAction transaction and wrap it in a batch
 
     Args:
         transaction_signer (sawtooth_signing.Signer): The transaction key pair
@@ -423,6 +429,111 @@ def make_update_election_transaction(transaction_signer,
     payload = payload_pb2.BevPayload(
         action=payload_pb2.BevPayload.UPDATE_ELECTION,
         update_election=action,
+        timestamp=timestamp)
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
+def make_update_voting_option_status_transaction(transaction_signer,
+                                                 batch_signer,
+                                                 voting_option_id,
+                                                 name,
+                                                 description,
+                                                 election_id,
+                                                 status,
+                                                 timestamp):
+    """Make a UpdateVotingOptionStatusAction transaction and wrap it in a batch
+
+    Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        voting_option_id (str): Unique ID of the voting option
+        name (str): Name of the voting option
+        description (str): Description of the voting option
+        election_id (str): Unique ID of the election
+        status (bool): Defines if the voting option is activated or deactivate
+        timestamp (int): Unix UTC timestamp of when the vote is change
+
+
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_voter_address(transaction_signer.get_public_key().as_hex()),
+        addresser.get_voting_option_address(voting_option_id)
+    ]
+
+    outputs = [addresser.get_voting_option_address(voting_option_id)]
+
+    action = payload_pb2.UpdateVotingOptionAction(
+        voting_option_id=voting_option_id,
+        name=name,
+        description=description,
+        election_id=election_id,
+        status=status)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.UPDATE_VOTING_OPTION,
+        update_voting_option=action,
+        timestamp=timestamp)
+    payload_bytes = payload.SerializeToString()
+
+    return _make_batch(
+        payload_bytes=payload_bytes,
+        inputs=inputs,
+        outputs=outputs,
+        transaction_signer=transaction_signer,
+        batch_signer=batch_signer)
+
+
+def make_update_poll_book_status_transaction(transaction_signer,
+                                             batch_signer,
+                                             voter_id,
+                                             name,
+                                             election_id,
+                                             status,
+                                             timestamp):
+    """Make a UpdatePollBookStatusAction transaction and wrap it in a batch
+
+     Args:
+        transaction_signer (sawtooth_signing.Signer): The transaction key pair
+        batch_signer (sawtooth_signing.Signer): The batch key pair
+        voter_id (str): Unique ID of the voter
+        name (str): Name of the voter
+        election_id (str):  Unique ID of the election
+        status (bool): Defines if the user in poll registration is activated or disable
+        timestamp (int): Unix UTC timestamp of when the election is created
+
+
+
+    Returns:
+        batch_pb2.Batch: The transaction wrapped in a batch
+    """
+
+    inputs = [
+        addresser.get_voter_address(transaction_signer.get_public_key().as_hex()),
+        addresser.get_poll_registration_address(voter_id)
+    ]
+
+    outputs = [addresser.get_poll_registration_address(voter_id)]
+
+    action = payload_pb2.UpdatePollRegistrationAction(
+        voter_id=voter_id,
+        name=name,
+        election_id=election_id,
+        status=status)
+
+    payload = payload_pb2.BevPayload(
+        action=payload_pb2.BevPayload.UPDATE_POLL_REGISTRATION,
+        update_poll_registration=action,
         timestamp=timestamp)
     payload_bytes = payload.SerializeToString()
 

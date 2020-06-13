@@ -88,7 +88,8 @@ class SimpleSupplyState(object):
                           voting_option_id,
                           name,
                           description,
-                          election_id):
+                          election_id,
+                          status):
         """Creates a new voting option in state
 
             Args:
@@ -96,6 +97,7 @@ class SimpleSupplyState(object):
                 name (str): Name of the voting option
                 description (str): Description of the voting option
                 election_id (str): Unique ID of the election
+                status (bool): Defines if the voting option is activated or disable
         """
         address = addresser.get_voting_option_address(voting_option_id)
 
@@ -103,7 +105,8 @@ class SimpleSupplyState(object):
             voting_option_id=voting_option_id,
             name=name,
             description=description,
-            election_id=election_id)
+            election_id=election_id,
+            status=status)
 
         container = votingOption_pb2.VotingOptionContainer()
         state_entries = self._context.get_state(
@@ -121,20 +124,23 @@ class SimpleSupplyState(object):
     def set_poll_registration(self,
                               voter_id,
                               name,
-                              election_id):
+                              election_id,
+                              status):
         """Creates a new poll registration in state
 
             Args:
                 voter_id (str): Unique ID of the voter
                 name (str): Name of the voting option
                 election_id (str): Unique ID of the election
+                status (bool): Defines if the user in poll registration is activated or disable
         """
         address = addresser.get_poll_registration_address(voter_id)
 
         poll_registration = pollRegistration_pb2.PollRegistration(
             voter_id=voter_id,
             name=name,
-            election_id=election_id)
+            election_id=election_id,
+            status=status)
 
         container = pollRegistration_pb2.PollRegistrationContainer()
         state_entries = self._context.get_state(
@@ -299,6 +305,14 @@ class SimpleSupplyState(object):
 
     def update_election(self,
                         election_id,
+                        name,
+                        description,
+                        start_timestamp,
+                        end_timestamp,
+                        results_permission,
+                        can_change_vote,
+                        can_show_realtime,
+                        admin_id,
                         status,
                         timestamp):
 
@@ -311,8 +325,66 @@ class SimpleSupplyState(object):
             container.ParseFromString(state_entries[0].data)
             for election in container.entries:
                 if election.election_id == election_id:
+                    election.name = name
+                    election.description = description
+                    election.start_timestamp = start_timestamp
+                    election.end_timestamp = end_timestamp
+                    election.results_permission = results_permission
+                    election.can_change_vote = can_change_vote
+                    election.can_show_realtime = can_show_realtime
+                    election.admin_id = admin_id
                     election.status = status
                     election.timestamp = timestamp
+
+        data = container.SerializeToString()
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
+    def update_voting_option(self,
+                             voting_option_id,
+                             name,
+                             description,
+                             election_id,
+                             status):
+
+        address = addresser.get_voting_option_address(voting_option_id)
+        container = votingOption_pb2.VotingOptionContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+            for voting_option in container.entries:
+                if voting_option.voting_option_id == voting_option_id:
+                    voting_option.name = name
+                    voting_option.description = description
+                    voting_option.election_id = election_id
+                    voting_option.status = status
+
+        data = container.SerializeToString()
+        updated_state = {}
+        updated_state[address] = data
+        self._context.set_state(updated_state, timeout=self._timeout)
+
+    def update_poll_registration(self,
+                                 voter_id,
+                                 name,
+                                 election_id,
+                                 status):
+
+        address = addresser.get_poll_registration_address(voter_id)
+        container = pollRegistration_pb2.PollRegistrationContainer()
+        state_entries = self._context.get_state(
+            addresses=[address], timeout=self._timeout)
+
+        if state_entries:
+            container.ParseFromString(state_entries[0].data)
+            for poll_registration in container.entries:
+                if poll_registration.voter_id == voter_id:
+                    poll_registration.name = name
+                    poll_registration.election_id = election_id
+                    poll_registration.status = status
 
         data = container.SerializeToString()
         updated_state = {}
