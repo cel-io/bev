@@ -105,6 +105,21 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchall()
 
+    async def fetch_voters_resources(self, voter_id=None):
+        fetch = """
+               SELECT voter_id
+               FROM voters
+               WHERE type = 'VOTER'
+               AND voter_id LIKE '%{0}%'
+               AND ({1}) >= start_block_num
+               AND ({1}) < end_block_num
+               ORDER BY type DESC;
+           """.format(voter_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchall()
+
     async def fetch_all_election_resources(self):
         fetch = """
         SELECT *

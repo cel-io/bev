@@ -94,13 +94,14 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_post('/elections', handler.create_election)
     app.router.add_put('/elections/{electionId}/update', handler.update_election)
 
-    app.router.add_get('/voting_options/{votingOptionId}', handler.get_voting_option)
+    app.router.add_get('/voting_options/{votingOptionId}/get', handler.get_voting_option)
     app.router.add_put('/voting_options/{votingOptionId}/status', handler.update_voting_option_status)
     app.router.add_put('/poll_book/{voterId}/status', handler.update_poll_book_status)
 
     app.router.add_post('/voters', handler.create_voter)
     app.router.add_patch('/voters/{voterId}/type', handler.update_voter_type)
     app.router.add_get('/voters/admins', handler.list_admins)
+    app.router.add_get('/voters/{voterID}', handler.get_voters)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_get('/votes/{voterId}/voter', handler.list_votes)

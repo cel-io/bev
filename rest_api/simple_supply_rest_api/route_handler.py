@@ -405,14 +405,13 @@ class RouteHandler(object):
         return json_response(voting_options)
 
     async def get_voting_option(self, request):
-        private_key, public_key = await self._authorize(request)
-
+        private_key, public_key, user = await self._authorize(request)
         voting_option_id = request.match_info.get('votingOptionId', '')
         voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
 
         if voting_option is None:
             raise ApiNotFound(
-                'Voting Option with the voting option id '
+                'No voting options with the id '
                 '{} was not found'.format(voting_option_id))
 
         return json_response(voting_option)
@@ -510,6 +509,19 @@ class RouteHandler(object):
         admin_list = await self._database.fetch_admins_resources()
 
         return json_response(admin_list)
+
+    async def get_voters(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        if user.get('type') != 'SUPERADMIN':
+            raise ApiUnauthorized(
+                'Unauthorized'
+            )
+
+        voter_id = request.match_info.get('voterID', '')
+        voters_list = await self._database.fetch_voters_resources(voter_id=voter_id)
+
+        return json_response(voters_list)
 
     async def list_vote(self, request):
         private_key, public_key, user = await self._authorize(request)

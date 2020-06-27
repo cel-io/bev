@@ -272,11 +272,9 @@ export default{
                                     this.alreadyVote = true
                                 }
 
-                                this.isLoading = false
-
                                 if(this.vote != null){
 
-                                    axios.get('api/voting_options/'+this.vote.voting_option_id)
+                                    axios.get('api/voting_options/'+this.vote.voting_option_id +'/get')
                                     .then(response => {
                                         this.my_voting_option = response.data
 
@@ -290,6 +288,8 @@ export default{
                                         }
                                     })
 
+                                }else{
+                                    this.isLoading = false
                                 }
                             })
                             .catch(error => {
