@@ -99,9 +99,11 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_put('/poll_book/{voterId}/status', handler.update_poll_book_status)
 
     app.router.add_post('/voters', handler.create_voter)
-    app.router.add_patch('/voters/{voterId}/type', handler.update_voter_type)
+    app.router.add_put('/voters/{voterId}/promote', handler.promote_voter_type)
+    app.router.add_put('/voters/{voterId}/demote', handler.demote_voter_type)
     app.router.add_get('/voters/admins', handler.list_admins)
     app.router.add_get('/voters/{voterID}', handler.get_voters)
+    app.router.add_get('/voters/{voterID}/get', handler.get_voter)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_get('/votes/{voterId}/voter', handler.list_votes)

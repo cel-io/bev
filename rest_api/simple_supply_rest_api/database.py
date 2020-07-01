@@ -95,9 +95,9 @@ class Database(object):
         fetch = """
             SELECT voter_id, name, type
             FROM voters
-            WHERE type = 'ADMIN' OR type = 'SUPERADMIN'
-            AND ({0}) >= start_block_num
+            WHERE ({0}) >= start_block_num
             AND ({0}) < end_block_num
+            AND type = 'ADMIN' OR type = 'SUPERADMIN'
             ORDER BY type DESC;
         """.format(LATEST_BLOCK_NUM)
 

@@ -122,7 +122,7 @@ class RouteHandler(object):
         return json_response(
             {'accessToken': token, 'user': user})
 
-    async def update_voter_type(self, request):
+    async def promote_voter_type(self, request):
         private_key, public_key, user = await self._authorize(request)
         body = await decode_request(request)
         required_fields = ['type']
@@ -164,6 +164,49 @@ class RouteHandler(object):
             type='ADMIN')
 
         return json_response({'voter': {'voter_id': voter_id, 'name': voter.get('name'), 'type': 'ADMIN'}})
+
+    async def demote_voter_type(self, request):
+        private_key, public_key, user = await self._authorize(request)
+        body = await decode_request(request)
+        required_fields = ['type']
+        validate_fields(required_fields, body)
+
+        voter_id = request.match_info.get('voterId', '')
+        if voter_id == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
+
+        if user.get('type') != 'SUPERADMIN':
+            raise ApiUnauthorized(
+                'Unauthorized'
+            )
+
+        voter = await self._database.fetch_voter_resource(voter_id=voter_id)
+
+        if voter is None:
+            raise ApiNotFound(
+                'No voter found'
+            )
+
+        if voter.get('type') == 'VOTER':
+            raise ApiConflict(
+                'Voter {} is already an voter'.format(voter_id)
+            )
+
+        auth_info = await self._database.fetch_auth_resource(public_key=voter.get('public_key'))
+        voter_private_key = decrypt_private_key(request.app['aes_key'], voter.get('public_key'),
+                                                auth_info.get('encrypted_private_key'))
+
+        await self._messenger.send_update_voter_transaction(
+            private_key=voter_private_key,
+            voter_id=voter_id,
+            public_key=voter.get('public_key'),
+            name=voter.get('name'),
+            created_at=get_time(),
+            type='VOTER')
+
+        return json_response({'voter': {'voter_id': voter_id, 'name': voter.get('name'), 'type': 'VOTER'}})
 
     async def create_vote(self, request):
         body = await decode_request(request)
@@ -501,10 +544,10 @@ class RouteHandler(object):
     async def list_admins(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        if user.get('type') != 'SUPERADMIN':
-            raise ApiUnauthorized(
-                'Unauthorized'
-            )
+        # if user.get('type') != 'SUPERADMIN':
+        #     raise ApiUnauthorized(
+        #         'Unauthorized'
+        #     )
 
         admin_list = await self._database.fetch_admins_resources()
 
@@ -522,6 +565,19 @@ class RouteHandler(object):
         voters_list = await self._database.fetch_voters_resources(voter_id=voter_id)
 
         return json_response(voters_list)
+
+    async def get_voter(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        if user.get('type') != 'SUPERADMIN':
+            raise ApiUnauthorized(
+                'Unauthorized'
+            )
+
+        voter_id = request.match_info.get('voterID', '')
+        voter = await self._database.fetch_voter_resource(voter_id=voter_id)
+
+        return json_response(voter)
 
     async def list_vote(self, request):
         private_key, public_key, user = await self._authorize(request)

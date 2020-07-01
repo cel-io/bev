@@ -71,6 +71,9 @@
                             <b-table-column field="type" label="Type" sortable>
                                 <b-tag type="is-volby">{{props.row.type}}</b-tag>
                             </b-table-column>
+                            <b-table-column  label="Action" sortable>
+                                <b-button v-if="props.row.type == 'ADMIN'"rounded  size="is-small" type="is-success" @click.prevent="demote(props.row.voter_id)">Demote</b-button>
+                            </b-table-column>
                         </template>
                     </b-table>
                 </template>
@@ -88,6 +91,7 @@ export default {
         return {
             title: 'Admins',
             voterId: '',
+            voter: {},
             admins: [],
             voters:[],
             selected: null,
@@ -121,7 +125,7 @@ export default {
             this.isNotFound = false
             this.isAlreadyAdmin = false
 
-            axios.patch(`api/voters/${this.selected}/type`,{
+            axios.put(`api/voters/${this.selected}/promote`,{
                 'type': 'ADMIN'
             })
             .then(response => {
@@ -159,7 +163,44 @@ export default {
             axios.get('api/voters/admins')
             .then(response => {
                 this.admins = response.data
+                console.log(this.admins)
                 this.isLoadingList = false
+            })
+            .catch(error => {
+                console.log(error)
+                if(error.response.status == 401){
+                    this.$store.commit("logout")
+                    this.$router.push("/login")
+                }
+            })
+        },
+        demote(voter_id){
+            axios.get(`api/voters/${voter_id}/get`)
+            .then(response => {
+                this.voter = response.data
+
+                axios.put(`api/voters/${voter_id}/demote`,{
+                    'type': this.voter.type
+                })
+                .then(response => {
+
+                    this.admins.splice(this.admins.map(function(item) { return item.voter_id; }).indexOf(voter_id), 1)
+                    this.$refs.observer.reset()
+
+                    this.$buefy.toast.open({
+                        duration: 3000,
+                        message: 'Admin demoted!',
+                        type: 'is-success'
+                    })
+                })
+                .catch(error => {
+                    console.log(error)
+                    if(error.response.status == 401){
+                        this.$store.commit("logout")
+                        this.$router.push("/login")
+                    }
+                })
+
             })
             .catch(error => {
                 console.log(error)
@@ -177,22 +218,22 @@ export default {
             this.isFetching = true
 
             axios.get('api/voters/' + name)
-                .then(({ data }) => {
-                    this.voters = []
-                    data.forEach((item) => this.voters.push(item.voter_id))
-                })
-                .catch((error) => {
-                    this.voters = []
-                    throw error
-                })
-                .finally(() => {
-                    this.isFetching = false
-                })
-            }, 500)
-        },
-        created(){
-            this.$emit('title',this.title)
-            this.getAdmins()
-        }
+            .then(({ data }) => {
+                this.voters = []
+                data.forEach((item) => this.voters.push(item.voter_id))
+            })
+            .catch((error) => {
+                this.voters = []
+                throw error
+            })
+            .finally(() => {
+                this.isFetching = false
+            })
+        }, 500)
+    },
+    created(){
+        this.$emit('title',this.title)
+        this.getAdmins()
     }
-    </script>
+}
+</script>
