@@ -217,18 +217,22 @@ export default {
             }
             this.isFetching = true
 
-            axios.get('api/voters/' + name)
-            .then(({ data }) => {
-                this.voters = []
-                data.forEach((item) => this.voters.push(item.voter_id))
-            })
-            .catch((error) => {
-                this.voters = []
-                throw error
-            })
-            .finally(() => {
-                this.isFetching = false
-            })
+            console.log(name.length)
+
+            if(name.length >= 3){
+                axios.get('api/voters/' + name)
+                .then(({ data }) => {
+                    this.voters = []
+                    data.forEach((item) => this.voters.push(item.voter_id))
+                })
+                .catch((error) => {
+                    this.voters = []
+                    throw error
+                })
+                .finally(() => {
+                    this.isFetching = false
+                })
+            }
         }, 500)
     },
     created(){

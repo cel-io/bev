@@ -91,6 +91,23 @@ class Database(object):
             await cursor.execute(fetch_elections)
             return await cursor.fetchall()
 
+    async def fetch_public_elections_resources(self, timestamp):
+        fetch_elections = """
+                SELECT *
+                FROM elections
+                WHERE start_timestamp <= {0}
+                AND end_timestamp >= {0}
+                AND status = '1'
+                AND can_show_realtime = '1'
+                AND ({1}) >= start_block_num
+                AND ({1}) < end_block_num
+                ORDER BY start_timestamp DESC;
+                """.format(timestamp, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch_elections)
+            return await cursor.fetchall()
+
     async def fetch_admins_resources(self):
         fetch = """
             SELECT voter_id, name, type

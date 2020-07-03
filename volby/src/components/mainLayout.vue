@@ -19,6 +19,9 @@
                 <b-navbar-item v-if="user.type == 'ADMIN' || user.type == 'SUPERADMIN'" tag="router-link" to="/newelection">
                     New Election
                 </b-navbar-item>
+                <b-navbar-item tag="router-link" to="/public">
+                    Public Elections
+                </b-navbar-item>
                 <b-navbar-item v-if="user.type == 'SUPERADMIN'" tag="router-link" to="/admins">
                     Admins
                 </b-navbar-item>

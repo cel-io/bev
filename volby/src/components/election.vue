@@ -23,7 +23,7 @@
                                 <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
                             </b-tooltip>
                             <b-button v-if="this.canUpdate && this.alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
-                            <b-button v-else-if="!this.alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
+                            <b-button v-else-if="!this.alreadyVote && this.is_poll_book_registration" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
                         </div>
                     </div>
                     <div class="columns">
@@ -196,7 +196,8 @@ export default{
             num_votes_missing: 0,
             percentage_n_vote: 0,
             percentage_n_missing: 0,
-            switchGraph: 0
+            switchGraph: 0,
+            is_poll_book_registration: false
         }
     },
     methods: {
@@ -266,18 +267,28 @@ export default{
                             .then(response => {
                                 this.vote = response.data
 
+                                axios.get('api/poll_book/'+this.$parent.user.voter_id+'/'+this.electionId)
+                                .then(response => {
+                                    let poll_registration = response.data
+
+                                    console.log(poll_registration)
+
+                                    if(poll_registration == null){
+                                        this.is_poll_book_registration = false
+                                    }else{
+                                        this.is_poll_book_registration = true
+                                    }
+                                })
+
                                 if(this.vote == null){
                                     this.alreadyVote = false
+                                    this.isLoading = false
                                 }else{
-                                    this.alreadyVote = true
-                                }
-
-                                if(this.vote != null){
-
                                     axios.get('api/voting_options/'+this.vote.voting_option_id +'/get')
                                     .then(response => {
                                         this.my_voting_option = response.data
 
+                                        this.alreadyVote = true
                                         this.isLoading = false
                                     })
                                     .catch(error => {
@@ -287,9 +298,13 @@ export default{
                                             this.$router.push("/login")
                                         }
                                     })
-
-                                }else{
-                                    this.isLoading = false
+                                }
+                            })
+                            .catch(error => {
+                                console.log(error)
+                                if(error.response.status == 401){
+                                    this.$store.commit("logout")
+                                    this.$router.push("/login")
                                 }
                             })
                             .catch(error => {

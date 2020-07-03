@@ -459,6 +459,15 @@ class RouteHandler(object):
 
         return json_response(voting_option)
 
+    async def is_poll_book_registration(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        voterId = request.match_info.get('voterId', '')
+        electionId = request.match_info.get('electionId', '')
+        poll_registration = await self._database.fetch_poll_book_registration(election_id=electionId, voter_id=voterId)
+
+        return json_response(poll_registration)
+
     async def update_voting_option_status(self, request):
         private_key, public_key = await self._authorize(request)
 
@@ -541,13 +550,19 @@ class RouteHandler(object):
 
         return json_response(past_elections_list)
 
+    async def list_public_elections(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        public_elections_list = await self._database.fetch_public_elections_resources(get_time())
+        return json_response(public_elections_list)
+
     async def list_admins(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        # if user.get('type') != 'SUPERADMIN':
-        #     raise ApiUnauthorized(
-        #         'Unauthorized'
-        #     )
+        if user.get('type') != 'SUPERADMIN':
+            raise ApiUnauthorized(
+                'Unauthorized'
+            )
 
         admin_list = await self._database.fetch_admins_resources()
 
