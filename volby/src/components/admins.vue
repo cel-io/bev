@@ -163,7 +163,6 @@ export default {
             axios.get('api/voters/admins')
             .then(response => {
                 this.admins = response.data
-                console.log(this.admins)
                 this.isLoadingList = false
             })
             .catch(error => {

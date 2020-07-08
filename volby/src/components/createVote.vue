@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="card box has-margin-bottom-40">
+        <div class="card box shadow has-margin-bottom-40">
             <div class="card-content has-padding-bottom-0">
                 <b-field class="title is-1 has-text-centered">
                     <h1 ><strong>{{ this.election.name }}</strong></h1>

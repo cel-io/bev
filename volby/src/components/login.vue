@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="section has-padding-top-10">
-            <div class="container">
+            <div class="container main">
                 <div class="columns is-centered is-full-height is-vcentered">
                     <div class="column has-text-centered has-padding-top-30">
                         <img class="image is-128x128 is-horizontal-center" src="img/icon.png"/>
@@ -9,7 +9,7 @@
                         <h4 id="home_subtitle">Login</h4>
                         <div class="columns is-centered">
                             <div class="column is-5">
-                                <div class="card box has-padding-top-0 has-padding-left-0 has-padding-right-0 has-padding-bottom-0<">
+                                <div class="card box shadow has-padding-top-0 has-padding-left-0 has-padding-right-0 has-padding-bottom-0">
                                     <div class="card-content">
                                         <b-message v-show="isInvalidLogin" type="is-danger">
                                             Invalid email or password.
