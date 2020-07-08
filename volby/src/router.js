@@ -65,8 +65,8 @@ const routes = [
             {path: 'election/:electionId/admin', component: Election, name: 'electionAdmin', beforeEnter: adminGuard},
             {path: 'myelections', component: MyElections, name: 'myElections', beforeEnter: adminGuard},
             {path: 'election/:electionId/update', component: UpdateElection, name: 'updateElection', beforeEnter: adminGuard},
-            {path: 'admins', component: Admins, name: 'admins', beforeEnter: superadminGuard}
-            {path: 'public', component: Public, name: 'public'},
+            {path: 'admins', component: Admins, name: 'admins', beforeEnter: superadminGuard},
+            {path: 'public', component: Public, name: 'public'}
         ],
         beforeEnter: authGuard
     }

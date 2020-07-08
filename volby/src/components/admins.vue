@@ -72,7 +72,7 @@
                                 <b-tag type="is-volby">{{props.row.type}}</b-tag>
                             </b-table-column>
                             <b-table-column  label="Action" sortable>
-                                <b-button v-if="props.row.type == 'ADMIN'"rounded  size="is-small" type="is-success" @click.prevent="demote(props.row.voter_id)">Demote</b-button>
+                                <b-button v-if="props.row.type == 'ADMIN'" rounded  size="is-small" type="is-success" @click.prevent="demote(props.row.voter_id)">Demote</b-button>
                             </b-table-column>
                         </template>
                     </b-table>
@@ -91,7 +91,6 @@ export default {
         return {
             title: 'Admins',
             voterId: '',
-            voter: {},
             admins: [],
             voters:[],
             selected: null,
@@ -143,16 +142,16 @@ export default {
             .catch(error => {
                 console.log(error)
                 switch(error.response.status){
-                    case 401:
-                    this.$store.commit("logout")
-                    this.$router.push("/login")
-                    break
+                    case 403:
+                        this.$store.commit("logout")
+                        this.$router.push("/login")
+                        break
                     case 409:
-                    this.isAlreadyAdmin = true
-                    break
+                        this.isAlreadyAdmin = true
+                        break
                     case 404:
-                    this.isNotFound = true
-                    break
+                        this.isNotFound = true
+                        break
                 }
             })
             .then(() => {
@@ -175,36 +174,23 @@ export default {
             })
         },
         demote(voter_id){
-            axios.get(`api/voters/${voter_id}/get`)
+            axios.patch(`/api/voters/${this.voterId}/type`,{
+                'type': 'VOTER'
+            })
             .then(response => {
-                this.voter = response.data
 
-                axios.put(`api/voters/${voter_id}/demote`,{
-                    'type': this.voter.type
+                this.admins.splice(this.admins.map(function(item) { return item.voter_id; }).indexOf(voter_id), 1)
+                this.$refs.observer.reset()
+
+                this.$buefy.toast.open({
+                    duration: 3000,
+                    message: 'Admin demoted',
+                    type: 'is-success'
                 })
-                .then(response => {
-
-                    this.admins.splice(this.admins.map(function(item) { return item.voter_id; }).indexOf(voter_id), 1)
-                    this.$refs.observer.reset()
-
-                    this.$buefy.toast.open({
-                        duration: 3000,
-                        message: 'Admin demoted!',
-                        type: 'is-success'
-                    })
-                })
-                .catch(error => {
-                    console.log(error)
-                    if(error.response.status == 401){
-                        this.$store.commit("logout")
-                        this.$router.push("/login")
-                    }
-                })
-
             })
             .catch(error => {
                 console.log(error)
-                if(error.response.status == 401){
+                if(error.response.status == 403){
                     this.$store.commit("logout")
                     this.$router.push("/login")
                 }
@@ -217,10 +203,8 @@ export default {
             }
             this.isFetching = true
 
-            console.log(name.length)
-
             if(name.length >= 3){
-                axios.get('api/voters/' + name)
+                axios.get('/api/voters/' + name)
                 .then(({ data }) => {
                     this.voters = []
                     data.forEach((item) => this.voters.push(item.voter_id))
