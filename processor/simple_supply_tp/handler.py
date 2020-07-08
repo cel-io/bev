@@ -191,7 +191,7 @@ def _update_voter(state, public_key, payload):
     if state.get_voter(public_key) is None:
         raise InvalidTransaction('Voter with the public key {} does '
                                  'not exists'.format(public_key))
-    state.set_voter(
+    state.update_voter(
         voter_id=payload.data.voter_id,
         public_key=payload.data.public_key,
         name=payload.data.name,

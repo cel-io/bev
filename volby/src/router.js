@@ -18,6 +18,7 @@ import About from './components/about'
 import Admins from './components/admins'
 import MyElections from './components/myElections'
 import UpdateElection from './components/updateElection'
+import Public from './components/public'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -65,6 +66,7 @@ const routes = [
             {path: 'myelections', component: MyElections, name: 'myElections', beforeEnter: adminGuard},
             {path: 'election/:electionId/update', component: UpdateElection, name: 'updateElection', beforeEnter: adminGuard},
             {path: 'admins', component: Admins, name: 'admins', beforeEnter: superadminGuard}
+            {path: 'public', component: Public, name: 'public'},
         ],
         beforeEnter: authGuard
     }

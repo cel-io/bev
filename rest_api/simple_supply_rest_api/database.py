@@ -91,6 +91,23 @@ class Database(object):
             await cursor.execute(fetch_elections)
             return await cursor.fetchall()
 
+    async def fetch_public_elections_resources(self, timestamp):
+        fetch_elections = """
+                SELECT *
+                FROM elections
+                WHERE start_timestamp <= {0}
+                AND end_timestamp >= {0}
+                AND status = '1'
+                AND can_show_realtime = '1'
+                AND ({1}) >= start_block_num
+                AND ({1}) < end_block_num
+                ORDER BY start_timestamp DESC;
+                """.format(timestamp, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch_elections)
+            return await cursor.fetchall()
+
     async def fetch_admin_elections_resources(self, admin_id):
         fetch_elections = """
                 SELECT *
@@ -109,11 +126,26 @@ class Database(object):
         fetch = """
             SELECT voter_id, name, type
             FROM voters
-            WHERE type = 'ADMIN' OR type = 'SUPERADMIN'
-            AND ({0}) >= start_block_num
+            WHERE ({0}) >= start_block_num
             AND ({0}) < end_block_num
+            AND type = 'ADMIN' OR type = 'SUPERADMIN'
             ORDER BY type DESC;
         """.format(LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchall()
+
+    async def fetch_voters_resources(self, voter_id=None):
+        fetch = """
+               SELECT voter_id
+               FROM voters
+               WHERE type = 'VOTER'
+               AND voter_id LIKE '%{0}%'
+               AND ({1}) >= start_block_num
+               AND ({1}) < end_block_num
+               ORDER BY type DESC;
+           """.format(voter_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)

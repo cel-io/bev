@@ -86,6 +86,7 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_post('/elections', handler.create_election)
     app.router.add_get('/elections/current', handler.list_elections_current) # CORRECT TO REST
     app.router.add_get('/elections/past', handler.list_elections_past) # CORRECT TO REST
+    app.router.add_get('/elections/public', handler.list_public_elections)
     app.router.add_get('/elections/{electionId}', handler.get_election)
     app.router.add_get('/elections/{electionId}/number_of_votes', handler.get_election_votes)
     app.router.add_get('/elections/{electionId}/poll_book', handler.get_poll_registrations)
@@ -97,11 +98,12 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_get('/voting_options/{votingOptionId}', handler.get_voting_option)
     app.router.add_patch('/voting_options/{votingOptionId}/status', handler.update_voting_option_status)
     app.router.add_patch('/elections/{electionId}/poll_registration/{voterId}/status', handler.update_poll_book_status)
+    app.router.add_get('/poll_book/{voterId}/{electionId}', handler.is_poll_book_registration)
 
     app.router.add_post('/voters', handler.create_voter)
-    app.router.add_patch('/voters/{voterId}/type', handler.update_voter_type)
+    app.router.add_put('/voters/{voterId}/promote', handler.promote_voter_type)
+    app.router.add_put('/voters/{voterId}/demote', handler.demote_voter_type)
     app.router.add_get('/voters/admins', handler.list_admins)
-    app.router.add_get('/voters/admins/{voterId}/elections', handler.list_admin_elections)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_get('/votes/{voterId}/voter', handler.list_votes)

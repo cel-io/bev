@@ -16,6 +16,9 @@
                 <b-navbar-item tag="router-link" to="/elections">
                     Elections
                 </b-navbar-item>
+                <b-navbar-item tag="router-link" to="/public">
+                    Public Elections
+                </b-navbar-item>
             </template>
 
             <template slot="end">
@@ -39,17 +42,17 @@
             </template>
         </b-navbar>
         <div class="section">
-            <div class="container main has-padding-top-0">
+            <div class="container main has-padding-top-0 has-margin-bottom-70">
                 <div class="is-flex is-vcentered has-margin-bottom-30">
                     <b-button class="has-margin-top-15 has-margin-right-15" v-if="backRedirect" tag="router-link" :to="backRedirect" rounded type="is-info" size="is-small" icon-left="arrow-left"></b-button>
                     <h1 class="title is-1">
                         {{title}}
                     </h1>
-                </div>            
+                </div>
                 <router-view @title="onTitle" @back="onBackButton"></router-view>
             </div>
         </div>
-        <footer class="footer volby-footer">
+        <footer class="footer volby-footer has-padding-top-100">
             <div class="columns is-vcentered has-text-centered">
                 <div class="column is-3">
                     <img class="image is-horizontal-center" width="50%" src="img/ipleiria.png" />
@@ -93,8 +96,8 @@ export default{
                     this.$router.push("/").catch(e => {})
                 }else{
                     console.log(error)
-                }                                
-            })            
+                }
+            })
         }
     }
 }
