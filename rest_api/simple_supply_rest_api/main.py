@@ -104,6 +104,7 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_patch('/voters/{voterId}/type', handler.update_voter_type)
     app.router.add_get('/voters/admins', handler.list_admins)
     app.router.add_get('/voters/{voterId}', handler.get_voter)
+    app.router.add_get('/voters/admins/{voterId}/elections', handler.list_admin_elections)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_get('/votes/{voterId}/voter', handler.list_votes)
