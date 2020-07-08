@@ -44,7 +44,7 @@
                                     <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
                                 </b-tooltip>
                                 <b-button v-if="canUpdate && alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
-                                <b-button v-else-if="!alreadyVote && is_poll_book_registration" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
+                                <b-button v-else-if="!alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
                             </div>
                             <div class="column is-6 has-text-right" v-else-if="election.end_timestamp < currentTimestamp">
                                 <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Terminated</b-tag>
@@ -235,7 +235,8 @@ export default{
             num_votes_missing: 0,
             percentage_n_vote: 0,
             percentage_n_missing: 0,
-            switchGraph: 0
+            switchGraph: 0,
+            asAdmin: false
         }
     },
     methods: {
@@ -310,17 +311,6 @@ export default{
                             .then(response => {
                                 this.vote = response.data
 
-                                axios.get('api/poll_book/'+this.$parent.user.voter_id+'/'+this.electionId)
-                                .then(response => {
-                                    let poll_registration = response.data
-
-                                    if(poll_registration == null){
-                                        this.is_poll_book_registration = false
-                                    }else{
-                                        this.is_poll_book_registration = true
-                                    }
-                                })
-
                                 if(this.vote == null){
                                     this.alreadyVote = false
                                     this.isLoading = false
@@ -347,13 +337,6 @@ export default{
                                         }
                                     })
 
-                                }
-                            })
-                            .catch(error => {
-                                console.log(error)
-                                if(error.response.status == 401){
-                                    this.$store.commit("logout")
-                                    this.$router.push("/login")
                                 }
                             })
                             .catch(error => {
@@ -514,7 +497,7 @@ export default{
                 .then(() => {
                     this.isLoadingToggle = false
                 })
-            }           
+            }
         }
     },
     created() {

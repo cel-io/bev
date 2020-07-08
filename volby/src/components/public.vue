@@ -74,7 +74,7 @@
                             {{ props.row.name }}
                         </b-table-column>
                         <b-table-column field="admin_name" label="Created By" sortable>
-                            {{ props.row.admin_name }}
+                            {{ props.row.admin_id }}
                         </b-table-column>
                         <b-table-column field="start_timestamp" label="Start Time" sortable>
                             {{ toDate(props.row.start_timestamp) }}
