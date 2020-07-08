@@ -38,6 +38,65 @@
                 </template>
             </div>
         </div>
+        <h3 class="title is-3">Past elections</h3>
+        <div class="card box">
+            <div class="card-content">
+                <template v-if="isLoading">
+                    <div class="columns is-centered">
+                        <div class="column is-12 has-text-centered">
+                            <b-icon pack="fas" icon="sync-alt" size="is-large" custom-class="fa-spin"></b-icon>
+                        </div>
+                    </div>
+                </template>
+                <template v-else-if="pastElections.length == 0">
+                    <div class="columns is-centered">
+                        <div class="column is-12 has-text-centered">
+                            There were not any public elections yet.
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <b-table :data="pastElections"
+                    :paginated="isPaginated"
+                    :per-page="perPage"
+                    :current-page.sync="currentPage"
+                    :pagination-simple="isPaginationSimple"
+                    :pagination-position="paginationPosition"
+                    default-sort="start_timestamp"
+                    :default-sort-direction="'desc'"
+                    aria-next-label="Next page"
+                    aria-previous-label="Previous page"
+                    aria-page-label="Page"
+                    aria-current-label="Current page">
+
+                    <template slot-scope="props">
+                        <b-table-column field="name" label="Name" sortable>
+                            {{ props.row.name }}
+                        </b-table-column>
+                        <b-table-column field="admin_name" label="Created By" sortable>
+                            {{ props.row.admin_name }}
+                        </b-table-column>
+                        <b-table-column field="start_timestamp" label="Start Time" sortable>
+                            {{ toDate(props.row.start_timestamp) }}
+                        </b-table-column>
+                        <b-table-column field="end_timestamp" label="End Time" sortable>
+                            {{ toDate(props.row.start_timestamp) }}
+                        </b-table-column>
+                        <b-table-column field="voted" label="Participation" centered sortable>
+                            <span v-if="showParticipation[props.row.id]" >
+                                <b-tag v-if="props.row.voted" type="is-success" rounded>Voted</b-tag>
+                                <b-tag v-else type="is-danger" rounded>Didn't Vote</b-tag>
+                            </span>
+                            <b-button rounded size="is-small" @click="toggleParticipation(props.row.id)" :icon-left="showParticipation[props.row.id] ? 'eye-off-outline' : 'eye-outline'"></b-button>
+                        </b-table-column>
+                        <b-table-column label="Actions">
+                            <b-button tag="router-link" :to="'/election/' + props.row.election_id" rounded icon-left="plus" type="is-info" size="is-small">Info</b-button>
+                        </b-table-column>
+                    </template>
+                </b-table>
+            </template>
+        </div>
+    </div>
 </div>
 </template>
 <script>
@@ -48,6 +107,7 @@ export default{
         return{
             title: "Public Elections",
             currentElections: [],
+            pastElections: [],
             isLoading: true,
             showParticipation: {},
             currentPage: 1,
@@ -61,9 +121,30 @@ export default{
         }
     },
     methods:{
+        getPastElections(){
+            axios.get('api/elections/public/past')
+            .then(response => {
+                this.pastElections = response.data
+
+                this.pastElections.forEach(item => {
+                    this.$set(this.showParticipation, item.id, false)
+                })
+
+                this.isLoading = false
+            })
+            .catch(error => {
+                console.log(error)
+
+                if(error.response.status == 401){
+                    this.$store.commit("logout")
+                    this.$router.push("/login")
+                }
+            })
+        },
         getCurrentElections(){
             axios.get('api/elections/public')
             .then(response => {
+                this.getPastElections()
                 this.currentElections = response.data
 
                 this.isLoading = false
@@ -76,7 +157,13 @@ export default{
                     this.$router.push("/login")
                 }
             })
-        }
+        },
+        toDate(timestamp){
+            return timestampToDate(timestamp)
+        },
+        toggleParticipation(id){
+            this.$set(this.showParticipation, id, !this.showParticipation[id])
+        },
     },
     created() {
         this.$emit('title',this.title)

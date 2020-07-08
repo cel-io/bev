@@ -175,40 +175,35 @@ export default {
             })
         },
         demote(voter_id){
-            axios.get(`api/voters/${voter_id}/get`)
-            .then(response => {
-                this.voter = response.data
+            this.$buefy.dialog.confirm({
+                title: 'Promote to Voter?',
+                message: `Are you sure you want to <b>demote</b> ${this.voterId} to the Voter role?`,
+                confirmText: 'Demote',
+                type: 'is-danger',
+                onConfirm: () => {
+                        axios.put(`api/voters/${voter_id}/demote`,{
+                            'type': 'VOTER'
+                        })
+                        .then(response => {
 
-                axios.put(`api/voters/${voter_id}/demote`,{
-                    'type': this.voter.type
-                })
-                .then(response => {
+                            this.admins.splice(this.admins.map(function(item) { return item.voter_id; }).indexOf(voter_id), 1)
+                            this.$refs.observer.reset()
 
-                    this.admins.splice(this.admins.map(function(item) { return item.voter_id; }).indexOf(voter_id), 1)
-                    this.$refs.observer.reset()
-
-                    this.$buefy.toast.open({
-                        duration: 3000,
-                        message: 'Admin demoted!',
-                        type: 'is-success'
-                    })
-                })
-                .catch(error => {
-                    console.log(error)
-                    if(error.response.status == 401){
-                        this.$store.commit("logout")
-                        this.$router.push("/login")
+                            this.$buefy.toast.open({
+                                duration: 3000,
+                                message: 'Admin demoted!',
+                                type: 'is-success'
+                            })
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            if(error.response.status == 401){
+                                this.$store.commit("logout")
+                                this.$router.push("/login")
+                            }
+                        })
                     }
                 })
-
-            })
-            .catch(error => {
-                console.log(error)
-                if(error.response.status == 401){
-                    this.$store.commit("logout")
-                    this.$router.push("/login")
-                }
-            })
         },
         getAsyncData: debounce(function (name) {
             if (!name.length) {
@@ -216,8 +211,6 @@ export default {
                 return
             }
             this.isFetching = true
-
-            console.log(name.length)
 
             if(name.length >= 3){
                 axios.get('api/voters/' + name)
