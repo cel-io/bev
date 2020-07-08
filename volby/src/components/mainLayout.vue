@@ -2,7 +2,7 @@
     <div>
         <b-navbar :shadow="true" :spaced="true">
             <template slot="brand">
-                <b-navbar-item tag="router-link" :to="{ path: '/' }">
+                <b-navbar-item tag="router-link" :to="{ path: '/dashboard' }">
                     <img
                     src="img/icon.png"
                     alt="Volby"
@@ -16,15 +16,20 @@
                 <b-navbar-item tag="router-link" to="/elections">
                     Elections
                 </b-navbar-item>
-                <b-navbar-item v-if="user.type == 'ADMIN' || user.type == 'SUPERADMIN'" tag="router-link" to="/newelection">
-                    New Election
-                </b-navbar-item>
-                <b-navbar-item v-if="user.type == 'SUPERADMIN'" tag="router-link" to="/admins">
-                    Admins
-                </b-navbar-item>
             </template>
 
             <template slot="end">
+                <template v-if="user.type == 'ADMIN' || user.type == 'SUPERADMIN'">
+                    <b-navbar-item tag="router-link" to="/newelection">
+                    New Election
+                    </b-navbar-item>
+                    <b-navbar-item tag="router-link" to="/myelections">
+                        My Elections
+                    </b-navbar-item>
+                </template>                
+                <b-navbar-item v-if="user.type == 'SUPERADMIN'" tag="router-link" to="/admins">
+                    Admins
+                </b-navbar-item>
                 <b-navbar-dropdown>
                     <template slot="label"><span class="has-margin-right-10">{{user.name}}</span> <b-tag type="is-volby">{{user.type}}</b-tag></template>
                     <b-navbar-item @click="logout">

@@ -16,6 +16,8 @@ import UpdateVote from './components/updateVote'
 import Election from './components/election'
 import About from './components/about'
 import Admins from './components/admins'
+import MyElections from './components/myElections'
+import UpdateElection from './components/updateElection'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -31,7 +33,7 @@ const authGuard = (to, from, next) => {
 }
 
 const adminGuard = (to, from, next) => {
-    if(store.getters.user.type == 'ADMIN'){
+    if(store.getters.user.type == 'ADMIN' || store.getters.user.type == 'SUPERADMIN'){
         next()
     }else{
         next({name: "dashboard"})
@@ -59,6 +61,9 @@ const routes = [
             {path: 'election/:electionId/vote', component: CreateVote, name: 'createVote'},
             {path: 'vote/:voteId/update', component: UpdateVote, name: 'updateVote'},
             {path: 'election/:electionId', component: Election, name: 'election'},
+            {path: 'election/:electionId/admin', component: Election, name: 'electionAdmin', beforeEnter: adminGuard},
+            {path: 'myelections', component: MyElections, name: 'myElections', beforeEnter: adminGuard},
+            {path: 'election/:electionId/update', component: UpdateElection, name: 'updateElection', beforeEnter: adminGuard},
             {path: 'admins', component: Admins, name: 'admins', beforeEnter: superadminGuard}
         ],
         beforeEnter: authGuard

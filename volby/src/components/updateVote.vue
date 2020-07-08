@@ -1,29 +1,27 @@
 <template>
     <div>
-        <section>
-            <div class="card box has-margin-bottom-40">
-                <div class="card-content has-padding-bottom-30">
-                    <b-field class="title is-1 has-text-centered">
-                        <h1 ><strong>{{ this.election.name }}</strong></h1>
-                    </b-field>
-                    <b-field class="title is-5 has-text-centered">
-                        <span>{{ this.election.description }}</span>
-                    </b-field>
-                    <p class="content title is-6">
-                        <b> Voting Options: </b>
-                    </p>
-                    <b-field v-for="(voting_option, index) in this.voting_options_array" :key="index">
-                        <b-radio v-model="votingOptionSelectedId" type="is-sucess" name="name" :native-value="voting_option.voting_option_id">
-                            {{ (voting_option.name).toUpperCase() }}
-                        </b-radio>
-                        <hr v-if="voting_option == voting_options_array[voting_options_array.length - 2]">
-                    </b-field >
-                    <b-field class="is-pulled-right">
-                        <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
-                    </b-field>
-                </div>
+        <div class="card box shadow has-margin-bottom-40">
+            <div class="card-content has-padding-bottom-30">
+                <b-field class="title is-1 has-text-centered">
+                    <h1 ><strong>{{ this.election.name }}</strong></h1>
+                </b-field>
+                <b-field class="title is-5 has-text-centered">
+                    <span>{{ this.election.description }}</span>
+                </b-field>
+                <p class="content title is-6">
+                    <b> Voting Options: </b>
+                </p>
+                <b-field v-for="(voting_option, index) in this.voting_options_array" :key="index">
+                    <b-radio v-model="votingOptionSelectedId" type="is-sucess" name="name" :native-value="voting_option.voting_option_id">
+                        {{ (voting_option.name).toUpperCase() }}
+                    </b-radio>
+                    <hr v-if="voting_option == voting_options_array[voting_options_array.length - 2]">
+                </b-field >
+                <b-field class="is-pulled-right">
+                    <b-button type="is-success" icon-left="check-circle" rounded @click.prevent="submit()">Vote</b-button>
+                </b-field>
             </div>
-        </section>
+        </div>
     </div>
 </template>
 <script>
@@ -66,17 +64,16 @@ export default{
                     type: 'is-warning',
                     hasIcon: true,
                     onConfirm: () => {
-                        axios.put('api/votes/'+ this.old_vote.vote_id + '/update', {
+                        axios.put('/api/votes/'+ this.old_vote.vote_id, {
                             "voting_option_id": this.votingOptionSelected.voting_option_id
                         })
                         .then(response => {
-                            this.$router.push("/dashboard")
                             this.$buefy.toast.open({
                                 duration: 5000,
                                 message: 'Vote updated',
-                                position: 'is-top-right',
-                                type: 'is-sucess'
+                                type: 'is-success'
                             })
+                            this.$router.push("/elections")
                         })
                         .catch(error => {
                             console.log(error)
@@ -85,15 +82,14 @@ export default{
 
                 })
             }else{
-                axios.put('api/votes/'+ this.old_vote.vote_id + '/update', {
+                axios.put('/api/votes/'+ this.old_vote.vote_id, {
                     "voting_option_id": this.votingOptionSelected.voting_option_id
                 })
                 .then(response => {
                     this.$buefy.toast.open({
                         duration: 5000,
-                        message: 'Vote successfully!',
-                        position: 'is-top-right',
-                        type: 'is-sucess'
+                        message: 'Vote updated',
+                        type: 'is-success'
                     })
                     this.$router.push('/elections')
                 })

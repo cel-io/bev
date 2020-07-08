@@ -1,6 +1,8 @@
 <template>
     <div>
-        <div class="card box has-margin-bottom-40">
+        <div class="columns">
+            <div class="column">
+                <div class="card box shadow has-margin-bottom-40">
             <div class="card-content has-padding-bottom-0">
                 <validation-observer ref="observer">
                     <b-tabs v-model="activeTab" expanded>
@@ -78,11 +80,11 @@
                                     </validation-provider>
                                 </div>
                             </div>
-                        <hr />
-                        <b-field class="is-pulled-right">
-                            <b-button rounded @click="nextTab()" icon-right="arrow-right">Next</b-button>
-                        </b-field>
-                    </b-tab-item>
+                            <hr />
+                            <b-field class="is-pulled-right">
+                                <b-button rounded @click="nextTab()" icon-right="arrow-right">Next</b-button>
+                            </b-field>
+                        </b-tab-item>
                     <b-tab-item label="Ballot">
                         <div class="has-margin-bottom-20">
                             <b-tag type="is-info">NOTE</b-tag> <b>Blank</b> and <b>Null</b> votes are default options.</div>
@@ -92,7 +94,7 @@
                                         <div class="column is-one-third">
                                             <validation-provider :vid="'optionName_' + index" :rules="{
                                                 required: true,
-                                                custom_rule: votingOptions
+                                                nullBlankCheck: votingOptions
                                                 }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
                                                 <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                     <template slot="label">{{(index + 1) + '. Option Name'}} <span class="has-text-danger">*</span></template>
@@ -143,7 +145,7 @@
                                             </validation-provider>
                                         </div>
                                         <div class="column">
-                                            <validation-provider :vid="'voterName_' + index" rules="required|alpha_spaces" :name="(index + 1) + '. Voter Name '" v-slot="validationContext">
+                                            <validation-provider :vid="'voterName_' + index" rules="required" :name="(index + 1) + '. Voter Name '" v-slot="validationContext">
                                                 <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                     <template slot="label">{{(index + 1) + '. Voter Name'}} <span class="has-text-danger">*</span></template>
                                                     <b-input v-model="voter.name"></b-input>
@@ -166,12 +168,13 @@
                                 <b-button rounded @click="prevTab()" icon-left="arrow-left">Previous</b-button>
                             </b-field>
                             <b-field class="is-pulled-right">
-                                <b-button type="is-primary" rounded @click.prevent="submit">Submit</b-button>
+                                <b-button type="is-primary" rounded :loading="isLoading" @click.prevent="submit">Submit</b-button>
                             </b-field>
                         </b-tab-item>
                     </b-tabs>
-
                 </validation-observer>
+            </div>
+        </div>
             </div>
         </div>
     </div>
@@ -179,7 +182,7 @@
 <script>
 
 import { extend } from 'vee-validate';
-import { unique, custom_rule } from 'vee-validate/dist/rules';
+import { unique, nullBlankCheck } from 'vee-validate/dist/rules';
 
 extend('unique', {
     validate(value, obj) {
@@ -191,7 +194,7 @@ extend('unique', {
     }
 });
 
-extend('custom_rule', {
+extend('nullBlankCheck', {
     validate(value, obj) {
         if (value.toUpperCase() == "NULL" || value.toUpperCase() == "BLANK" ) {
             return  `${value.toUpperCase()} is a default options in the election.`
@@ -232,7 +235,8 @@ export default{
                     id: "",
                     name: ""
                 }
-            ]
+            ],
+            isLoading: false
         }
     },
     methods: {
@@ -270,6 +274,14 @@ export default{
         submit(){
             this.$refs.observer.validate()
             .then(result => {
+                this.isLoading = true
+                const loadingSnackbar = this.$buefy.toast.open({
+                    message: 'Writing to blockchain. This might take some time...',
+                    position: 'is-bottom-left',
+                    type: 'is-warning',
+                    indefinite: true
+                })
+
                 if(!result){
                     if(this.$refs.observer.errors.name.length > 0 || this.$refs.observer.errors.startDate.length > 0 || this.$refs.observer.errors.endDate.length > 0
                     || this.$refs.observer.errors.resultsExposure.length > 0 || this.$refs.observer.errors.realtimeResults.length > 0 || this.$refs.observer.errors.mutableVotes.length > 0){
@@ -303,9 +315,12 @@ export default{
                                     this.activeTab = 1
                                 }
                             })
+                            break
                         }
                     }
-
+                    
+                    loadingSnackbar.close()
+                    this.isLoading = false
                     return
                 }
 
@@ -327,10 +342,14 @@ export default{
                         type: 'is-success'
                     })
 
-                    this.$router.push("/dashboard").catch(e => {})
+                    this.$router.push("/myelections").catch(e => {})
                 })
                 .catch(error => {
                     console.log(error)
+                })
+                .then(() => {
+                    loadingSnackbar.close()
+                    this.isLoading = false
                 })
             })
         }

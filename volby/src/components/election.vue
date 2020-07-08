@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="card box">
+        <div class="card box shadow">
             <div class="card-content">
                 <template v-if="isLoading">
                     <div class="columns is-centered">
@@ -14,25 +14,50 @@
                         <div class="column is-6">
                             <span class="is-size-3 has-margin-right-5">{{election.name}}</span>
                         </div>
-                        <div class="column is-6 has-text-right" v-if="election.end_timestamp > currentTimestamp">
-                            <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Live</b-tag>
-                            <b-tooltip v-if="!this.canUpdate && this.alreadyVote" type="is-dark" label="You already have submitted a vote. The option multible votes is disabled for this election">
-                                <b-tag class="has-margin-top-5 has-margin-right-5">Can't Vote any more.</b-tag>
-                            </b-tooltip>
-                            <b-tooltip v-else-if="this.canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
-                                <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
-                            </b-tooltip>
-                            <b-button v-if="this.canUpdate && this.alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
-                            <b-button v-else-if="!this.alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
-                        </div>
+                        <template v-if="asAdmin">
+                            <div class="column is-6 has-text-right" v-if="election.end_timestamp >= currentTimestamp && currentTimestamp >= election.start_timestamp">
+                                <b-tooltip v-if="canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
+                                    <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
+                                </b-tooltip>
+                                <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Live</b-tag>
+                            </div>
+                            <div class="column is-6 has-text-right" v-else-if="election.end_timestamp < currentTimestamp">
+                                <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Terminated</b-tag>
+                            </div>
+                            <div class="column is-6 has-text-right" v-else-if="election.start_timestamp > currentTimestamp">
+                                <b-tooltip v-if="canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
+                                    <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
+                                </b-tooltip>
+                                <b-button type="is-primary" rounded tag="router-link" :to="'/election/' + election.election_id + '/update'">Update</b-button>
+                                <b-tooltip :active="election.status" type="is-dark" label="Disabled elections won't take place">
+                                    <b-button rounded :type="election.status ? 'is-danger' : 'is-success'" @click="toggleElectionStatus" :loading="isLoadingToggle">{{election.status ? 'Disable' : 'Enable'}}</b-button>
+                                </b-tooltip>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="column is-6 has-text-right" v-if="election.end_timestamp >= currentTimestamp && currentTimestamp >= election.start_timestamp">
+                                <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Live</b-tag>
+                                <b-tooltip v-if="!canUpdate && alreadyVote" type="is-dark" label="You already have submitted a vote. This election doesn't allow mutable votes.">
+                                    <b-tag class="has-margin-top-5 has-margin-right-5">Can't vote anymore.</b-tag>
+                                </b-tooltip>
+                                <b-tooltip v-else-if="canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
+                                    <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
+                                </b-tooltip>
+                                <b-button v-if="canUpdate && alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
+                                <b-button v-else-if="!alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
+                            </div>
+                            <div class="column is-6 has-text-right" v-else-if="election.end_timestamp < currentTimestamp">
+                                <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Terminated</b-tag>
+                            </div>
+                        </template>
                     </div>
                     <div class="columns">
                         <div class="column is-12">
                             <b-tabs v-model="activeTab" expanded>
-                                <b-tab-item label="My Vote">
+                                <b-tab-item label="My Vote" v-if="!asAdmin">
                                     <br>
                                     <div v-if="!this.alreadyVote" class="has-text-centered" >
-                                        <span>No Votes made.</span>
+                                        <span>You didn't vote yet.</span>
                                     </div>
                                     <div v-else class="card box">
                                         <div class="card-content">
@@ -62,15 +87,29 @@
                                         <div class="column">
                                             <span class="has-text-weight-bold">End Time: </span> {{ toDate(election.end_timestamp) }}
                                         </div>
-                                        <div class="column" v-if="election.end_timestamp > currentTimestamp">
+                                        <div class="column" v-if="election.end_timestamp >= currentTimestamp && currentTimestamp >= election.start_timestamp">
                                             <countdown :time="(election.end_timestamp - currentTimestamp ) * 1000">
                                                 <template slot-scope="props"><span class="has-text-weight-bold">Time Remaining:</span> {{ props.days }} days, {{ props.hours }} hours, {{ props.minutes }} minutes, {{ props.seconds }} seconds.</template>
                                             </countdown>
                                         </div>
+                                        <div class="column" v-if="currentTimestamp < election.start_timestamp">
+                                            <countdown :time="(election.start_timestamp - currentTimestamp ) * 1000" v-if="election.status">
+                                                <template slot-scope="props"><span class="has-text-weight-bold">Starts In:</span> {{ props.days }} days, {{ props.hours }} hours, {{ props.minutes }} minutes, {{ props.seconds }} seconds.</template>
+                                            </countdown>
+                                            <span v-else><span class="has-text-weight-bold">Starts In: </span> The election won't start if it is <b>disabled</b>.</span>
+                                        </div>
                                     </div>
-                                    <div class="columns">
+                                    <div class="columns" v-if="!asAdmin">
                                         <div class="column">
                                             <span class="has-text-weight-bold">Created By:</span> {{election.admin_name}}
+                                        </div>
+                                    </div>
+                                    <div class="columns" v-else>
+                                        <div class="column">
+                                            <span class="has-text-weight-bold">Results Exposure:</span> {{election.results_permission == 'PRIVATE' ? 'Private - Only the administrator can view the results.' : (election.results_permission == 'VOTERS_ONLY' ? 'Voters Only - Only the administrator and the voters can view the results.' : 'Public - Everyone can view the results.' )}}
+                                        </div>
+                                        <div class="column">
+                                            <span class="has-text-weight-bold">Realtime Results Exposure:</span> {{election.can_show_realtime ? 'Results can be viewed in real time.' : "Results can't be viewed in real time." }}
                                         </div>
                                     </div>
                                 </b-tab-item>
@@ -93,7 +132,7 @@
                                 <b-tab-item label="Results">
                                     <br>
                                     <div class=" has-text-centered" v-if="this.num_votes_all == 0">
-                                        <span>No Votes found to Generate Chart.</span>
+                                        <span>No votes yet.</span>
                                     </div>
                                     <div v-else class="has-text-centered">
                                         <div class="columns">
@@ -196,7 +235,9 @@ export default{
             num_votes_missing: 0,
             percentage_n_vote: 0,
             percentage_n_missing: 0,
-            switchGraph: 0
+            switchGraph: 0,
+            asAdmin: false,
+            isLoadingToggle: false
         }
     },
     methods: {
@@ -205,7 +246,7 @@ export default{
             .then(response => {
                 this.election = response.data
 
-                if(this.election.can_change_vote == 1){
+                if(this.election.can_change_vote){
                     this.canUpdate = true
                 }else{
                     this.canUpdate = false
@@ -262,6 +303,11 @@ export default{
                             this.percentage_n_vote = (this.num_votes_all * 100) / this.num_total_votes
                             this.percentage_n_missing = (this.num_votes_missing * 100) / this.num_total_votes
 
+                            if(this.asAdmin){
+                                this.isLoading = false
+                                return
+                            }
+
                             axios.get('api/votes/'+this.$parent.user.voter_id+'/election/'+this.election.election_id)
                             .then(response => {
                                 this.vote = response.data
@@ -271,8 +317,6 @@ export default{
                                 }else{
                                     this.alreadyVote = true
                                 }
-
-                                this.isLoading = false
 
                                 if(this.vote != null){
 
@@ -290,6 +334,8 @@ export default{
                                         }
                                     })
 
+                                }else{
+                                    this.isLoading = false
                                 }
                             })
                             .catch(error => {
@@ -381,13 +427,87 @@ export default{
                 responsive: true,
             }
         },
-        getRandomInt () {
-            return Math.floor(Math.random() * (50 - 5 + 1)) + 5
-        },
+        toggleElectionStatus(){
+            if(this.election.status){
+                this.$buefy.dialog.confirm({
+                    title: 'Disable Election',
+                    message: 'Are you sure you want to disable this election? Disabled elections won\'t take place.',
+                    confirmText: 'Disable',
+                    type: 'is-danger',
+                    hasIcon: true,
+                    onConfirm: () => {
+                        this.isLoadingToggle = true
+                        axios.put('/api/elections/'+ this.election.election_id, {
+                            "status": false
+                        })
+                        .then(response => {
+                            this.election.status = false
+                            this.$buefy.toast.open({
+                                duration: 5000,
+                                message: 'Election disabled',
+                                type: 'is-success'
+                            })
+                        })
+                        .catch(error => {
+                            if(error.response.status == 400){
+                                this.getElection()
+                                this.fillData()
+
+                                this.$buefy.toast.open({
+                                    duration: 5000,
+                                    message: 'Election already started. No updates allowed.',
+                                    type: 'is-warning'
+                                })
+                            }
+                            console.log(error)
+                        })
+                        .then(() => {
+                            this.isLoadingToggle = false
+                        })
+                    }
+
+                })
+            }else{
+                this.isLoadingToggle = true
+                axios.put('/api/elections/'+ this.election.election_id, {
+                    "status": true
+                })
+                .then(response => {
+                    this.election.status = true
+                    this.$buefy.toast.open({
+                        duration: 5000,
+                        message: 'Election enabled',
+                        type: 'is-success'
+                    })
+                })
+                .catch(error => {
+                    if(error.response.status == 400){
+                        this.getElection()
+                        this.fillData()
+
+                        this.$buefy.toast.open({
+                            duration: 5000,
+                            message: 'Election already started. No updates allowed.',
+                            type: 'is-warning'
+                        })
+                    }
+                    console.log(error)
+                })
+                .then(() => {
+                    this.isLoadingToggle = false
+                })
+            }           
+        }
     },
     created() {
+        if(this.$router.currentRoute.name == 'electionAdmin'){
+            this.asAdmin = true
+            this.title = "Election Administration"
+            this.$emit('back','/myelections')
+        }else{
+            this.$emit('back','/elections')
+        }
         this.$emit('title',this.title)
-        this.$emit('back','/elections')
     },
     mounted(){
         this.getElection()

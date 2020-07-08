@@ -3,7 +3,7 @@
         <div class="columns">
             <div class="column is-6">
                 <h3 class="title is-3">Promote to Admin</h3>
-                <div class="card box">
+                <div class="card box shadow">
                     <div class="card-content">
                         <b-message v-show="isNotFound" type="is-danger">
                             No voter found with the submitted ID.
@@ -113,7 +113,7 @@ export default {
             this.isNotFound = false
             this.isAlreadyAdmin = false
 
-            axios.patch(`api/voters/${this.voterId}/type`,{
+            axios.patch(`/api/voters/${this.voterId}/type`,{
                 'type': 'ADMIN'
             })
             .then(response => {

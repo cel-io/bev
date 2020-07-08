@@ -9,6 +9,7 @@ from Crypto.Cipher import AES
 from itsdangerous import BadSignature
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
+from simple_supply_rest_api.errors import ApiForbidden
 from simple_supply_rest_api.errors import ApiConflict
 from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiNotFound
@@ -281,69 +282,64 @@ class RouteHandler(object):
         private_key, public_key, user = await self._authorize(request)
 
         body = await decode_request(request)
-        required_fields = ['name', 'description', 'start_timestamp', 'end_timestamp',
-                           'results_permission', 'can_change_vote', 'can_show_realtime',
-                           'voting_options', 'poll_book']
-        validate_fields(required_fields, body)
 
-        electionId = request.match_info.get('electionId', '')
+        election_id = request.match_info.get('electionId', '')
 
-        election = await self._database.fetch_election_resource(election_id=electionId)
+        election = await self._database.fetch_election_resource(election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
                 'Election with the election id '
-                '{} was not found'.format(electionId))
+                '{} was not found'.format(election_id))
 
         current_time = get_time()
 
         if election.get('start_timestamp') < current_time:
-            raise ApiInternalError(
+            raise ApiBadRequest(
                 'Election with the election id '
-                '{} already start.'.format(electionId))
-
-        admin = await self._database.fetch_voter_resource(public_key=public_key)
+                '{} already start.'.format(election_id))
 
         await self._messenger.send_update_election_transaction(
             private_key=private_key,
-            election_id=electionId,
-            name=body.get('name'),
-            description=body.get('description'),
-            start_timestamp=body.get('start_timestamp'),
-            end_timestamp=body.get('end_timestamp'),
-            results_permission=body.get('results_permission'),
-            can_change_vote=body.get('can_change_vote'),
-            can_show_realtime=body.get('can_show_realtime'),
-            admin_id=admin.get('voter_id'),
-            status=body.get('status'),
+            election_id=election_id,
+            name=body.get('name') if body.get('name') is not None else election.get('name'),
+            description=body.get('description') if body.get('description') is not None else election.get('description'),
+            start_timestamp=body.get('start_timestamp') if body.get('start_timestamp') is not None else election.get('start_timestamp'),
+            end_timestamp=body.get('end_timestamp') if body.get('end_timestamp') is not None else election.get('end_timestamp'),
+            results_permission=body.get('results_permission') if body.get('results_permission') is not None else election.get('results_permission'),
+            can_change_vote=body.get('can_change_vote') if body.get('can_change_vote') is not None else election.get('can_change_vote'),
+            can_show_realtime=body.get('can_show_realtime') if body.get('can_show_realtime') is not None else election.get('can_show_realtime'),
+            admin_id=user.get('voter_id'),
+            status=body.get('status') if body.get('status') is not None else election.get('status'),
             timestamp=get_time())
 
-        for voting_option in body.get('voting_options'):
-            voting_option_id = uuid.uuid1().hex
+        if body.get('voting_options') is not None:
+            for voting_option in body.get('voting_options'):
+                voting_option_id = uuid.uuid1().hex
 
-            await self._messenger.send_create_voting_option_transaction(
-                private_key=private_key,
-                voting_option_id=voting_option_id,
-                name=voting_option.get('name'),
-                description=voting_option.get('description'),
-                election_id=electionId,
-                status=1,
-                timestamp=get_time()
-            )
+                await self._messenger.send_create_voting_option_transaction(
+                    private_key=private_key,
+                    voting_option_id=voting_option_id,
+                    name=voting_option.get('name'),
+                    description=voting_option.get('description'),
+                    election_id=election_id,
+                    status=1,
+                    timestamp=get_time()
+                )
 
-            await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
-                                                                        name=voting_option.get('name'),
-                                                                        election_id=electionId)
-
-        for poll_book in body.get('poll_book'):
-            await self._messenger.send_create_poll_registration_transaction(
-                private_key=private_key,
-                voter_id=poll_book.get('id'),
-                name=poll_book.get('name'),
-                election_id=electionId,
-                status=1,
-                timestamp=get_time()
-            )
+                await self._database.insert_voting_option_num_vote_resource(voting_option_id=voting_option_id,
+                                                                            name=voting_option.get('name'),
+                                                                            election_id=election_id)
+        if body.get('poll_book') is not None:
+            for poll_book in body.get('poll_book'):
+                await self._messenger.send_create_poll_registration_transaction(
+                    private_key=private_key,
+                    voter_id=poll_book.get('id'),
+                    name=poll_book.get('name'),
+                    election_id=election_id,
+                    status=1,
+                    timestamp=get_time()
+                )
 
         return json_response(
             {'data': 'Update Election transaction submitted'})
@@ -405,7 +401,7 @@ class RouteHandler(object):
         return json_response(voting_options)
 
     async def get_voting_option(self, request):
-        private_key, public_key = await self._authorize(request)
+        private_key, public_key, user = await self._authorize(request)
 
         voting_option_id = request.match_info.get('votingOptionId', '')
         voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
@@ -418,11 +414,7 @@ class RouteHandler(object):
         return json_response(voting_option)
 
     async def update_voting_option_status(self, request):
-        private_key, public_key = await self._authorize(request)
-
-        body = await decode_request(request)
-        required_fields = []
-        validate_fields(required_fields, body)
+        private_key, public_key, user = await self._authorize(request)
 
         voting_option_id = request.match_info.get('votingOptionId', '')
         voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
@@ -450,20 +442,17 @@ class RouteHandler(object):
             {'data': 'Update Voting Option Status transaction submitted'})
 
     async def update_poll_book_status(self, request):
-        private_key, public_key = await self._authorize(request)
+        private_key, public_key, user = await self._authorize(request)
 
-        body = await decode_request(request)
-        required_fields = ['election_id']
-        validate_fields(required_fields, body)
-
-        voterId = request.match_info.get('voterId', '')
-        voter_poll_book = await self._database.fetch_poll_book_registration(election_id=body.get('election_id'),
-                                                                            voter_id=voterId)
+        voter_id = request.match_info.get('voterId', '')
+        election_id = request.match_info.get('electionId', '')
+        voter_poll_book = await self._database.fetch_poll_book_registration(election_id=election_id,
+                                                                            voter_id=voter_id)
 
         if voter_poll_book is None:
             raise ApiNotFound(
                 'Voter with the voter id '
-                '{} was not found'.format(voterId))
+                '{} was not found'.format(voter_id))
 
         if voter_poll_book.get('status') is True:
             status = 0
@@ -472,9 +461,9 @@ class RouteHandler(object):
 
         await self._messenger.send_update_voter_poll_book_status_transaction(
             private_key=private_key,
-            voter_id=voterId,
+            voter_id=voter_id,
             name=voter_poll_book.get('name'),
-            election_id=body.get('election_id'),
+            election_id=election_id,
             status=status,
             timestamp=get_time())
 
@@ -484,20 +473,28 @@ class RouteHandler(object):
     async def list_elections_current(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        voter = await self._database.fetch_voter_resource(public_key=public_key)
-
-        current_elections_list = await self._database.fetch_current_elections_resources(voter.get('voter_id'),
+        current_elections_list = await self._database.fetch_current_elections_resources(user.get('voter_id'),
                                                                                         get_time())
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        voter = await self._database.fetch_voter_resource(public_key=public_key)
-
-        past_elections_list = await self._database.fetch_past_elections_resources(voter.get('voter_id'), get_time())
+        past_elections_list = await self._database.fetch_past_elections_resources(user.get('voter_id'), get_time())
 
         return json_response(past_elections_list)
+
+    async def list_admin_elections(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        if user.get('voter_id') != request.match_info.get('voterId', ''):
+            raise ApiForbidden('Admin must be the authenticated one')
+
+        if user.get('type') != 'ADMIN' and user.get('type') != 'SUPERADMIN':
+            raise ApiForbidden('Voter must be an admin or superadmin')
+
+        admin_elections_list = await self._database.fetch_admin_elections_resources(user.get('voter_id'))
+        return json_response(admin_elections_list)
 
     async def list_admins(self, request):
         private_key, public_key, user = await self._authorize(request)

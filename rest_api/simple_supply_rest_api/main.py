@@ -84,29 +84,30 @@ def start_rest_api(host, port, messenger, database):
     handler = RouteHandler(loop, messenger, database)
 
     app.router.add_post('/elections', handler.create_election)
-    app.router.add_get('/elections/current', handler.list_elections_current)
-    app.router.add_get('/elections/past', handler.list_elections_past)
+    app.router.add_get('/elections/current', handler.list_elections_current) # CORRECT TO REST
+    app.router.add_get('/elections/past', handler.list_elections_past) # CORRECT TO REST
     app.router.add_get('/elections/{electionId}', handler.get_election)
     app.router.add_get('/elections/{electionId}/number_of_votes', handler.get_election_votes)
     app.router.add_get('/elections/{electionId}/poll_book', handler.get_poll_registrations)
     app.router.add_get('/elections/{electionId}/poll_book/count', handler.count_poll_registrations)
     app.router.add_get('/elections/{electionId}/voting_options', handler.list_voting_options_election)
     app.router.add_post('/elections', handler.create_election)
-    app.router.add_put('/elections/{electionId}/update', handler.update_election)
+    app.router.add_put('/elections/{electionId}', handler.update_election)
 
     app.router.add_get('/voting_options/{votingOptionId}', handler.get_voting_option)
-    app.router.add_put('/voting_options/{votingOptionId}/status', handler.update_voting_option_status)
-    app.router.add_put('/poll_book/{voterId}/status', handler.update_poll_book_status)
+    app.router.add_patch('/voting_options/{votingOptionId}/status', handler.update_voting_option_status)
+    app.router.add_patch('/elections/{electionId}/poll_registration/{voterId}/status', handler.update_poll_book_status)
 
     app.router.add_post('/voters', handler.create_voter)
     app.router.add_patch('/voters/{voterId}/type', handler.update_voter_type)
     app.router.add_get('/voters/admins', handler.list_admins)
+    app.router.add_get('/voters/admins/{voterId}/elections', handler.list_admin_elections)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_get('/votes/{voterId}/voter', handler.list_votes)
     app.router.add_get('/votes/{voterId}/election/{electionId}', handler.get_vote_election)
     app.router.add_post('/votes/{votingOptionId}', handler.create_vote)
-    app.router.add_put('/votes/{voteId}/update', handler.update_vote)
+    app.router.add_put('/votes/{voteId}', handler.update_vote)
 
     app.router.add_post('/authentication', handler.authenticate)
     app.router.add_post('/logout', handler.logout)
@@ -122,7 +123,7 @@ def start_rest_api(host, port, messenger, database):
     #     '/records/{record_id}/transfer', handler.transfer_record)
     # app.router.add_post('/records/{record_id}/update', handler.update_record)
 
-    LOGGER.info('Starting Simple Supply REST API on %s:%s', host, port)
+    LOGGER.info('Starting BEV REST API on %s:%s', host, port)
     loop.run_until_complete(create_superadmins(messenger, database))
     web.run_app(
         app,
