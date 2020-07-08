@@ -87,6 +87,7 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_get('/elections/current', handler.list_elections_current) # CORRECT TO REST
     app.router.add_get('/elections/past', handler.list_elections_past) # CORRECT TO REST
     app.router.add_get('/elections/public', handler.list_public_elections)
+    app.router.add_get('/elections/public/past', handler.list_public_past_elections)
     app.router.add_get('/elections/{electionId}', handler.get_election)
     app.router.add_get('/elections/{electionId}/number_of_votes', handler.get_election_votes)
     app.router.add_get('/elections/{electionId}/poll_book', handler.get_poll_registrations)

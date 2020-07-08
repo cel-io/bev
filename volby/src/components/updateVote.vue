@@ -79,7 +79,6 @@ export default{
                             console.log(error)
                         })
                     }
-
                 })
             }else{
                 axios.put('/api/votes/'+ this.old_vote.vote_id, {

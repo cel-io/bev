@@ -314,8 +314,6 @@ export default{
                                 .then(response => {
                                     let poll_registration = response.data
 
-                                    console.log(poll_registration)
-
                                     if(poll_registration == null){
                                         this.is_poll_book_registration = false
                                     }else{

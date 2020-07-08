@@ -511,6 +511,13 @@ class RouteHandler(object):
         public_elections_list = await self._database.fetch_public_elections_resources(get_time())
         return json_response(public_elections_list)
 
+    async def list_public_past_elections(self, request):
+        private_key, public_key, user = await self._authorize(request)
+
+        past_elections_list = await self._database.fetch_public_past_elections_resources(get_time())
+
+        return json_response(past_elections_list)
+
     async def list_admins(self, request):
         private_key, public_key, user = await self._authorize(request)
 
