@@ -116,17 +116,6 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_post('/authentication', handler.authenticate)
     app.router.add_post('/logout', handler.logout)
 
-    # app.router.add_post('/agents', handler.create_agent)
-    # app.router.add_get('/agents', handler.list_agents)
-    # app.router.add_get('/agents/{agent_id}', handler.fetch_agent)
-    #
-    # app.router.add_post('/records', handler.create_record)
-    # app.router.add_get('/records', handler.list_records)
-    # app.router.add_get('/records/{record_id}', handler.fetch_record)
-    # app.router.add_post(
-    #     '/records/{record_id}/transfer', handler.transfer_record)
-    # app.router.add_post('/records/{record_id}/update', handler.update_record)
-
     LOGGER.info('Starting BEV REST API on %s:%s', host, port)
     loop.run_until_complete(create_superadmins(messenger, database))
     web.run_app(
