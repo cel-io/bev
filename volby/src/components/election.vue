@@ -43,8 +43,8 @@
                                 <b-tooltip v-else-if="canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
                                     <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
                                 </b-tooltip>
-                                <b-button v-if="canUpdate && alreadyVote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
-                                <b-button v-else-if="!alreadyVote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
+                                <b-button v-if="canUpdate && alreadyVote && election.can_vote" tag="router-link" :to="'/vote/' + vote.vote_id + '/update'" rounded type="is-info">Update Vote</b-button>
+                                <b-button v-else-if="!alreadyVote && election.can_vote" tag="router-link" :to="'/election/' + election.election_id + '/vote'" rounded type="is-info">Vote</b-button>
                             </div>
                             <div class="column is-6 has-text-right" v-else-if="election.end_timestamp < currentTimestamp">
                                 <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Terminated</b-tag>
@@ -54,7 +54,7 @@
                     <div class="columns">
                         <div class="column is-12">
                             <b-tabs v-model="activeTab" expanded>
-                                <b-tab-item label="My Vote" v-if="!asAdmin">
+                                <b-tab-item label="My Vote" v-if="!asAdmin && election.can_vote">
                                     <br>
                                     <div v-if="!this.alreadyVote" class="has-text-centered" >
                                         <span>You didn't vote yet.</span>
@@ -244,6 +244,7 @@ export default{
             axios.get('api/elections/'+ this.electionId)
             .then(response => {
                 this.election = response.data
+                console.log(this.election)
 
                 if(this.election.can_change_vote){
                     this.canUpdate = true

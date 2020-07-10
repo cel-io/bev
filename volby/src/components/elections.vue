@@ -120,7 +120,7 @@ export default{
     },
     methods:{
         getPastElections(){
-            axios.get('api/elections/past')
+            axios.get('api/voters/'+ this.$parent.user.voter_id +'/elections/past')
             .then(response => {
                 this.pastElections = response.data
 
@@ -140,7 +140,7 @@ export default{
             })
         },
         getCurrentElections(){
-            axios.get('api/elections/current')
+            axios.get('api/voters/'+ this.$parent.user.voter_id +'/elections/current')
             .then(response => {
                 this.getPastElections()
                 this.currentElections = response.data

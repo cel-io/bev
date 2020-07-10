@@ -74,7 +74,7 @@
                             {{ props.row.name }}
                         </b-table-column>
                         <b-table-column field="admin_name" label="Created By" sortable>
-                            {{ props.row.admin_id }}
+                            {{ props.row.admin_name }}
                         </b-table-column>
                         <b-table-column field="start_timestamp" label="Start Time" sortable>
                             {{ toDate(props.row.start_timestamp) }}
@@ -142,7 +142,7 @@ export default{
             })
         },
         getCurrentElections(){
-            axios.get('api/elections/public')
+            axios.get('api/elections/public/current')
             .then(response => {
                 this.getPastElections()
                 this.currentElections = response.data

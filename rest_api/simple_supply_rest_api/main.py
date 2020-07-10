@@ -84,9 +84,7 @@ def start_rest_api(host, port, messenger, database):
     handler = RouteHandler(loop, messenger, database)
 
     app.router.add_post('/elections', handler.create_election)
-    app.router.add_get('/elections/current', handler.list_elections_current) # CORRECT TO REST
-    app.router.add_get('/elections/past', handler.list_elections_past) # CORRECT TO REST
-    app.router.add_get('/elections/public', handler.list_public_elections)
+    app.router.add_get('/elections/public/current', handler.list_public_elections)
     app.router.add_get('/elections/public/past', handler.list_public_past_elections)
     app.router.add_get('/elections/{electionId}', handler.get_election)
     app.router.add_get('/elections/{electionId}/number_of_votes', handler.get_election_votes)
@@ -109,6 +107,8 @@ def start_rest_api(host, port, messenger, database):
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
     app.router.add_get('/votes/{voterId}/voter', handler.list_votes)
+    app.router.add_get('/voters/{voterId}/elections/current', handler.list_elections_current)
+    app.router.add_get('/voters/{voterId}/elections/past', handler.list_elections_past)
     app.router.add_get('/votes/{voterId}/election/{electionId}', handler.get_vote_election)
     app.router.add_post('/votes/{votingOptionId}', handler.create_vote)
     app.router.add_put('/votes/{voteId}', handler.update_vote)

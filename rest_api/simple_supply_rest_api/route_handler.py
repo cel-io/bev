@@ -346,8 +346,10 @@ class RouteHandler(object):
 
     async def get_election(self, request):
         private_key, public_key, user = await self._authorize(request)
+
         election_id = request.match_info.get('electionId', '')
-        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        election = await self._database.fetch_election_resource(voter_id=user.get('voter_id'), election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
@@ -482,14 +484,24 @@ class RouteHandler(object):
     async def list_elections_current(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        current_elections_list = await self._database.fetch_current_elections_resources(user.get('voter_id'),
+        voterId = request.match_info.get('voterId', '')
+
+        if user.get('voter_id') != voterId:
+            raise ApiForbidden('Admin must be the authenticated one')
+
+        current_elections_list = await self._database.fetch_current_elections_resources(voterId,
                                                                                         get_time())
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        past_elections_list = await self._database.fetch_past_elections_resources(user.get('voter_id'), get_time())
+        voterId = request.match_info.get('voterId', '')
+
+        if user.get('voter_id') != voterId:
+            raise ApiForbidden('Admin must be the authenticated one')
+
+        past_elections_list = await self._database.fetch_past_elections_resources(voterId, get_time())
 
         return json_response(past_elections_list)
 
@@ -514,7 +526,7 @@ class RouteHandler(object):
     async def list_public_past_elections(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        past_elections_list = await self._database.fetch_public_past_elections_resources(get_time())
+        past_elections_list = await self._database.fetch_public_past_elections_resources(user.get('voter_id'), get_time())
 
         return json_response(past_elections_list)
 
