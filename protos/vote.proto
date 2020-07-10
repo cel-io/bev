@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message Vote{
+    string vote_id = 1;
+    uint64 timestamp = 2;
+    string voter_id = 3;
+
+    string election_id = 4;
+    string voting_option_id = 5;
+}
+
+message VoteContainer {
+    repeated Vote entries = 1;
+}

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message VotingOption{
+    string voting_option_id = 1;
+    string name = 2;
+    string description = 3;
+
+    string election_id = 4;
+    bool status = 5;
+}
+
+message VotingOptionContainer {
+    repeated VotingOption entries = 1;
+}

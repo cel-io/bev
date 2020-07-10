@@ -36,7 +36,7 @@ def parse_args(args):
     database_parser.add_argument(
         '--db-name',
         help='The name of the database',
-        default='simple-supply')
+        default='bev')
     database_parser.add_argument(
         '--db-host',
         help='The host of the database',

@@ -74,3 +74,17 @@ class ApiUnauthorized(_ApiError):
         self.status_code = 401
         self.message = 'Unauthorized: ' + message
         super().__init__()
+
+
+class ApiConflict(_ApiError):
+    def __init__(self, message):
+        self.status_code = 409
+        self.message = 'Conflict: ' + message
+        super().__init__()
+
+
+class ApiForbidden(_ApiError):
+    def __init__(self, message):
+        self.status_code = 403
+        self.message = 'Forbidden: ' + message
+        super().__init__()

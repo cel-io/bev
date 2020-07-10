@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message Election{
+    string election_id = 1;
+    string name = 2;
+    string description = 3;
+    uint64 start_timestamp = 4;
+    uint64 end_timestamp = 5;
+
+    enum ResultsPermission {
+        PRIVATE = 0;
+        VOTERS_ONLY = 1;
+        PUBLIC = 2;
+    }
+
+    ResultsPermission results_permission = 6;
+    bool can_change_vote = 7;
+    bool can_show_realtime = 8;
+
+    string admin_id = 9;
+    bool status = 10;
+    uint64 timestamp = 11;
+}
+
+message ElectionContainer {
+    repeated Election entries = 1;
+}

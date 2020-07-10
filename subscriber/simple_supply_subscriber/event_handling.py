@@ -24,7 +24,6 @@ from simple_supply_addressing.addresser import AddressSpace
 from simple_supply_addressing.addresser import NAMESPACE
 from simple_supply_subscriber.decoding import deserialize_data
 
-
 MAX_BLOCK_NUMBER = int(math.pow(2, 63)) - 1
 NAMESPACE_REGEX = re.compile('^{}'.format(NAMESPACE))
 LOGGER = logging.getLogger(__name__)
@@ -86,6 +85,16 @@ def _apply_state_changes(database, events, block_num, block_id):
             _apply_agent_change(database, block_num, resources)
         elif data_type == AddressSpace.RECORD:
             _apply_record_change(database, block_num, resources)
+        elif data_type == AddressSpace.ELECTION:
+            _apply_election_change(database, block_num, resources)
+        elif data_type == AddressSpace.VOTING_OPTION:
+            _apply_voting_option_change(database, block_num, resources)
+        elif data_type == AddressSpace.POLL_REGISTRATION:
+            _apply_poll_registration_change(database, block_num, resources)
+        elif data_type == AddressSpace.VOTER:
+            _apply_voter_change(database, block_num, resources)
+        elif data_type == AddressSpace.VOTE:
+            _apply_vote_change(database, block_num, resources)
         else:
             LOGGER.warning('Unsupported data type: %s', data_type)
 
@@ -115,3 +124,38 @@ def _apply_record_change(database, block_num, records):
         record['start_block_num'] = block_num
         record['end_block_num'] = MAX_BLOCK_NUMBER
         database.insert_record(record)
+
+
+def _apply_election_change(database, block_num, elections):
+    for election in elections:
+        election['start_block_num'] = block_num
+        election['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_election(election)
+
+
+def _apply_voting_option_change(database, block_num, voting_options):
+    for voting_option in voting_options:
+        voting_option['start_block_num'] = block_num
+        voting_option['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_voting_option(voting_option)
+
+
+def _apply_poll_registration_change(database, block_num, poll_books):
+    for pollBook in poll_books:
+        pollBook['start_block_num'] = block_num
+        pollBook['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_poll_registration(pollBook)
+
+
+def _apply_voter_change(database, block_num, voters):
+    for voter in voters:
+        voter['start_block_num'] = block_num
+        voter['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_voter(voter)
+
+
+def _apply_vote_change(database, block_num, votes):
+    for vote in votes:
+        vote['start_block_num'] = block_num
+        vote['end_block_num'] = MAX_BLOCK_NUMBER
+        database.insert_vote(vote)

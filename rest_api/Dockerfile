@@ -31,15 +31,17 @@ RUN pip3 install \
     aiohttp \
     aiopg \
     bcrypt \
+    diskcache \
     itsdangerous \
     pycrypto \
-    psycopg2-binary
+    psycopg2-binary \
+    python-dotenv
 
 
-WORKDIR /project/sawtooth-simple-supply
+WORKDIR /project/bev
 
-ENV PATH $PATH:/project/sawtooth-simple-supply/bin
+ENV PATH $PATH:/project/bev/bin
 
 EXPOSE 8000/tcp
 
-CMD ['simple-supply-rest-api']
+CMD ['bev-rest-api']

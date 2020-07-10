@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message PollRegistration{
+    string voter_id = 1;
+    string name = 2;
+    string election_id = 3;
+    bool status = 4;
+}
+
+message PollRegistrationContainer {
+    repeated PollRegistration entries = 1;
+}

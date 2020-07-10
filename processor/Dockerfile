@@ -24,8 +24,8 @@ RUN \
 
 RUN apt-get install -y -q python3-sawtooth-sdk
 
-WORKDIR /project/sawtooth-simple-supply
+WORKDIR /project/bev
 
-ENV PATH $PATH:/project/sawtooth-simple-supply/bin
+ENV PATH $PATH:/project/bev/bin
 
-CMD ['simple-supply-tp']
+CMD ['bev-tp']

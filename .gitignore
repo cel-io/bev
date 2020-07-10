@@ -1,5 +1,6 @@
 # Python
 **/__pycache__/**
+venv
 
 # Generated Protobufs
 **/protobuf/
@@ -12,3 +13,13 @@
 
 # Webpack
 **/dist
+
+#env
+rest_api/simple_supply_rest_api/.env
+
+
+.idea/bev.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/misc.xml

@@ -36,18 +36,24 @@ RUN pip3 install \
     aiohttp \
     aiopg \
     bcrypt \
+    diskcache \
     grpcio-tools \
     itsdangerous \
     nose2 \
     psycopg2-binary \
     pycrypto \
     pylint \
-    pycodestyle
+    pycodestyle \
+    python-dotenv
 
 WORKDIR /project/sawtooth-simple-supply
 
-COPY curator_app/package.json /project/sawtooth-simple-supply/curator_app/
+RUN mv /project/sawtooth-simple-supply /project/bev
 
-RUN cd curator_app/ && npm install
+WORKDIR /project/bev
 
-ENV PATH $PATH:/project/sawtooth-simple-supply/bin
+COPY volby/package.json /project/bev/volby/
+
+RUN cd volby/ && npm install
+
+ENV PATH $PATH:/project/bev/bin

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+message Voter{
+    string voter_id = 1;
+    string public_key = 2;
+    string name = 3;
+    uint64 created_at = 4;
+
+
+    enum Type {
+        VOTER = 0;
+        ADMIN = 1;
+        SUPERADMIN = 2;
+    }
+
+    Type type = 5;
+}
+
+message VoterContainer {
+    repeated Voter entries = 1;
+}

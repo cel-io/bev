@@ -1,0 +1,80 @@
+@import "~bulma/sass/utilities/_all";
+
+$primary: $cyan;
+
+$volby: #de4937;
+$volby-invert: findColorInvert($volby);
+
+$colors: (
+    "white": ($white, $black),
+    "black": ($black, $white),
+    "light": ($light, $light-invert),
+    "dark": ($dark, $dark-invert),
+    "primary": ($info, $info-invert),
+    "info": ($info, $info-invert),
+    "success": ($success, $success-invert),
+    "warning": ($warning, $warning-invert),
+    "danger": ($danger, $danger-invert),
+    "volby": ($volby, $volby-invert)
+);
+
+@import "~bulma";
+@import "~buefy/src/scss/buefy";
+
+html{
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    min-height: 100%;
+}
+
+.main{
+    min-height: 100vh;
+    height: auto;
+}
+
+.is-real-fluid{
+    margin-left: 32px;
+    margin-right: 32px;
+}
+
+.is-256x256{
+    max-width: 256px;
+    max-height: 256px;
+}
+
+.is-horizontal-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#home_title{
+    font-size: 60pt;
+    font-weight: bold;
+}
+
+#home_subtitle{
+    font-size: 20pt;
+}
+
+.is-full-height{
+    height: 100%;
+}
+
+.shadow {
+    -webkit-box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:    0 .5rem 1rem rgba(0,0,0,.15);  /* Firefox 3.5 - 3.6 */
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+
+.volby-footer{
+    margin-top: auto;
+    padding: 0;
+}
+
+.small_chart {
+    max-width: 350px;
+    margin:  30px auto;
+}
