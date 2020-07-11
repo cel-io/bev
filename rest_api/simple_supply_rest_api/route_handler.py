@@ -38,6 +38,11 @@ class RouteHandler(object):
                            'voting_options', 'poll_book']
         validate_fields(required_fields, body)
 
+        if user.get('type') != 'ADMIN':
+            raise ApiForbidden(
+                'Forbidden'
+            )
+
         election_id = uuid.uuid1().hex
         voting_options = body.get('voting_options')
         admin = await self._database.fetch_voter_resource(public_key=public_key)
@@ -48,7 +53,6 @@ class RouteHandler(object):
 
         voting_options.append({"name": "NULL", "description": "VOTE NULL"})
         voting_options.append({"name": "BLANK", "description": "VOTE BLANK"})
-
 
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
@@ -83,7 +87,6 @@ class RouteHandler(object):
                                                                         election_id=election_id)
 
         for poll_book in body.get('poll_book'):
-
             await self._messenger.send_create_poll_registration_transaction(
                 private_key=private_key,
                 voter_id=poll_book.get('id'),
@@ -176,6 +179,11 @@ class RouteHandler(object):
         private_key, public_key, user = await self._authorize(request)
         voting_option_id = request.match_info.get('votingOptionId', '')
 
+        if voting_option_id == '':
+            raise ApiBadRequest(
+                'The voting option ID is a required query string parameter'
+            )
+
         voter = await self._database.fetch_voter_resource(public_key=public_key)
 
         if voter is None:
@@ -195,10 +203,29 @@ class RouteHandler(object):
 
         election = await self._database.fetch_election_resource(election_id=voting_option.get('election_id'))
 
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(voting_option.get('election_id')))
+
         if election.get('status') == 0:
             raise ApiInternalError(
                 'Election with the election id '
                 '{} is cancelled'.format(election.get('election_id')))
+
+        current_time = get_time()
+
+        if election.get('end_timestamp') < current_time or election.get('start_timestamp') > current_time:
+            raise ApiBadRequest(
+                'Not in election time.'.format())
+
+        poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
+                                                                              election_id=election_id)
+
+        if poll_registration is None:
+            raise ApiBadRequest(
+                'Voter is not registered in the poll book of the election with the id '
+                '{} .'.format(election.get('election_id')))
 
         num_votes_update = vo_count_vote.get('num_votes') + 1
 
@@ -217,7 +244,6 @@ class RouteHandler(object):
 
     async def update_vote(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         body = await decode_request(request)
         required_fields = ['voting_option_id']
         validate_fields(required_fields, body)
@@ -243,6 +269,11 @@ class RouteHandler(object):
                 'Election with the election id '
                 '{} was not found'.format(vote.get('election_id')))
 
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(vote.get('election_id')))
+
         if election.get('can_change_vote') == 0:
             raise ApiInternalError(
                 'Election with the election id '
@@ -252,6 +283,17 @@ class RouteHandler(object):
             raise ApiInternalError(
                 'Election with the election id '
                 '{} was not found don\'t permit to change vote'.format(vote.get('election_id')))
+
+        current_time = get_time()
+
+        if election.get('end_timestamp') < current_time or election.get('start_timestamp') > current_time:
+            raise ApiBadRequest(
+                'Not in election time.'.format())
+
+        if election.get('admin_id') == user.get('voter_id'):
+            raise ApiBadRequest(
+                'User is not the owner of the election with the id '
+                '{} .'.format(election.get('election_id')))
 
         new_voting_option_id = body.get('voting_option_id')
         old_voting_option_id = vote.get('voting_option_id')
@@ -282,10 +324,13 @@ class RouteHandler(object):
 
     async def update_election(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         body = await decode_request(request)
-
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
 
         election = await self._database.fetch_election_resource(election_id=election_id)
 
@@ -301,16 +346,26 @@ class RouteHandler(object):
                 'Election with the election id '
                 '{} already start.'.format(election_id))
 
+        if election.get('admin_id') != user.get('voter_id)'):
+            raise ApiBadRequest(
+                'User is not the owner of the election with the id '
+                '{} .'.format(election_id))
+
         await self._messenger.send_update_election_transaction(
             private_key=private_key,
             election_id=election_id,
             name=body.get('name') if body.get('name') is not None else election.get('name'),
             description=body.get('description') if body.get('description') is not None else election.get('description'),
-            start_timestamp=body.get('start_timestamp') if body.get('start_timestamp') is not None else election.get('start_timestamp'),
-            end_timestamp=body.get('end_timestamp') if body.get('end_timestamp') is not None else election.get('end_timestamp'),
-            results_permission=body.get('results_permission') if body.get('results_permission') is not None else election.get('results_permission'),
-            can_change_vote=body.get('can_change_vote') if body.get('can_change_vote') is not None else election.get('can_change_vote'),
-            can_show_realtime=body.get('can_show_realtime') if body.get('can_show_realtime') is not None else election.get('can_show_realtime'),
+            start_timestamp=body.get('start_timestamp') if body.get('start_timestamp') is not None else election.get(
+                'start_timestamp'),
+            end_timestamp=body.get('end_timestamp') if body.get('end_timestamp') is not None else election.get(
+                'end_timestamp'),
+            results_permission=body.get('results_permission') if body.get(
+                'results_permission') is not None else election.get('results_permission'),
+            can_change_vote=body.get('can_change_vote') if body.get('can_change_vote') is not None else election.get(
+                'can_change_vote'),
+            can_show_realtime=body.get('can_show_realtime') if body.get(
+                'can_show_realtime') is not None else election.get('can_show_realtime'),
             admin_id=user.get('voter_id'),
             status=body.get('status') if body.get('status') is not None else election.get('status'),
             timestamp=get_time())
@@ -351,18 +406,40 @@ class RouteHandler(object):
 
         election_id = request.match_info.get('electionId', '')
 
-        election = await self._database.fetch_election_resource(voter_id=user.get('voter_id'), election_id=election_id)
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
+        election = await self._database.fetch_election_with_can_vote_resource(voter_id=user.get('voter_id'),
+                                                                              election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
-                'Election with the A election id '
+                'Election with the election id '
                 '{} was not found'.format(election_id))
+
+        if election.get('results_permission') != 'PUBLIC':
+
+            poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
+                                                                                  election_id=election_id)
+
+            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+                raise ApiBadRequest(
+                    'Voter is not registered in the poll book of the election with the id '
+                    '{} .'.format(election_id))
 
         return json_response(election)
 
     async def get_election_votes(self, request):
         private_key, public_key, user = await self._authorize(request)
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
         number_of_votes = await self._database.fetch_number_of_votes(election_id=election_id)
 
         if number_of_votes is None:
@@ -370,11 +447,34 @@ class RouteHandler(object):
                 'No voting options with the election id '
                 '{} was not found'.format(election_id))
 
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        if election.get('results_permission') != 'PUBLIC':
+
+            poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
+                                                                                  election_id=election_id)
+
+            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+                raise ApiBadRequest(
+                    'Voter is not registered in the poll book of the election with the id '
+                    '{} .'.format(election_id))
+
         return json_response(number_of_votes)
 
     async def get_poll_registrations(self, request):
         private_key, public_key, user = await self._authorize(request)
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
         poll_book = await self._database.fetch_poll_book(election_id=election_id)
 
         if poll_book is None:
@@ -382,19 +482,59 @@ class RouteHandler(object):
                 'No voters with the election id '
                 '{} was not found'.format(election_id))
 
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        if election.get('admin_id') != user.get('voter_id)'):
+            raise ApiBadRequest(
+                'User is not the owner of the election with the id '
+                '{} .'.format(election_id))
+
         return json_response(poll_book)
 
     async def count_poll_registrations(self, request):
         private_key, public_key, user = await self._authorize(request)
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
         count_poll_book = await self._database.count_poll_book(election_id=election_id)
+
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        if election.get('results_permission') != 'PUBLIC':
+
+            poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
+                                                                                  election_id=election_id)
+
+            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+                raise ApiBadRequest(
+                    'Voter is not registered in the poll book of the election with the id '
+                    '{} .'.format(election_id))
 
         return json_response(count_poll_book)
 
     async def list_voting_options_election(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
         voting_options = await self._database.fetch_election_voting_options_resource(election_id=election_id)
 
         if voting_options is None:
@@ -402,12 +542,34 @@ class RouteHandler(object):
                 'Voting Options in the election id '
                 '{} was not found'.format(election_id))
 
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        if election.get('results_permission') != 'PUBLIC':
+
+            poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
+                                                                                  election_id=election_id)
+
+            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+                raise ApiBadRequest(
+                    'Voter is not registered in the poll book of the election with the id '
+                    '{} .'.format(election_id))
+
         return json_response(voting_options)
 
     async def get_voting_option(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         voting_option_id = request.match_info.get('votingOptionId', '')
+
+        if voting_option_id == '':
+            raise ApiBadRequest(
+                'The voting option ID is a required query string parameter'
+            )
+
         voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
 
         if voting_option is None:
@@ -419,14 +581,39 @@ class RouteHandler(object):
 
     async def update_voting_option_status(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         voting_option_id = request.match_info.get('votingOptionId', '')
+
+        if voting_option_id == '':
+            raise ApiBadRequest(
+                'The voting option ID is a required query string parameter'
+            )
+
         voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
 
         if voting_option is None:
             raise ApiNotFound(
                 'Voting Option with the voting option id '
                 '{} was not found'.format(voting_option_id))
+
+        election_id = voting_option.get('election_id')
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        current_time = get_time()
+
+        if election.get('start_timestamp') < current_time:
+            raise ApiBadRequest(
+                'Election with the election id '
+                '{} already start.'.format(election_id))
+
+        if election.get('admin_id') != user.get('voter_id)'):
+            raise ApiBadRequest(
+                'User is not the owner of the election with the id '
+                '{} .'.format(election_id))
 
         if voting_option.get('status') is True:
             status = 0
@@ -447,9 +634,20 @@ class RouteHandler(object):
 
     async def update_poll_book_status(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         voter_id = request.match_info.get('voterId', '')
+
+        if voter_id == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
+
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
         voter_poll_book = await self._database.fetch_poll_book_registration(election_id=election_id,
                                                                             voter_id=voter_id)
 
@@ -457,6 +655,25 @@ class RouteHandler(object):
             raise ApiNotFound(
                 'Voter with the voter id '
                 '{} was not found'.format(voter_id))
+
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        current_time = get_time()
+
+        if election.get('start_timestamp') < current_time:
+            raise ApiBadRequest(
+                'Election with the election id '
+                '{} already start.'.format(election_id))
+
+        if election.get('admin_id') != user.get('voter_id)'):
+            raise ApiBadRequest(
+                'User is not the owner of the election with the id '
+                '{} .'.format(election_id))
 
         if voter_poll_book.get('status') is True:
             status = 0
@@ -476,8 +693,12 @@ class RouteHandler(object):
 
     async def list_elections_current(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         voterId = request.match_info.get('voterId', '')
+
+        if voterId == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
 
         if user.get('voter_id') != voterId:
             raise ApiForbidden('Admin must be the authenticated one')
@@ -488,8 +709,12 @@ class RouteHandler(object):
 
     async def list_elections_past(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         voterId = request.match_info.get('voterId', '')
+
+        if voterId == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
 
         if user.get('voter_id') != voterId:
             raise ApiForbidden('Admin must be the authenticated one')
@@ -501,7 +726,14 @@ class RouteHandler(object):
     async def list_admin_elections(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        if user.get('voter_id') != request.match_info.get('voterId', ''):
+        voter_id = request.match_info.get('voterId', '')
+
+        if voter_id == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
+
+        if user.get('voter_id') != voter_id:
             raise ApiForbidden('Admin must be the authenticated one')
 
         if user.get('type') != 'ADMIN' and user.get('type') != 'SUPERADMIN':
@@ -519,7 +751,8 @@ class RouteHandler(object):
     async def list_public_past_elections(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        past_elections_list = await self._database.fetch_public_past_elections_resources(user.get('voter_id'), get_time())
+        past_elections_list = await self._database.fetch_public_past_elections_resources(user.get('voter_id'),
+                                                                                         get_time())
 
         return json_response(past_elections_list)
 
@@ -527,8 +760,8 @@ class RouteHandler(object):
         private_key, public_key, user = await self._authorize(request)
 
         if user.get('type') != 'SUPERADMIN':
-            raise ApiUnauthorized(
-                'Unauthorized'
+            raise ApiForbidden(
+                'Forbidden'
             )
 
         admin_list = await self._database.fetch_admins_resources()
@@ -539,8 +772,8 @@ class RouteHandler(object):
         private_key, public_key, user = await self._authorize(request)
 
         if user.get('type') != 'SUPERADMIN':
-            raise ApiUnauthorized(
-                'Unauthorized'
+            raise ApiForbidden(
+                'Forbidden'
             )
 
         voter_id = request.match_info.get('voterID', '')
@@ -557,22 +790,71 @@ class RouteHandler(object):
             )
 
         voter_id = request.match_info.get('voterID', '')
+
+        if voter_id == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
+
         voter = await self._database.fetch_voter_resource(voter_id=voter_id)
+
+        if voter is None:
+            raise ApiNotFound(
+                'No voter found'
+            )
 
         return json_response(voter)
 
     async def get_vote(self, request):
         private_key, public_key, user = await self._authorize(request)
         vote_id = request.match_info.get('voteId', '')
+
+        if vote_id == '':
+            raise ApiBadRequest(
+                'The vote ID is a required query string parameter'
+            )
+
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+
+        if vote is None:
+            raise ApiNotFound(
+                'Vote with the vote id '
+                '{} was not found'.format(vote_id))
+
+        election_id = vote.get('election_id')
+        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        if election is None:
+            raise ApiNotFound(
+                'Election with the election id '
+                '{} was not found'.format(election_id))
+
+        if election.get('admin_id') != user.get('voter_id)'):
+            raise ApiBadRequest(
+                'User is not the owner of the election with the id '
+                '{} .'.format(election_id))
 
         return json_response(vote)
 
     async def get_vote_election(self, request):
         private_key, public_key, user = await self._authorize(request)
-
         voter_id = request.match_info.get('voterId', '')
+
+        if voter_id == '':
+            raise ApiBadRequest(
+                'The voter ID is a required query string parameter'
+            )
+
         election_id = request.match_info.get('electionId', '')
+
+        if election_id == '':
+            raise ApiBadRequest(
+                'The election ID is a required query string parameter'
+            )
+
+        if user.get('voter_id') != voter_id:
+            raise ApiForbidden('Admin must be the authenticated one')
+
         vote = await self._database.fetch_my_vote__election_resource(voter_id=voter_id,
                                                                      election_id=election_id)
 
