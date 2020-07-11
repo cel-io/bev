@@ -2,7 +2,7 @@
     <div>
         <b-navbar :shadow="true" :spaced="true">
             <template slot="brand">
-                <b-navbar-item tag="router-link" :to="{ path: '/dashboard' }">
+                <b-navbar-item tag="router-link" :to="{ path: '/start' }">
                     <img
                     src="img/icon.png"
                     alt="Volby"
@@ -10,8 +10,8 @@
                 </b-navbar-item>
             </template>
             <template slot="start">
-                <b-navbar-item tag="router-link" to="/dashboard">
-                    Dashboard
+                <b-navbar-item tag="router-link" to="/start">
+                    Start
                 </b-navbar-item>
                 <b-navbar-item tag="router-link" to="/elections">
                     Elections

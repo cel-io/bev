@@ -8,7 +8,7 @@ import Home from './components/home'
 import Login from './components/login'
 import Register from './components/register'
 import MainLayout from './components/mainLayout'
-import Dashboard from './components/dashboard'
+import Start from './components/start'
 import CreateElection from './components/createElection'
 import CreateVote from './components/createVote'
 import Elections from './components/elections.vue'
@@ -19,6 +19,7 @@ import Admins from './components/admins'
 import MyElections from './components/myElections'
 import UpdateElection from './components/updateElection'
 import Public from './components/public'
+import NotFound from './components/notFound'
 
 const authGuard = (to, from, next) => {
     if(store.getters.accessToken){
@@ -33,11 +34,19 @@ const authGuard = (to, from, next) => {
     }
 }
 
+const alreadyLoggedGuard = (to, from, next) => {
+    if(store.getters.accessToken){
+        next({name: "start"})
+    }else{
+        next()
+    }
+}
+
 const adminGuard = (to, from, next) => {
     if(store.getters.user.type == 'ADMIN' || store.getters.user.type == 'SUPERADMIN'){
         next()
     }else{
-        next({name: "dashboard"})
+        next({name: "start"})
     }
 }
 
@@ -45,18 +54,19 @@ const superadminGuard = (to, from, next) => {
     if(store.getters.user.type == 'SUPERADMIN'){
         next()
     }else{
-        next({name: "dashboard"})
+        next({name: "start"})
     }
 }
 
 const routes = [
-    {path: '/', component: Home, name: 'home'},
-    {path: '/login', component: Login, name: 'login'},
-    {path: '/register', component: Register, name: 'register'},
+    {path: "*", component: NotFound},
+    {path: '/', component: Home, name: 'home', beforeEnter: alreadyLoggedGuard},
+    {path: '/login', component: Login, name: 'login', beforeEnter: alreadyLoggedGuard},
+    {path: '/register', component: Register, name: 'register', beforeEnter: alreadyLoggedGuard},
     {path: '/about', component: About, name: 'about'},
-    {path: '',component: MainLayout, redirect: 'dashboard',
+    {path: '',component: MainLayout, redirect: 'start',
         children: [
-            {path: 'dashboard', component: Dashboard, name: 'dashboard'},
+            {path: 'start', component: Start, name: 'start'},
             {path: 'newelection', component: CreateElection, name: 'createElection'},
             {path: 'elections', component: Elections, name: 'elections'},
             {path: 'election/:electionId/vote', component: CreateVote, name: 'createVote'},

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="columns">
-            <div class="column is-6">
+            <div class="column is-4">
                 <h3 class="title is-3">Promote to Admin</h3>
                 <div class="card box">
                     <div class="card-content">
@@ -36,7 +36,7 @@
                 </div>
             </div>
         </div>
-        <div class="column is-6">
+        <div class="column is-8">
             <h3 class="title is-3">Current Admins</h3>
             <div class="card box">
                 <div class="card-content">
@@ -62,17 +62,35 @@
                         aria-current-label="Current page">
 
                         <template slot-scope="props">
-                            <b-table-column field="voter_id" label="Voter ID" sortable>
+                            <b-table-column field="voter_id" label="Voter ID" sortable searchable>
+                                <template slot="searchable" slot-scope="props">
+                                    <b-input v-model="props.filters[props.column.field]"
+                                    placeholder="Search..."
+                                    icon="magnify"
+                                    size="is-small" />
+                                </template>
                                 {{ props.row.voter_id }}
                             </b-table-column>
-                            <b-table-column field="name" label="Name" sortable>
+                            <b-table-column field="name" label="Name" sortable searchable>
+                                <template slot="searchable" slot-scope="props">
+                                    <b-input v-model="props.filters[props.column.field]"
+                                    placeholder="Search..."
+                                    icon="magnify"
+                                    size="is-small" />
+                                </template>
                                 {{ props.row.name }}
                             </b-table-column>
-                            <b-table-column field="type" label="Type" sortable>
+                            <b-table-column field="type" label="Type" sortable searchable>
+                                <template slot="searchable" slot-scope="props">
+                                    <b-input v-model="props.filters[props.column.field]"
+                                    placeholder="Search..."
+                                    icon="magnify"
+                                    size="is-small" />
+                                </template>
                                 <b-tag type="is-volby">{{props.row.type}}</b-tag>
                             </b-table-column>
                             <b-table-column  label="Action" sortable>
-                                <b-button v-if="props.row.type == 'ADMIN'"rounded  size="is-small" type="is-success" @click.prevent="demote(props.row.voter_id)">Demote</b-button>
+                                <b-button v-if="props.row.type == 'ADMIN'" rounded  size="is-small" type="is-success" @click.prevent="demote(props.row.voter_id)">Demote</b-button>
                             </b-table-column>
                         </template>
                     </b-table>

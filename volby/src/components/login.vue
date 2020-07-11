@@ -82,7 +82,7 @@ export default{
                     type: 'is-success'
                 })
 
-                this.$router.push("/dashboard").catch(e => {})
+                this.$router.push("/start").catch(e => {})
             })
             .catch(error => {
                 if(error.response.status == 401){

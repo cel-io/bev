@@ -49,7 +49,7 @@ export default{
                     onConfirm: () => {
                         axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                         .then(response => {
-                            this.$router.push("/dashboard")
+                            this.$router.push("/elections")
                             this.$buefy.toast.open({
                                 duration: 3000,
                                 message: 'Vote submitted!',
@@ -65,7 +65,7 @@ export default{
             }else{
                 axios.post('api/votes/'+ this.votingOptionSelected.voting_option_id, {})
                 .then(response => {
-                    this.$router.push("/dashboard")
+                    this.$router.push("/elections")
                     this.$buefy.toast.open({
                         duration: 3000,
                         message: 'Vote submitted!',
@@ -87,11 +87,21 @@ export default{
             axios.get('api/elections/'+ this.electionId +'/voting_options')
             .then(response => {
                 this.voting_options_array = response.data
+                
+                let nullOption = this.voting_options_array.findIndex(v => v.name == "NULL")
+                this.voting_options_array.splice(nullOption,1)
+
+                let blankOption = this.voting_options_array.findIndex(v => v.name == "BLANK")
+                this.voting_options_array.splice(blankOption,1)
+
                 this.voting_options_array.sort(function(a, b){
                     if(a.id < b.id) { return -1; }
                     if(a.id > b.id) { return 1; }
                     return 0;
                 })
+
+                this.voting_options_array.push(nullOption)
+                this.voting_options_array.push(blankOption)
             })
             .catch(error => {
                 console.log(error)
