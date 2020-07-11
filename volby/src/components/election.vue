@@ -236,7 +236,8 @@ export default{
             percentage_n_vote: 0,
             percentage_n_missing: 0,
             switchGraph: 0,
-            asAdmin: false
+            asAdmin: false,
+            isLoadingToggle: false
         }
     },
     methods: {

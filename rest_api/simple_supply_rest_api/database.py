@@ -372,16 +372,6 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
-    async def fetch_votes_resource(self, vote_id=None):
-        fetch = """
-           SELECT * FROM votes
-           WHERE vote_id='{0}';
-           """.format(vote_id)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch)
-            return await cursor.fetchall()
-
     async def fetch_my_vote__election_resource(self, voter_id=None, election_id=None):
         fetch = """
               SELECT * FROM votes WHERE timestamp=(SELECT MAX(timestamp) FROM votes

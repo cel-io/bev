@@ -108,7 +108,6 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_get('/voters/admins/{voterId}/elections', handler.list_admin_elections)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
-    app.router.add_get('/votes/{voterId}/voter', handler.list_votes)
     app.router.add_get('/votes/{voterId}/election/{electionId}', handler.get_vote_election)
     app.router.add_post('/votes/{votingOptionId}', handler.create_vote)
     app.router.add_put('/votes/{voteId}', handler.update_vote)
@@ -198,7 +197,6 @@ def main():
         validator_url = opts.connect
         if "tcp://" not in validator_url:
             validator_url = "tcp://" + validator_url
-        messenger = Messenger(validator_url)
 
         database = Database(
             opts.db_host,
@@ -207,6 +205,10 @@ def main():
             opts.db_user,
             opts.db_password,
             loop)
+
+        messenger = Messenger(validator_url, database)
+
+
 
         try:
             host, port = opts.bind.split(":")

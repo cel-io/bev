@@ -34,16 +34,20 @@ from simple_supply_rest_api.transaction_creation import \
     make_update_voting_option_status_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_update_poll_book_status_transaction
+import logging
 
+LOGGER = logging.getLogger(__name__)
+MAX_TRIES = 50
 
 
 class Messenger(object):
-    def __init__(self, validator_url):
+    def __init__(self, validator_url, database):
         self._connection = Connection(validator_url)
         self._context = create_context('secp256k1')
         self._crypto_factory = CryptoFactory(self._context)
         self._batch_signer = self._crypto_factory.new_signer(
             self._context.new_random_private_key())
+        self._database = database
 
     def open_validator_connection(self):
         self._connection.open()
@@ -86,7 +90,20 @@ class Messenger(object):
             admin_id=admin_id,
             status=status,
             timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            election = await self._database.fetch_election_resource(election_id=election_id)
+
+            if election is not None:
+                break
+
+            LOGGER.info("Invalid transaction. Retrying...")
+            count_tries = count_tries + 1
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_create_voting_option_transaction(self,
                                                     private_key,
@@ -110,7 +127,19 @@ class Messenger(object):
             timestamp=timestamp
         )
 
-        await self._send_and_wait_for_commit(batch)
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+
+            if voting_option is not None:
+                break
+
+            LOGGER.info("Invalid transaction. Retrying...")
+            count_tries = count_tries + 1
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_create_poll_registration_transaction(self,
                                                         private_key,
@@ -132,7 +161,18 @@ class Messenger(object):
             timestamp=timestamp
         )
 
-        await self._send_and_wait_for_commit(batch)
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            poll_book_registration = await self._database.fetch_poll_book_registration(election_id=election_id, voter_id=voter_id)
+
+            if poll_book_registration is not None:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_create_voter_transaction(self,
                                             private_key,
@@ -152,7 +192,18 @@ class Messenger(object):
             name=name,
             created_at=created_at,
             type=type)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            voter = await self._database.fetch_voter_resource(voter_id=voter_id)
+            if voter is not None:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_update_voter_transaction(self,
                                             private_key,
@@ -172,7 +223,18 @@ class Messenger(object):
             name=name,
             created_at=created_at,
             type=type)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            voter = await self._database.fetch_voter_resource(voter_id=voter_id)
+            if voter is not None and voter.get("created_at") == created_at:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_create_vote_transaction(self,
                                            private_key,
@@ -192,7 +254,18 @@ class Messenger(object):
             voter_id=voter_id,
             election_id=election_id,
             voting_option_id=voting_option_id)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+            if vote is not None:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_update_vote_transaction(self,
                                            private_key,
@@ -208,7 +281,18 @@ class Messenger(object):
             vote_id=vote_id,
             timestamp=timestamp,
             voting_option_id=voting_option_id)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+            if vote is not None and vote.get('timestamp') == timestamp:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_update_election_transaction(self,
                                                private_key,
@@ -240,7 +324,18 @@ class Messenger(object):
             admin_id=admin_id,
             status=status,
             timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            election = await self._database.fetch_election_resource(election_id=election_id)
+            if election is not None and election.get('timestamp') == timestamp:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_update_voting_option_status_transaction(self,
                                                            private_key,
@@ -262,7 +357,18 @@ class Messenger(object):
             election_id=election_id,
             status=status,
             timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+            if voting_option is not None and voting_option.get('timestamp') == timestamp:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     async def send_update_voter_poll_book_status_transaction(self,
                                                              private_key,
@@ -282,7 +388,20 @@ class Messenger(object):
             election_id=election_id,
             status=status,
             timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
+
+        count_tries = 0
+
+        while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
+            poll_book_registration = await self._database.fetch_poll_book_registration(election_id=election_id,
+                                                                                       voter_id=voter_id)
+
+            if poll_book_registration is not None and poll_book_registration.get('timestamp') == timestamp:
+                break
+
+            LOGGER.debug("Invalid transaction. Retrying...")
+
+        if count_tries == MAX_TRIES:
+            raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
 
     # ------------------------------------------------------------
     # ------------------------------------------------------------
@@ -380,10 +499,9 @@ class Messenger(object):
         status_response = client_batch_submit_pb2.ClientBatchStatusResponse()
         status_response.ParseFromString(validator_response.content)
         status = status_response.batch_statuses[0].status
-        if status == client_batch_submit_pb2.ClientBatchStatus.INVALID:
-            error = status_response.batch_statuses[0].invalid_transactions[0]
-            raise ApiBadRequest(error.message)
-        elif status == client_batch_submit_pb2.ClientBatchStatus.PENDING:
-            raise ApiInternalError('Transaction submitted but timed out')
-        elif status == client_batch_submit_pb2.ClientBatchStatus.UNKNOWN:
-            raise ApiInternalError('Something went wrong. Try again later ')
+        if status == client_batch_submit_pb2.ClientBatchStatus.INVALID \
+                or status == client_batch_submit_pb2.ClientBatchStatus.PENDING \
+                or status == client_batch_submit_pb2.ClientBatchStatus.UNKNOWN:
+            return False
+
+        return True

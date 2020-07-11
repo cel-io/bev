@@ -94,6 +94,7 @@
                                         <div class="column is-one-third">
                                             <validation-provider :vid="'optionName_' + index" :rules="{
                                                 required: true,
+                                                unique: votingOptions,
                                                 nullBlankCheck: votingOptions
                                                 }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
                                                 <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">

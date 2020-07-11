@@ -49,6 +49,7 @@ class RouteHandler(object):
         voting_options.append({"name": "NULL", "description": "VOTE NULL"})
         voting_options.append({"name": "BLANK", "description": "VOTE BLANK"})
 
+
         await self._messenger.send_create_election_transaction(
             private_key=private_key,
             election_id=election_id,
@@ -82,6 +83,7 @@ class RouteHandler(object):
                                                                         election_id=election_id)
 
         for poll_book in body.get('poll_book'):
+
             await self._messenger.send_create_poll_registration_transaction(
                 private_key=private_key,
                 voter_id=poll_book.get('id'),
@@ -562,13 +564,6 @@ class RouteHandler(object):
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
 
         return json_response(vote)
-
-    async def list_votes(self, request):
-        private_key, public_key, user = await self._authorize(request)
-        voter_id = request.match_info.get('voterId', '')
-        votes = await self._database.fetch_votes_resource(voter_id=voter_id)
-
-        return json_response(votes)
 
     async def get_vote_election(self, request):
         private_key, public_key, user = await self._authorize(request)
