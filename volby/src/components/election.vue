@@ -255,7 +255,6 @@ export default{
             axios.get('api/elections/'+ this.electionId)
             .then(response => {
                 this.election = response.data
-                console.log(this.election)
 
                 if(this.election.can_change_vote){
                     this.canUpdate = true
