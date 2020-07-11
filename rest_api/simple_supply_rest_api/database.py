@@ -275,7 +275,6 @@ class Database(object):
                  SELECT e.*, v.name AS "admin_name"
                  FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                  WHERE election_id='{0}'
-                 AND e.status = '1'
                  AND ({1}) >= e.start_block_num
                  AND ({1}) < e.end_block_num;
                  """.format(election_id, LATEST_BLOCK_NUM)

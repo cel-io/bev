@@ -38,10 +38,8 @@ class RouteHandler(object):
                            'voting_options', 'poll_book']
         validate_fields(required_fields, body)
 
-        if user.get('type') != 'ADMIN':
-            raise ApiForbidden(
-                'Forbidden'
-            )
+        if user.get('type') != 'ADMIN' and user.get('type') != 'SUPERADMIN':
+            raise ApiForbidden('Voter must be an admin or superadmin')
 
         election_id = uuid.uuid1().hex
         voting_options = body.get('voting_options')
@@ -201,17 +199,18 @@ class RouteHandler(object):
                 'Voting Option with the voting option id '
                 '{} was not found'.format(voting_option_id))
 
-        election = await self._database.fetch_election_resource(election_id=voting_option.get('election_id'))
+        election_id = voting_option.get('election_id')
+        election = await self._database.fetch_election_resource(election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
                 'Election with the election id '
-                '{} was not found'.format(voting_option.get('election_id')))
+                '{} was not found'.format(election_id))
 
         if election.get('status') == 0:
             raise ApiInternalError(
                 'Election with the election id '
-                '{} is cancelled'.format(election.get('election_id')))
+                '{} is cancelled'.format(election_id))
 
         current_time = get_time()
 
@@ -225,7 +224,7 @@ class RouteHandler(object):
         if poll_registration is None:
             raise ApiBadRequest(
                 'Voter is not registered in the poll book of the election with the id '
-                '{} .'.format(election.get('election_id')))
+                '{} .'.format(election_id))
 
         num_votes_update = vo_count_vote.get('num_votes') + 1
 
@@ -256,33 +255,34 @@ class RouteHandler(object):
             )
 
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+        election_id = vote.get('election_id')
 
         if vote is None:
             raise ApiNotFound(
                 'Vote with the vote id '
                 '{} was not found'.format(vote_id))
 
-        election = await self._database.fetch_election_resource(election_id=vote.get('election_id'))
+        election = await self._database.fetch_election_resource(election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
                 'Election with the election id '
-                '{} was not found'.format(vote.get('election_id')))
+                '{} was not found'.format(election_id))
 
         if election is None:
             raise ApiNotFound(
                 'Election with the election id '
-                '{} was not found'.format(vote.get('election_id')))
+                '{} was not found'.format(election_id))
 
         if election.get('can_change_vote') == 0:
             raise ApiInternalError(
                 'Election with the election id '
-                '{} was not found don\'t permit to change vote'.format(vote.get('election_id')))
+                '{} was not found don\'t permit to change vote'.format(election_id))
 
         if election.get('can_change_vote') == 0:
             raise ApiInternalError(
                 'Election with the election id '
-                '{} was not found don\'t permit to change vote'.format(vote.get('election_id')))
+                '{} was not found don\'t permit to change vote'.format(election_id))
 
         current_time = get_time()
 
@@ -293,7 +293,7 @@ class RouteHandler(object):
         if election.get('admin_id') == user.get('voter_id'):
             raise ApiBadRequest(
                 'User is not the owner of the election with the id '
-                '{} .'.format(election.get('election_id')))
+                '{} .'.format(election_id))
 
         new_voting_option_id = body.get('voting_option_id')
         old_voting_option_id = vote.get('voting_option_id')
@@ -346,7 +346,7 @@ class RouteHandler(object):
                 'Election with the election id '
                 '{} already start.'.format(election_id))
 
-        if election.get('admin_id') != user.get('voter_id)'):
+        if election.get('admin_id') != user.get('voter_id'):
             raise ApiBadRequest(
                 'User is not the owner of the election with the id '
                 '{} .'.format(election_id))
@@ -424,10 +424,10 @@ class RouteHandler(object):
             poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
                                                                                   election_id=election_id)
 
-            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+            if poll_registration is None and election.get('admin_id') != user.get('voter_id'):
                 raise ApiBadRequest(
                     'Voter is not registered in the poll book of the election with the id '
-                    '{} .'.format(election_id))
+                    '{}.'.format(election_id))
 
         return json_response(election)
 
@@ -459,7 +459,7 @@ class RouteHandler(object):
             poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
                                                                                   election_id=election_id)
 
-            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+            if poll_registration is None and election.get('admin_id') != user.get('voter_id'):
                 raise ApiBadRequest(
                     'Voter is not registered in the poll book of the election with the id '
                     '{} .'.format(election_id))
@@ -489,7 +489,7 @@ class RouteHandler(object):
                 'Election with the election id '
                 '{} was not found'.format(election_id))
 
-        if election.get('admin_id') != user.get('voter_id)'):
+        if election.get('admin_id') != user.get('voter_id'):
             raise ApiBadRequest(
                 'User is not the owner of the election with the id '
                 '{} .'.format(election_id))
@@ -519,7 +519,7 @@ class RouteHandler(object):
             poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
                                                                                   election_id=election_id)
 
-            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+            if poll_registration is None and election.get('admin_id') != user.get('voter_id'):
                 raise ApiBadRequest(
                     'Voter is not registered in the poll book of the election with the id '
                     '{} .'.format(election_id))
@@ -554,7 +554,7 @@ class RouteHandler(object):
             poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
                                                                                   election_id=election_id)
 
-            if poll_registration is None or election.get('admin_id') != user.get('voter_id)'):
+            if poll_registration is None and election.get('admin_id') != user.get('voter_id'):
                 raise ApiBadRequest(
                     'Voter is not registered in the poll book of the election with the id '
                     '{} .'.format(election_id))
@@ -610,7 +610,7 @@ class RouteHandler(object):
                 'Election with the election id '
                 '{} already start.'.format(election_id))
 
-        if election.get('admin_id') != user.get('voter_id)'):
+        if election.get('admin_id') != user.get('voter_id'):
             raise ApiBadRequest(
                 'User is not the owner of the election with the id '
                 '{} .'.format(election_id))
@@ -670,7 +670,7 @@ class RouteHandler(object):
                 'Election with the election id '
                 '{} already start.'.format(election_id))
 
-        if election.get('admin_id') != user.get('voter_id)'):
+        if election.get('admin_id') != user.get('voter_id'):
             raise ApiBadRequest(
                 'User is not the owner of the election with the id '
                 '{} .'.format(election_id))
@@ -828,11 +828,6 @@ class RouteHandler(object):
             raise ApiNotFound(
                 'Election with the election id '
                 '{} was not found'.format(election_id))
-
-        if election.get('admin_id') != user.get('voter_id)'):
-            raise ApiBadRequest(
-                'User is not the owner of the election with the id '
-                '{} .'.format(election_id))
 
         return json_response(vote)
 
