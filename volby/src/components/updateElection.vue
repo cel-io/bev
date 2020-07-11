@@ -112,10 +112,22 @@
                                             aria-current-label="Current page">
 
                                             <template slot-scope="props">
-                                                <b-table-column field="name" label="Name" sortable>
+                                                <b-table-column field="name" label="Name" sortable searchable>
+                                                    <template slot="searchable" slot-scope="props">
+                                                        <b-input v-model="props.filters[props.column.field]"
+                                                        placeholder="Search..."
+                                                        icon="magnify"
+                                                        size="is-small" />
+                                                    </template>
                                                     {{ props.row.name }}
                                                 </b-table-column>
-                                                <b-table-column field="description" label="Description" sortable>
+                                                <b-table-column field="description" label="Description" sortable searchable>
+                                                    <template slot="searchable" slot-scope="props">
+                                                        <b-input v-model="props.filters[props.column.field]"
+                                                        placeholder="Search..."
+                                                        icon="magnify"
+                                                        size="is-small" />
+                                                    </template>
                                                     {{ props.row.description }}
                                                 </b-table-column>
                                                 <b-table-column v-if="currentVotingOptions.length > 1" label="Actions">
@@ -124,7 +136,7 @@
                                             </template>
                                         </b-table>
                                     </div>
-                                </div>                                
+                                </div>
                                 <div class="card box" v-for="(votingOption, index) in newVotingOptions" :key="index">
                                     <div class="card-content">
                                         <div class="columns">
@@ -182,10 +194,22 @@
                                             aria-current-label="Current page">
 
                                             <template slot-scope="props">
-                                                <b-table-column field="voter_id" label="Voter ID" sortable>
+                                                <b-table-column field="voter_id" label="Voter ID" sortable searchable>
+                                                    <template slot="searchable" slot-scope="props">
+                                                        <b-input v-model="props.filters[props.column.field]"
+                                                        placeholder="Search..."
+                                                        icon="magnify"
+                                                        size="is-small" />
+                                                    </template>
                                                     {{ props.row.voter_id }}
                                                 </b-table-column>
-                                                <b-table-column field="name" label="Name" sortable>
+                                                <b-table-column field="name" label="Name" sortable searchable>
+                                                    <template slot="searchable" slot-scope="props">
+                                                        <b-input v-model="props.filters[props.column.field]"
+                                                        placeholder="Search..."
+                                                        icon="magnify"
+                                                        size="is-small" />
+                                                    </template>
                                                     {{ props.row.name }}
                                                 </b-table-column>
                                                 <b-table-column v-if="currentPollBook.length > 1" label="Actions">
@@ -382,7 +406,7 @@ export default{
                             break
                         }
                     }
-                    
+
                     loadingSnackbar.close()
                     this.isLoadingSubmit = false
                     return
@@ -475,7 +499,7 @@ export default{
                                 this.currentPollBook.splice(i,1)
                                 break
                             }
-                        }                        
+                        }
                         this.$buefy.toast.open({
                             duration: 5000,
                             message: 'Poll registration removed',
@@ -504,7 +528,7 @@ export default{
                                 this.currentVotingOptions.splice(i,1)
                                 break
                             }
-                        }                        
+                        }
                         this.$buefy.toast.open({
                             duration: 5000,
                             message: 'Voting option removed',

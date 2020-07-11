@@ -16,28 +16,28 @@
                                         </b-message>
                                         <validation-observer ref="observer" v-slot="{handleSubmit}">
                                             <form @submit.prevent="handleSubmit(submit)">
-                                            <validation-provider rules="required|min:2|alpha_spaces" name="Name" v-slot="validationContext">
-                                                <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                                    <b-input rounded v-model="name"></b-input>
-                                                </b-field>
-                                            </validation-provider>
-                                            <validation-provider rules="required|email" name="Email" v-slot="validationContext">
-                                                <b-field label="Email" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                                    <b-input rounded v-model="email"></b-input>
-                                                </b-field>
-                                            </validation-provider>
-                                            <validation-provider rules="required|min:6|confirmed:confirmation" name="Password" v-slot="validationContext">
-                                                <b-field label="Password" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                                    <b-input rounded type="password" v-model="password"></b-input>
-                                                </b-field>
-                                            </validation-provider>
-                                            <validation-provider vid="confirmation" rules="required" v-slot="validationContext">
-                                                <b-field label="Password Confirmation" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
-                                                    <b-input rounded type="password" v-model="confirmation"></b-input>
-                                                </b-field>
-                                            </validation-provider>
-                                            <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit">Register</b-button>
-                                        </form>
+                                                <validation-provider rules="required|min:2|alpha_spaces" name="Name" v-slot="validationContext">
+                                                    <b-field label="Name" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <b-input rounded v-model="name"></b-input>
+                                                    </b-field>
+                                                </validation-provider>
+                                                <validation-provider rules="required|email" name="Email" v-slot="validationContext">
+                                                    <b-field label="Email" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <b-input rounded v-model="email"></b-input>
+                                                    </b-field>
+                                                </validation-provider>
+                                                <validation-provider rules="required|capitalLetter|oneNumber|min:6|confirmed:confirmation" name="Password" v-slot="validationContext">
+                                                    <b-field label="Password" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <b-input rounded type="password" v-model="password"></b-input>
+                                                    </b-field>
+                                                </validation-provider>
+                                                <validation-provider vid="confirmation" rules="required" v-slot="validationContext">
+                                                    <b-field label="Password Confirmation" :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
+                                                        <b-input rounded type="password" v-model="confirmation"></b-input>
+                                                    </b-field>
+                                                </validation-provider>
+                                                <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit">Register</b-button>
+                                            </form>
                                         </validation-observer>
                                     </div>
                                 </div>
@@ -64,6 +64,38 @@
     </div>
 </template>
 <script>
+
+import { extend } from 'vee-validate';
+import { capitalLetter, oneNumber } from 'vee-validate/dist/rules';
+
+extend('oneNumber', {
+    validate(value, obj) {
+        var count = 0
+        count = value.replace(/\D/g, '').length
+
+        if (count == 0) {
+            return  'Password at least one number.'
+        }else{
+            return true;
+        }
+    }
+});
+
+extend('capitalLetter', {
+    validate(value, obj) {
+        var count=0
+        for(var i=0; i<value.length; i++) {
+            if(/[A-Z]/.test(value.charAt(i))) count++;
+        }
+
+        if (count == 0) {
+            return  'Password needs one uppercase letter.'
+        }else{
+            return true;
+        }
+    }
+});
+
 export default{
     data(){
         return{
