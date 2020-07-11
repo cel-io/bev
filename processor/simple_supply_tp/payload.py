@@ -80,26 +80,6 @@ class BevPayload(object):
                 payload_pb2.BevPayload.UPDATE_POLL_REGISTRATION:
             return self._transaction.update_poll_registration
 
-        if self._transaction.HasField('create_agent') and \
-            self._transaction.action == \
-                payload_pb2.BevPayload.CREATE_AGENT:
-            return self._transaction.create_agent
-
-        if self._transaction.HasField('create_record') and \
-            self._transaction.action == \
-                payload_pb2.BevPayload.CREATE_RECORD:
-            return self._transaction.create_record
-
-        if self._transaction.HasField('transfer_record') and \
-            self._transaction.action == \
-                payload_pb2.BevPayload.TRANSFER_RECORD:
-            return self._transaction.transfer_record
-
-        if self._transaction.HasField('update_record') and \
-            self._transaction.action == \
-                payload_pb2.BevPayload.UPDATE_RECORD:
-            return self._transaction.update_record
-
         raise InvalidTransaction('Action does not match payload data')
 
     @property

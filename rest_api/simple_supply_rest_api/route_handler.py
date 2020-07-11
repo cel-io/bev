@@ -348,8 +348,10 @@ class RouteHandler(object):
 
     async def get_election(self, request):
         private_key, public_key, user = await self._authorize(request)
+
         election_id = request.match_info.get('electionId', '')
-        election = await self._database.fetch_election_resource(election_id=election_id)
+
+        election = await self._database.fetch_election_resource(voter_id=user.get('voter_id'), election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
@@ -484,14 +486,24 @@ class RouteHandler(object):
     async def list_elections_current(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        current_elections_list = await self._database.fetch_current_elections_resources(user.get('voter_id'),
+        voterId = request.match_info.get('voterId', '')
+
+        if user.get('voter_id') != voterId:
+            raise ApiForbidden('Admin must be the authenticated one')
+
+        current_elections_list = await self._database.fetch_current_elections_resources(voterId,
                                                                                         get_time())
         return json_response(current_elections_list)
 
     async def list_elections_past(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        past_elections_list = await self._database.fetch_past_elections_resources(user.get('voter_id'), get_time())
+        voterId = request.match_info.get('voterId', '')
+
+        if user.get('voter_id') != voterId:
+            raise ApiForbidden('Admin must be the authenticated one')
+
+        past_elections_list = await self._database.fetch_past_elections_resources(voterId, get_time())
 
         return json_response(past_elections_list)
 
@@ -516,7 +528,7 @@ class RouteHandler(object):
     async def list_public_past_elections(self, request):
         private_key, public_key, user = await self._authorize(request)
 
-        past_elections_list = await self._database.fetch_public_past_elections_resources(get_time())
+        past_elections_list = await self._database.fetch_public_past_elections_resources(user.get('voter_id'), get_time())
 
         return json_response(past_elections_list)
 
@@ -625,113 +637,6 @@ class RouteHandler(object):
         return decrypt_private_key(request.app['aes_key'],
                                    public_key,
                                    auth_resource['encrypted_private_key']), public_key, user
-
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-
-    async def create_agent(self, request):
-        body = await decode_request(request)
-        required_fields = ['name', 'password']
-        validate_fields(required_fields, body)
-
-        public_key, private_key = self._messenger.get_new_key_pair()
-
-        await self._messenger.send_create_agent_transaction(
-            private_key=private_key,
-            name=body.get('name'),
-            timestamp=get_time())
-
-        encrypted_private_key = encrypt_private_key(
-            request.app['aes_key'], public_key, private_key)
-        hashed_password = hash_password(body.get('password'))
-
-        await self._database.create_auth_entry(
-            public_key, encrypted_private_key, hashed_password)
-
-        token = self.generate_auth_token(
-            request.app['secret_key'], public_key)
-
-        return json_response({'authorization': token})
-
-    async def list_agents(self, _request):
-        agent_list = await self._database.fetch_all_agent_resources()
-        return json_response(agent_list)
-
-    async def fetch_agent(self, request):
-        public_key = request.match_info.get('agent_id', '')
-        agent = await self._database.fetch_agent_resource(public_key)
-        if agent is None:
-            raise ApiNotFound(
-                'Agent with public key {} was not found'.format(public_key))
-        return json_response(agent)
-
-    async def create_record(self, request):
-        private_key, public_key, user = await self._authorize(request)
-
-        body = await decode_request(request)
-        required_fields = ['latitude', 'longitude', 'record_id']
-        validate_fields(required_fields, body)
-
-        await self._messenger.send_create_record_transaction(
-            private_key=private_key,
-            latitude=body.get('latitude'),
-            longitude=body.get('longitude'),
-            record_id=body.get('record_id'),
-            timestamp=get_time())
-
-        return json_response(
-            {'data': 'Create record transaction submitted'})
-
-    async def list_records(self, _request):
-        record_list = await self._database.fetch_all_record_resources()
-        return json_response(record_list)
-
-    async def fetch_record(self, request):
-        record_id = request.match_info.get('record_id', '')
-        record = await self._database.fetch_record_resource(record_id)
-        if record is None:
-            raise ApiNotFound(
-                'Record with the record id '
-                '{} was not found'.format(record_id))
-        return json_response(record)
-
-    async def transfer_record(self, request):
-        private_key, public_key, user = await self._authorize(request)
-
-        body = await decode_request(request)
-        required_fields = ['receiving_agent']
-        validate_fields(required_fields, body)
-
-        record_id = request.match_info.get('record_id', '')
-
-        await self._messenger.send_transfer_record_transaction(
-            private_key=private_key,
-            receiving_agent=body['receiving_agent'],
-            record_id=record_id,
-            timestamp=get_time())
-
-        return json_response(
-            {'data': 'Transfer record transaction submitted'})
-
-    async def update_record(self, request):
-        private_key, public_key, user = await self._authorize(request)
-
-        body = await decode_request(request)
-        required_fields = ['latitude', 'longitude']
-        validate_fields(required_fields, body)
-
-        record_id = request.match_info.get('record_id', '')
-
-        await self._messenger.send_update_record_transaction(
-            private_key=private_key,
-            latitude=body['latitude'],
-            longitude=body['longitude'],
-            record_id=record_id,
-            timestamp=get_time())
-
-        return json_response(
-            {'data': 'Update record transaction submitted'})
 
     async def logout(self, request):
         await self._authorize(request)

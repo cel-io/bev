@@ -70,10 +70,22 @@
                     aria-current-label="Current page">
 
                     <template slot-scope="props">
-                        <b-table-column field="name" label="Name" sortable>
+                        <b-table-column field="name" label="Name" sortable searchable>
+                            <template slot="searchable" slot-scope="props">
+                                <b-input v-model="props.filters[props.column.field]"
+                                placeholder="Search..."
+                                icon="magnify"
+                                size="is-small" />
+                            </template>
                             {{ props.row.name }}
                         </b-table-column>
-                        <b-table-column field="admin_name" label="Created By" sortable>
+                        <b-table-column field="admin_name" label="Created By" sortable searchable>
+                            <template slot="searchable" slot-scope="props">
+                                <b-input v-model="props.filters[props.column.field]"
+                                placeholder="Search..."
+                                icon="magnify"
+                                size="is-small" />
+                            </template>
                             {{ props.row.admin_name }}
                         </b-table-column>
                         <b-table-column field="start_timestamp" label="Start Time" sortable>
@@ -120,7 +132,7 @@ export default{
     },
     methods:{
         getPastElections(){
-            axios.get('api/elections/past')
+            axios.get('api/voters/'+ this.$parent.user.voter_id +'/elections/past')
             .then(response => {
                 this.pastElections = response.data
 
@@ -140,7 +152,7 @@ export default{
             })
         },
         getCurrentElections(){
-            axios.get('api/elections/current')
+            axios.get('api/voters/'+ this.$parent.user.voter_id +'/elections/current')
             .then(response => {
                 this.getPastElections()
                 this.currentElections = response.data

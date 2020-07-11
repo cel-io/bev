@@ -65,6 +65,7 @@ class Database(object):
                 AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND start_timestamp <= {1}
                 AND end_timestamp >= {1}
+                AND e.status = '1'
                 AND ({2}) >= e.start_block_num
                 AND ({2}) < e.end_block_num
                 ORDER BY start_timestamp DESC;
@@ -82,6 +83,7 @@ class Database(object):
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                 AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
                 AND end_timestamp < {1}
+                AND e.status = '1'
                 AND ({2}) >= e.start_block_num
                 AND ({2}) < e.end_block_num
                 ORDER BY start_timestamp DESC;
@@ -108,17 +110,19 @@ class Database(object):
             await cursor.execute(fetch_elections)
             return await cursor.fetchall()
 
-    async def fetch_public_past_elections_resources(self, timestamp):
+    async def fetch_public_past_elections_resources(self, voter_id, timestamp):
         fetch_elections = """
-                SELECT *
-                FROM elections
-                WHERE results_permission = 'PUBLIC'
-                AND status = '1'
-                AND end_timestamp < {0}
-                AND ({1}) >= start_block_num
-                AND ({1}) < end_block_num
+                SELECT e.*,v.name AS "admin_name",(SELECT vote_id FROM votes WHERE voter_id='{0}'
+                    AND election_id=e.election_id LIMIT 1)
+                    IS NOT NULL AS "voted"
+                FROM elections e JOIN voters v ON e.admin_id = v.voter_id
+                WHERE e.results_permission = 'PUBLIC'
+                AND e.status = '1'
+                AND e.end_timestamp < {1}
+                AND ({2}) >= e.start_block_num
+                AND ({2}) < e.end_block_num
                 ORDER BY start_timestamp DESC;
-                """.format(timestamp, LATEST_BLOCK_NUM)
+                """.format(voter_id, timestamp, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch_elections)
@@ -162,18 +166,6 @@ class Database(object):
                AND ({1}) < end_block_num
                ORDER BY type DESC;
            """.format(voter_id, LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch)
-            return await cursor.fetchall()
-
-    async def fetch_all_election_resources(self):
-        fetch = """
-        SELECT *
-        FROM elections
-        WHERE ({0}) >= start_block_num
-        AND ({0}) < end_block_num;
-        """.format(LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
@@ -261,14 +253,18 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
-    async def fetch_election_resource(self, election_id=None):
+    async def fetch_election_resource(self, voter_id=None, election_id=None):
         fetch = """
-                 SELECT e.*, v.name AS "admin_name"
+                 SELECT e.*, v.name AS "admin_name", (SELECT voter_id FROM poll_registrations WHERE voter_id='{0}'
+                    AND election_id='{1}' 
+                    AND status='1' LIMIT 1) 
+                    IS NOT NULL AS "can_vote"
                  FROM elections e JOIN voters v ON e.admin_id = v.voter_id
-                 WHERE election_id='{0}'
-                 AND ({1}) >= e.start_block_num
-                 AND ({1}) < e.end_block_num;
-                 """.format(election_id, LATEST_BLOCK_NUM)
+                 WHERE election_id='{1}'
+                 AND e.status = '1'
+                 AND ({2}) >= e.start_block_num
+                 AND ({2}) < e.end_block_num;
+                 """.format(voter_id, election_id, LATEST_BLOCK_NUM)
 
         async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
             await cursor.execute(fetch)
@@ -405,105 +401,3 @@ class Database(object):
 
         self._conn.commit()
 
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-
-    async def fetch_agent_resource(self, public_key):
-        fetch = """
-        SELECT public_key, name, timestamp FROM agents
-        WHERE public_key='{0}'
-        AND ({1}) >= start_block_num
-        AND ({1}) < end_block_num;
-        """.format(public_key, LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch)
-            return await cursor.fetchone()
-
-    async def fetch_all_agent_resources(self):
-        fetch = """
-        SELECT public_key, name, timestamp FROM agents
-        WHERE ({0}) >= start_block_num
-        AND ({0}) < end_block_num;
-        """.format(LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            await cursor.execute(fetch)
-            return await cursor.fetchall()
-
-    async def fetch_record_resource(self, record_id):
-        fetch_record = """
-        SELECT record_id FROM records
-        WHERE record_id='{0}'
-        AND ({1}) >= start_block_num
-        AND ({1}) < end_block_num;
-        """.format(record_id, LATEST_BLOCK_NUM)
-
-        fetch_record_locations = """
-        SELECT latitude, longitude, timestamp FROM record_locations
-        WHERE record_id='{0}'
-        AND ({1}) >= start_block_num
-        AND ({1}) < end_block_num;
-        """.format(record_id, LATEST_BLOCK_NUM)
-
-        fetch_record_owners = """
-        SELECT agent_id, timestamp FROM record_owners
-        WHERE record_id='{0}'
-        AND ({1}) >= start_block_num
-        AND ({1}) < end_block_num;
-        """.format(record_id, LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            try:
-                await cursor.execute(fetch_record)
-                record = await cursor.fetchone()
-
-                await cursor.execute(fetch_record_locations)
-                record['locations'] = await cursor.fetchall()
-
-                await cursor.execute(fetch_record_owners)
-                record['owners'] = await cursor.fetchall()
-
-                return record
-            except TypeError:
-                return None
-
-    async def fetch_all_record_resources(self):
-        fetch_records = """
-        SELECT record_id FROM records
-        WHERE ({0}) >= start_block_num
-        AND ({0}) < end_block_num;
-        """.format(LATEST_BLOCK_NUM)
-
-        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            try:
-                await cursor.execute(fetch_records)
-                records = await cursor.fetchall()
-
-                for record in records:
-                    fetch_record_locations = """
-                    SELECT latitude, longitude, timestamp
-                    FROM record_locations
-                    WHERE record_id='{0}'
-                    AND ({1}) >= start_block_num
-                    AND ({1}) < end_block_num;
-                    """.format(record['record_id'], LATEST_BLOCK_NUM)
-
-                    fetch_record_owners = """
-                    SELECT agent_id, timestamp
-                    FROM record_owners
-                    WHERE record_id='{0}'
-                    AND ({1}) >= start_block_num
-                    AND ({1}) < end_block_num;
-                    """.format(record['record_id'], LATEST_BLOCK_NUM)
-
-                    await cursor.execute(fetch_record_locations)
-                    record['locations'] = await cursor.fetchall()
-
-                    await cursor.execute(fetch_record_owners)
-                    record['owners'] = await cursor.fetchall()
-
-                return records
-            except TypeError:
-                return []

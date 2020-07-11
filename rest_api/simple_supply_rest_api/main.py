@@ -84,9 +84,7 @@ def start_rest_api(host, port, messenger, database):
     handler = RouteHandler(loop, messenger, database)
 
     app.router.add_post('/elections', handler.create_election)
-    app.router.add_get('/elections/current', handler.list_elections_current) # CORRECT TO REST
-    app.router.add_get('/elections/past', handler.list_elections_past) # CORRECT TO REST
-    app.router.add_get('/elections/public', handler.list_public_elections)
+    app.router.add_get('/elections/public/current', handler.list_public_elections)
     app.router.add_get('/elections/public/past', handler.list_public_past_elections)
     app.router.add_get('/elections/{electionId}', handler.get_election)
     app.router.add_get('/elections/{electionId}/number_of_votes', handler.get_election_votes)
@@ -106,25 +104,17 @@ def start_rest_api(host, port, messenger, database):
     app.router.add_get('/voters/admins', handler.list_admins)
     app.router.add_get('/voters/{voterId}', handler.get_voter)
     app.router.add_get('/voters/admins/{voterId}/elections', handler.list_admin_elections)
+    app.router.add_get('/voters/{voterId}/elections/current', handler.list_elections_current)
+    app.router.add_get('/voters/{voterId}/elections/past', handler.list_elections_past)
 
     app.router.add_get('/votes/{voteId}', handler.list_vote)
+    app.router.add_get('/votes/{voterId}/voter', handler.list_votes)
     app.router.add_get('/votes/{voterId}/election/{electionId}', handler.get_vote_election)
     app.router.add_post('/votes/{votingOptionId}', handler.create_vote)
     app.router.add_put('/votes/{voteId}', handler.update_vote)
 
     app.router.add_post('/authentication', handler.authenticate)
     app.router.add_post('/logout', handler.logout)
-
-    # app.router.add_post('/agents', handler.create_agent)
-    # app.router.add_get('/agents', handler.list_agents)
-    # app.router.add_get('/agents/{agent_id}', handler.fetch_agent)
-    #
-    # app.router.add_post('/records', handler.create_record)
-    # app.router.add_get('/records', handler.list_records)
-    # app.router.add_get('/records/{record_id}', handler.fetch_record)
-    # app.router.add_post(
-    #     '/records/{record_id}/transfer', handler.transfer_record)
-    # app.router.add_post('/records/{record_id}/update', handler.update_record)
 
     LOGGER.info('Starting BEV REST API on %s:%s', host, port)
     loop.run_until_complete(create_superadmins(messenger, database))

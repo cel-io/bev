@@ -6,18 +6,11 @@ from sawtooth_signing import create_context
 from sawtooth_signing import secp256k1
 from simple_supply_rest_api.errors import ApiBadRequest
 from simple_supply_rest_api.errors import ApiInternalError
-from simple_supply_rest_api.transaction_creation import \
-    make_create_agent_transaction
+
 from simple_supply_rest_api.transaction_creation import \
     make_create_election_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_create_voting_option_transaction
-from simple_supply_rest_api.transaction_creation import \
-    make_create_record_transaction
-from simple_supply_rest_api.transaction_creation import \
-    make_transfer_record_transaction
-from simple_supply_rest_api.transaction_creation import \
-    make_update_record_transaction
 from simple_supply_rest_api.transaction_creation import \
     make_create_poll_registration_transaction
 from simple_supply_rest_api.transaction_creation import \
@@ -38,7 +31,6 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 MAX_TRIES = 50
-
 
 class Messenger(object):
     def __init__(self, validator_url, database):
@@ -402,75 +394,6 @@ class Messenger(object):
 
         if count_tries == MAX_TRIES:
             raise ApiInternalError("Invalid transaction. MAX_TRIES limit reached.")
-
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
-
-    async def send_create_agent_transaction(self,
-                                            private_key,
-                                            name,
-                                            timestamp):
-        transaction_signer = self._crypto_factory.new_signer(
-            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
-
-        batch = make_create_agent_transaction(
-            transaction_signer=transaction_signer,
-            batch_signer=self._batch_signer,
-            name=name,
-            timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
-
-    async def send_create_record_transaction(self,
-                                             private_key,
-                                             latitude,
-                                             longitude,
-                                             record_id,
-                                             timestamp):
-        transaction_signer = self._crypto_factory.new_signer(
-            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
-
-        batch = make_create_record_transaction(
-            transaction_signer=transaction_signer,
-            batch_signer=self._batch_signer,
-            latitude=latitude,
-            longitude=longitude,
-            record_id=record_id,
-            timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
-
-    async def send_transfer_record_transaction(self,
-                                               private_key,
-                                               receiving_agent,
-                                               record_id,
-                                               timestamp):
-        transaction_signer = self._crypto_factory.new_signer(
-            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
-
-        batch = make_transfer_record_transaction(
-            transaction_signer=transaction_signer,
-            batch_signer=self._batch_signer,
-            receiving_agent=receiving_agent,
-            record_id=record_id,
-            timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
-
-    async def send_update_record_transaction(self,
-                                             private_key,
-                                             latitude,
-                                             longitude,
-                                             record_id,
-                                             timestamp):
-        transaction_signer = self._crypto_factory.new_signer(
-            secp256k1.Secp256k1PrivateKey.from_hex(private_key))
-        batch = make_update_record_transaction(
-            transaction_signer=transaction_signer,
-            batch_signer=self._batch_signer,
-            latitude=latitude,
-            longitude=longitude,
-            record_id=record_id,
-            timestamp=timestamp)
-        await self._send_and_wait_for_commit(batch)
 
     async def _send_and_wait_for_commit(self, batch):
         # Send transaction to validator

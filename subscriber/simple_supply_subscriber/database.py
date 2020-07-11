@@ -228,18 +228,6 @@ class Database(object):
             LOGGER.debug('Creating table: auth')
             cursor.execute(CREATE_AUTH_STMTS)
 
-            # LOGGER.debug('Creating table: records')
-            # cursor.execute(CREATE_RECORD_STMTS)
-            #
-            # LOGGER.debug('Creating table: record_locations')
-            # cursor.execute(CREATE_RECORD_LOCATION_STMTS)
-            #
-            # LOGGER.debug('Creating table: record_owners')
-            # cursor.execute(CREATE_RECORD_OWNER_STMTS)
-            #
-            # LOGGER.debug('Creating table: agents')
-            # cursor.execute(CREATE_AGENT_STMTS)
-
             LOGGER.debug('Creating types')
             cursor.execute(CREATE_TYPES_STMTS)
 
@@ -309,30 +297,6 @@ class Database(object):
                        WHERE end_block_num >= {}
                        """.format(block_num)
 
-        delete_agents = """
-        DELETE FROM agents WHERE start_block_num >= {}
-        """.format(block_num)
-        update_agents = """
-        UPDATE agents SET end_block_num = null
-        WHERE end_block_num >= {}
-        """.format(block_num)
-
-        delete_record_locations = """
-        DELETE FROM record_owners WHERE record_id =
-        (SELECT record_id FROM records WHERE start_block_num >= {})
-        """.format(block_num)
-        delete_record_owners = """
-        DELETE FROM record_owners WHERE record_id =
-        (SELECT record_id FROM records WHERE start_block_num >= {})
-        """.format(block_num)
-        delete_records = """
-        DELETE FROM records WHERE start_block_num >= {}
-        """.format(block_num)
-        update_records = """
-        UPDATE records SET end_block_num = null
-        WHERE end_block_num >= {}
-        """.format(block_num)
-
         delete_blocks = """
         DELETE FROM blocks WHERE block_num >= {}
         """.format(block_num)
@@ -340,12 +304,6 @@ class Database(object):
         with self._conn.cursor() as cursor:
             cursor.execute(delete_elections)
             cursor.execute(update_elections)
-            cursor.execute(delete_agents)
-            cursor.execute(update_agents)
-            cursor.execute(delete_record_locations)
-            cursor.execute(delete_record_owners)
-            cursor.execute(delete_records)
-            cursor.execute(update_records)
             cursor.execute(delete_blocks)
             cursor.execute(update_voters)
             cursor.execute(delete_voters)
@@ -546,122 +504,3 @@ class Database(object):
         with self._conn.cursor() as cursor:
             cursor.execute(update_voter)
             cursor.execute(insert_voter)
-
-    def insert_agent(self, agent_dict):
-        update_agent = """
-        UPDATE agents SET end_block_num = {}
-        WHERE end_block_num = {} AND public_key = '{}'
-        """.format(
-            agent_dict['start_block_num'],
-            agent_dict['end_block_num'],
-            agent_dict['public_key'])
-
-        insert_agent = """
-        INSERT INTO agents (
-        public_key,
-        name,
-        timestamp,
-        start_block_num,
-        end_block_num)
-        VALUES ('{}', '{}', '{}', '{}', '{}');
-        """.format(
-            agent_dict['public_key'],
-            agent_dict['name'],
-            agent_dict['timestamp'],
-            agent_dict['start_block_num'],
-            agent_dict['end_block_num'])
-
-        with self._conn.cursor() as cursor:
-            cursor.execute(update_agent)
-            cursor.execute(insert_agent)
-
-    def insert_record(self, record_dict):
-        update_record = """
-        UPDATE records SET end_block_num = {}
-        WHERE end_block_num = {} AND record_id = '{}'
-        """.format(
-            record_dict['start_block_num'],
-            record_dict['end_block_num'],
-            record_dict['record_id'])
-
-        insert_record = """
-        INSERT INTO records (
-        record_id,
-        start_block_num,
-        end_block_num)
-        VALUES ('{}', '{}', '{}');
-        """.format(
-            record_dict['record_id'],
-            record_dict['start_block_num'],
-            record_dict['end_block_num'])
-
-        with self._conn.cursor() as cursor:
-            cursor.execute(update_record)
-            cursor.execute(insert_record)
-
-        self._insert_record_locations(record_dict)
-        self._insert_record_owners(record_dict)
-
-    def _insert_record_locations(self, record_dict):
-        update_record_locations = """
-        UPDATE record_locations SET end_block_num = {}
-        WHERE end_block_num = {} AND record_id = '{}'
-        """.format(
-            record_dict['start_block_num'],
-            record_dict['end_block_num'],
-            record_dict['record_id'])
-
-        insert_record_locations = [
-            """
-            INSERT INTO record_locations (
-            record_id,
-            latitude,
-            longitude,
-            timestamp,
-            start_block_num,
-            end_block_num)
-            VALUES ('{}', '{}', '{}', '{}', '{}', '{}');
-            """.format(
-                record_dict['record_id'],
-                location['latitude'],
-                location['longitude'],
-                location['timestamp'],
-                record_dict['start_block_num'],
-                record_dict['end_block_num'])
-            for location in record_dict['locations']
-        ]
-        with self._conn.cursor() as cursor:
-            cursor.execute(update_record_locations)
-            for insert in insert_record_locations:
-                cursor.execute(insert)
-
-    def _insert_record_owners(self, record_dict):
-        update_record_owners = """
-        UPDATE record_owners SET end_block_num = {}
-        WHERE end_block_num = {} AND record_id = '{}'
-        """.format(
-            record_dict['start_block_num'],
-            record_dict['end_block_num'],
-            record_dict['record_id'])
-
-        insert_record_owners = [
-            """
-            INSERT INTO record_owners (
-            record_id,
-            agent_id,
-            timestamp,
-            start_block_num,
-            end_block_num)
-            VALUES ('{}', '{}', '{}', '{}', '{}');
-            """.format(
-                record_dict['record_id'],
-                owner['agent_id'],
-                owner['timestamp'],
-                record_dict['start_block_num'],
-                record_dict['end_block_num'])
-            for owner in record_dict['owners']
-        ]
-        with self._conn.cursor() as cursor:
-            cursor.execute(update_record_owners)
-            for insert in insert_record_owners:
-                cursor.execute(insert)

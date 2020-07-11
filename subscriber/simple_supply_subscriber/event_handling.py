@@ -81,11 +81,7 @@ def _apply_state_changes(database, events, block_num, block_id):
     for change in changes:
         data_type, resources = deserialize_data(change.address, change.value)
         database.insert_block({'block_num': block_num, 'block_id': block_id})
-        if data_type == AddressSpace.AGENT:
-            _apply_agent_change(database, block_num, resources)
-        elif data_type == AddressSpace.RECORD:
-            _apply_record_change(database, block_num, resources)
-        elif data_type == AddressSpace.ELECTION:
+        if data_type == AddressSpace.ELECTION:
             _apply_election_change(database, block_num, resources)
         elif data_type == AddressSpace.VOTING_OPTION:
             _apply_voting_option_change(database, block_num, resources)
@@ -110,20 +106,6 @@ def _parse_state_changes(events):
     state_change_list.ParseFromString(change_data)
     return [c for c in state_change_list.state_changes
             if NAMESPACE_REGEX.match(c.address)]
-
-
-def _apply_agent_change(database, block_num, agents):
-    for agent in agents:
-        agent['start_block_num'] = block_num
-        agent['end_block_num'] = MAX_BLOCK_NUMBER
-        database.insert_agent(agent)
-
-
-def _apply_record_change(database, block_num, records):
-    for record in records:
-        record['start_block_num'] = block_num
-        record['end_block_num'] = MAX_BLOCK_NUMBER
-        database.insert_record(record)
 
 
 def _apply_election_change(database, block_num, elections):
