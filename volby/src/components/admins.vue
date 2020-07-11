@@ -161,16 +161,12 @@ export default {
             .catch(error => {
                 console.log(error)
                 switch(error.response.status){
-                    case 401:
-                    this.$store.commit("logout")
-                    this.$router.push("/login")
-                    break
                     case 409:
-                    this.isAlreadyAdmin = true
-                    break
+                        this.isAlreadyAdmin = true
+                        break
                     case 404:
-                    this.isNotFound = true
-                    break
+                        this.isNotFound = true
+                        break
                 }
             })
             .then(() => {
@@ -185,10 +181,6 @@ export default {
             })
             .catch(error => {
                 console.log(error)
-                if(error.response.status == 401){
-                    this.$store.commit("logout")
-                    this.$router.push("/login")
-                }
             })
         },
         demote(voter_id){
@@ -214,10 +206,6 @@ export default {
                         })
                         .catch(error => {
                             console.log(error)
-                            if(error.response.status == 401){
-                                this.$store.commit("logout")
-                                this.$router.push("/login")
-                            }
                         })
                     }
                 })

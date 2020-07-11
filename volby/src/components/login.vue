@@ -33,6 +33,16 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="columns">
+                            <div class="column">
+                                <b-button type="is-text" tag="router-link" to="/register">Create an account</b-button>
+                            </div>
+                        </div>
+                        <div class="columns">
+                            <div class="column">
+                                <b-button type="is-text" tag="router-link" to="/">Home</b-button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -144,11 +144,6 @@ export default{
             })
             .catch(error => {
                 console.log(error)
-
-                if(error.response.status == 401){
-                    this.$store.commit("logout")
-                    this.$router.push("/login")
-                }
             })
         },
         getCurrentElections(){
@@ -159,11 +154,6 @@ export default{
             })
             .catch(error => {
                 console.log(error)
-
-                if(error.response.status == 401){
-                    this.$store.commit("logout")
-                    this.$router.push("/login")
-                }
             })
         },
         toDate(timestamp){

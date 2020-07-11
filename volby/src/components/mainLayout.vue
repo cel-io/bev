@@ -91,12 +91,7 @@ export default{
                 this.$router.push("/").catch(e => {})
             })
             .catch(error => {
-                if(error.response.status == 401){
-                    this.$store.commit('logout')
-                    this.$router.push("/").catch(e => {})
-                }else{
-                    console.log(error)
-                }
+                console.log(error)
             })
         }
     }
