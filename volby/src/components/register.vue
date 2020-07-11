@@ -36,7 +36,7 @@
                                                         <b-input rounded type="password" v-model="confirmation"></b-input>
                                                     </b-field>
                                                 </validation-provider>
-                                                <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit">Register</b-button>
+                                                <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit" :loading="isLoading" >Register</b-button>
                                             </form>
                                         </validation-observer>
                                     </div>
@@ -113,12 +113,14 @@ export default{
             email: "",
             password: "",
             confirmation: "",
-            isEmailNotUnique: ""
+            isEmailNotUnique: "",
+            isLoading: false
         }
     },
     methods: {
         submit(){
             this.isEmailNotUnique = false
+            this.isLoading = true
 
             axios.post('api/voters',{
                 name: this.name,
@@ -142,6 +144,9 @@ export default{
                 if(error.response.status == 409){
                     this.isEmailNotUnique = true
                 }
+            })
+            .then(() => {
+                this.isLoading = false
             })
         },
         getValidationState({ dirty, validated, valid = null }) {

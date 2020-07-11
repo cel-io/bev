@@ -94,7 +94,7 @@
                                         <div class="column is-one-third">
                                             <validation-provider :vid="'optionName_' + index" :rules="{
                                                 required: true,
-                                                unique: votingOptions,
+                                                uniqueName: votingOptions,
                                                 nullBlankCheck: votingOptions
                                                 }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
                                                 <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
@@ -188,12 +188,23 @@ import { unique, nullBlankCheck } from 'vee-validate/dist/rules';
 extend('unique', {
     validate(value, obj) {
         if (obj.filter(o => o.id === value).length > 1) {
-            return  `${value} is already taken.`
+            return  `${value} is already in the poll book.`
         }else{
             return true;
         }
     }
 });
+
+extend('uniqueName', {
+    validate(value, obj) {
+        if (obj.filter(o => o.name === value).length > 1) {
+            return  `${value} is already in the ballot.`
+        }else{
+            return true;
+        }
+    }
+});
+
 
 extend('nullBlankCheck', {
     validate(value, obj) {
@@ -276,7 +287,7 @@ export default{
             this.$refs.observer.validate()
             .then(result => {
                 this.isLoading = true
-                const loadingSnackbar = this.$buefy.toast.open({
+                const loadingSnackbar = this.$buefy.snackbar.open({
                     message: 'Writing to blockchain. This might take some time...',
                     position: 'is-bottom-left',
                     type: 'is-warning',

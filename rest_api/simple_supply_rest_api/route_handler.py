@@ -208,7 +208,7 @@ class RouteHandler(object):
                 '{} was not found'.format(election_id))
 
         if election.get('status') == 0:
-            raise ApiInternalError(
+            raise ApiBadRequest(
                 'Election with the election id '
                 '{} is cancelled'.format(election_id))
 
@@ -420,12 +420,8 @@ class RouteHandler(object):
                 '{} was not found'.format(election_id))
 
         if election.get('results_permission') != 'PUBLIC':
-
-            poll_registration = await self._database.fetch_poll_book_registration(voter_id=user.get('voter_id'),
-                                                                                  election_id=election_id)
-
-            if poll_registration is None and election.get('admin_id') != user.get('voter_id'):
-                raise ApiBadRequest(
+            if election.get('can_vote') is False and election.get('admin_id') != user.get('voter_id'):
+                raise ApiForbidden(
                     'Voter is not registered in the poll book of the election with the id '
                     '{}.'.format(election_id))
 

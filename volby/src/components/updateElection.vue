@@ -143,6 +143,7 @@
                                             <div class="column is-one-third">
                                                 <validation-provider :vid="'optionName_' + index" :rules="{
                                                     required: true,
+                                                    uniqueName: [...newVotingOptions,...currentVotingOptions],
                                                     nullBlankCheck: newVotingOptions
                                                     }" :name="(index + 1) + '. Option Name'" v-slot="validationContext">
                                                     <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
@@ -226,7 +227,7 @@
                                                 <validation-provider :vid="'voterId_' + index" :rules="{
                                                     required: true,
                                                     email: true,
-                                                    unique: newPollBook
+                                                    unique: [...newPollBook,...currentPollBook]
                                                     }" :name="(index + 1) + '. Voter Email'" v-slot="validationContext">
                                                     <b-field expanded :type="getValidationState(validationContext)" :message="validationContext.errors[0]">
                                                         <template slot="label">{{(index + 1) + '. Voter Email'}} <span class="has-text-danger">*</span></template>
@@ -286,6 +287,16 @@ extend('unique', {
     }
 });
 
+extend('uniqueName', {
+    validate(value, obj) {
+        if (obj.filter(o => o.name === value).length > 1) {
+            return  `${value} is already in the ballot.`
+        }else{
+            return true;
+        }
+    }
+});
+
 extend('nullBlankCheck', {
     validate(value, obj) {
         if (value.toUpperCase() == "NULL" || value.toUpperCase() == "BLANK" ) {
@@ -324,7 +335,8 @@ export default{
             perPagePollBook: 20,
             isPaginatedPollBook: true,
             isPaginationSimplePollBook: false,
-            paginationPositionPollBook: 'bottom'
+            paginationPositionPollBook: 'bottom',
+            currentTimestamp: Math.floor(new Date().getTime() / 1000)
         }
     },
     methods: {
@@ -363,7 +375,7 @@ export default{
             this.$refs.observer.validate()
             .then(result => {
                 this.isLoadingSubmit = true
-                const loadingSnackbar = this.$buefy.toast.open({
+                const loadingSnackbar = this.$buefy.snackbar.open({
                     message: 'Writing to blockchain. This might take some time...',
                     position: 'is-bottom-left',
                     type: 'is-warning',
@@ -433,6 +445,14 @@ export default{
                     this.$router.push("/myelections").catch(e => {})
                 })
                 .catch(error => {
+                    if(error.response.status == 400) {
+                        this.$router.push("/myelections")
+                        this.$buefy.toast.open({
+                            duration: 3000,
+                            message: "This election can't be updated anymore.",
+                            type: 'is-warning'
+                        })
+                    }
                     console.log(error)
                 })
                 .then(() => {
@@ -445,6 +465,16 @@ export default{
             axios.get(`/api/elections/${this.electionId}`)
             .then(response => {
                 this.election = response.data
+
+                if(this.election.start_timestamp < this.currentTimestamp){
+                    this.$router.push("/myelections")
+                    this.$buefy.toast.open({
+                        duration: 3000,
+                        message: "This election can't be updated anymore.",
+                        type: 'is-warning'
+                    })
+                    return
+                }
 
                 this.election.startDate = timestampToDateObject(this.election.start_timestamp)
                 this.election.endDate = timestampToDateObject(this.election.start_timestamp)
@@ -507,6 +537,14 @@ export default{
                         })
                     })
                     .catch(error => {
+                        if(error.response.status == 400) {
+                            this.$router.push("/myelections")
+                            this.$buefy.toast.open({
+                                duration: 3000,
+                                message: "This election can't be updated anymore.",
+                                type: 'is-warning'
+                            })
+                        }
                         console.log(error)
                     })
                 }
@@ -536,6 +574,14 @@ export default{
                         })
                     })
                     .catch(error => {
+                        if(error.response.status == 400) {
+                            this.$router.push("/myelections")
+                            this.$buefy.toast.open({
+                                duration: 3000,
+                                message: "This election can't be updated anymore.",
+                                type: 'is-warning'
+                            })
+                        }
                         console.log(error)
                     })
                 }

@@ -21,12 +21,12 @@ window.axios.interceptors.response.use(function (response) {
             this.$router.push("/start")
             this.$buefy.toast.open({
                 duration: 3000,
-                message: "You don't have permission to access this page.",
+                message: "You don't have permission to make this action.",
                 type: 'is-warning'
             })
             break
     }
-    
+
     return Promise.reject(error);
 });
 

@@ -258,7 +258,9 @@ class Database(object):
                     SELECT e.*, v.name AS "admin_name", (SELECT voter_id FROM poll_registrations WHERE voter_id='{0}'
                        AND election_id='{1}' 
                        AND status='1' LIMIT 1) 
-                       IS NOT NULL AS "can_vote"
+                       IS NOT NULL AS "can_vote", (SELECT vote_id FROM votes WHERE voter_id='{0}'
+                        AND election_id='{1}' LIMIT 1)
+                        IS NOT NULL AS "voted"
                     FROM elections e JOIN voters v ON e.admin_id = v.voter_id
                     WHERE election_id='{1}'
                     AND e.status = '1'

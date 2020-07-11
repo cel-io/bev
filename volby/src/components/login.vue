@@ -26,7 +26,7 @@
                                                         <b-input rounded type="password" v-model="password"></b-input>
                                                     </b-field>
                                                 </validation-provider>
-                                                <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit">Login</b-button>
+                                                <b-button class="has-margin-top-20" type="is-primary" expanded rounded native-type="submit" :loading="isLoading">Login</b-button>
                                             </form>
                                         </validation-observer>
                                     </div>
@@ -69,14 +69,16 @@ export default{
         return{
             email: "",
             password: "",
-            isInvalidLogin: false
+            isInvalidLogin: false,
+            isLoading: false
         }
     },
     methods: {
         submit(){
             this.isInvalidLogin = false
+            this.isLoading = true
 
-            axios.post('api/authentication',{
+            axios.post('/api/authentication',{
                 voter_id: this.email,
                 password: this.password
             })
@@ -98,6 +100,9 @@ export default{
                 if(error.response.status == 401){
                     this.isInvalidLogin = true
                 }
+            })
+            .then(() => {
+                this.isLoading = false
             })
         },
         getValidationState({ dirty, validated, valid = null }) {

@@ -295,15 +295,19 @@ export default{
                             this.colors.push("#"+Math.floor(Math.random()*16777215).toString(16))
                         })
 
-                        this.countLabels.forEach((element,index) => {
-                            if(element == "NULL" || element == "BLANK"){
-                                this.countLabels.splice(index,1)[0]
-                                let numVotes = this.numberVotes.splice(index,1)[0]
+                        let nullOptionIndex = this.countLabels.findIndex(v => v == "NULL")
+                        let nullOptionLabel = this.countLabels.splice(nullOptionIndex,1)[0]
+                        let nullOptionCount = this.numberVotes.splice(nullOptionIndex,1)[0]
 
-                                this.countLabels.push(element)
-                                this.numberVotes.push(numVotes)
-                            }
-                        })
+                        let blankOptionIndex = this.countLabels.findIndex(v => v == "BLANK")
+                        let blankOptionLabel = this.countLabels.splice(blankOptionIndex,1)[0]
+                        let blankOptionCount = this.numberVotes.splice(blankOptionIndex,1)[0]
+
+                        this.countLabels.push(nullOptionLabel)
+                        this.numberVotes.push(nullOptionCount)
+
+                        this.countLabels.push(blankOptionLabel)
+                        this.numberVotes.push(blankOptionCount)
 
                         axios.get('api/elections/'+this.electionId+'/poll_book/count')
                         .then(response => {

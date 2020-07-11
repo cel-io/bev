@@ -67,7 +67,7 @@ const routes = [
     {path: '',component: MainLayout, redirect: 'start',
         children: [
             {path: 'start', component: Start, name: 'start'},
-            {path: 'newelection', component: CreateElection, name: 'createElection'},
+            {path: 'newelection', component: CreateElection, name: 'createElection', beforeEnter: adminGuard},
             {path: 'elections', component: Elections, name: 'elections'},
             {path: 'election/:electionId/vote', component: CreateVote, name: 'createVote'},
             {path: 'vote/:voteId/update', component: UpdateVote, name: 'updateVote'},
