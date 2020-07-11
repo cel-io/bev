@@ -131,60 +131,70 @@
                                 </b-tab-item>
                                 <b-tab-item label="Results">
                                     <br>
-                                    <div class=" has-text-centered" v-if="this.num_votes_all == 0">
-                                        <span>No votes yet.</span>
+                                    <div class=" has-text-centered" v-if="election.results_permission == 'PRIVATE' && this.$parent.user.type == 'VOTER' ">
+                                        <span>Results are exclusive to the Adminstrator.</span>
                                     </div>
-                                    <div v-else class="has-text-centered">
-                                        <div class="columns">
-                                            <div class="column is-6">
-                                                <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
-                                                    <strong>Total Votes</strong>
-                                                </div>
-                                                <div v-if="this.switchGraph" class="small_chart">
-                                                    <pie-chart :chart-data="datacollectionPie"></pie-chart>
-                                                </div>
-                                                <div v-else class="small_chart">
-                                                    <bar-chart :chart-data="datacollectionBar" :options="options"></bar-chart>
-                                                </div>
-                                                <b-switch v-model="switchGraph"> Show Pie Chart </b-switch>
+                                    <div v-else>
+                                        <div class=" has-text-centered" v-if="!election.can_show_realtime && election.end_timestamp >= currentTimestamp && currentTimestamp >= election.start_timestamp ">
+                                            <span>Election can't show realtime results during election time.</span>
+                                        </div>
+                                        <div v-else>
+                                            <div class=" has-text-centered" v-if="this.num_votes_all == 0">
+                                                <span>No votes submitted.</span>
                                             </div>
-                                            <br>
-                                            <div class="column is-6">
-                                                <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
-                                                    <strong>Votes Submitted</strong>
-                                                </div>
-                                                <div>
-                                                    <div class="columns">
-                                                        <div class="column is-6">
-                                                            <h6 class="title is-6">Participation Rate</h6>
-                                                            <b-message type="is-success" class="shadow">
-                                                                <h4 class="title is-4">{{ this.percentage_n_vote }} % Of Voters</h4>
-                                                            </b-message>
+                                            <div v-else class="has-text-centered">
+                                                <div class="columns">
+                                                    <div class="column is-6">
+                                                        <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
+                                                            <strong>Total Votes</strong>
                                                         </div>
-                                                        <div class="column is-6">
-                                                            <h6 class="title is-6">Abstention Rate</h6>
-                                                            <b-message type="is-danger" class="shadow">
-                                                                <h4 class="title is-4">{{ this.percentage_n_missing }} % Of Voters</h4>
-                                                            </b-message>
+                                                        <div v-if="this.switchGraph" class="small_chart">
+                                                            <pie-chart :chart-data="datacollectionPie"></pie-chart>
                                                         </div>
+                                                        <div v-else class="small_chart">
+                                                            <bar-chart :chart-data="datacollectionBar" :options="options"></bar-chart>
+                                                        </div>
+                                                        <b-switch v-model="switchGraph"> Show Pie Chart </b-switch>
                                                     </div>
-                                                    <div class="columns">
-                                                        <div class="column is-6">
-                                                            <h6 class="title is-6">Participation Count</h6>
-                                                            <b-message type="is-success" class="shadow">
-                                                                <h4 class="title is-4">{{ this.num_votes_all }} Voters</h4>
-                                                            </b-message>
+                                                    <br>
+                                                    <div class="column is-6">
+                                                        <div class="title is-3" v-if="election.end_timestamp > currentTimestamp">
+                                                            <strong>Votes Submitted</strong>
                                                         </div>
-                                                        <div class="column is-6">
-                                                            <h6 class="title is-6">Abstention Count</h6>
-                                                            <b-message type="is-danger" class="shadow">
-                                                                <h4 class="title is-4">{{ this.num_votes_missing }} Voters</h4>
-                                                            </b-message>
-                                                        </div>
-                                                    </div>
-                                                    <div class="columns">
-                                                        <div class="column is-12">
-                                                            <h6 class="title is-6">Total Number of Poll Book Registrations: {{this.num_total_votes}}</h6>
+                                                        <div>
+                                                            <div class="columns">
+                                                                <div class="column is-6">
+                                                                    <h6 class="title is-6">Participation Rate</h6>
+                                                                    <b-message type="is-success" class="shadow">
+                                                                        <h4 class="title is-4">{{ this.percentage_n_vote }} % Of Voters</h4>
+                                                                    </b-message>
+                                                                </div>
+                                                                <div class="column is-6">
+                                                                    <h6 class="title is-6">Abstention Rate</h6>
+                                                                    <b-message type="is-danger" class="shadow">
+                                                                        <h4 class="title is-4">{{ this.percentage_n_missing }} % Of Voters</h4>
+                                                                    </b-message>
+                                                                </div>
+                                                            </div>
+                                                            <div class="columns">
+                                                                <div class="column is-6">
+                                                                    <h6 class="title is-6">Participation Count</h6>
+                                                                    <b-message type="is-success" class="shadow">
+                                                                        <h4 class="title is-4">{{ this.num_votes_all }} Voters</h4>
+                                                                    </b-message>
+                                                                </div>
+                                                                <div class="column is-6">
+                                                                    <h6 class="title is-6">Abstention Count</h6>
+                                                                    <b-message type="is-danger" class="shadow">
+                                                                        <h4 class="title is-4">{{ this.num_votes_missing }} Voters</h4>
+                                                                    </b-message>
+                                                                </div>
+                                                            </div>
+                                                            <div class="columns">
+                                                                <div class="column is-12">
+                                                                    <h6 class="title is-6">Total Number of Poll Book Registrations: {{this.num_total_votes}}</h6>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
