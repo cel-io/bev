@@ -319,7 +319,7 @@ export default{
                                 return
                             }
 
-                            axios.get('api/votes/'+this.$parent.user.voter_id+'/election/'+this.election.election_id)
+                            axios.get('api/voters/'+this.$parent.user.voter_id+'/election/'+this.election.election_id+'/vote')
                             .then(response => {
                                 this.vote = response.data
 

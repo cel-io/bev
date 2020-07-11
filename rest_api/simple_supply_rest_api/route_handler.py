@@ -417,15 +417,6 @@ class RouteHandler(object):
 
         return json_response(voting_option)
 
-    async def is_poll_book_registration(self, request):
-        private_key, public_key, user = await self._authorize(request)
-
-        voterId = request.match_info.get('voterId', '')
-        electionId = request.match_info.get('electionId', '')
-        poll_registration = await self._database.fetch_poll_book_registration(election_id=electionId, voter_id=voterId)
-
-        return json_response(poll_registration)
-
     async def update_voting_option_status(self, request):
         private_key, public_key, user = await self._authorize(request)
 
@@ -570,7 +561,7 @@ class RouteHandler(object):
 
         return json_response(voter)
 
-    async def list_vote(self, request):
+    async def get_vote(self, request):
         private_key, public_key, user = await self._authorize(request)
         vote_id = request.match_info.get('voteId', '')
         vote = await self._database.fetch_vote_resource(vote_id=vote_id)
