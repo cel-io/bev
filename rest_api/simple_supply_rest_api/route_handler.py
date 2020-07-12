@@ -150,9 +150,13 @@ class RouteHandler(object):
                 'No voter found'
             )
 
-        if voter.get('type') == 'ADMIN' or voter.get('type') == 'SUPERADMIN':
+        if body.get('type') == 'ADMIN' and (voter.get('type') == 'ADMIN' or voter.get('type') == 'SUPERADMIN'):
             raise ApiConflict(
                 'Voter {} is already an admin or superadmin'.format(voter_id)
+            )
+        elif body.get('type') == 'VOTER' and voter.get('type') == 'VOTER':
+            raise ApiConflict(
+                'Voter {} is already a voter. '.format(voter_id)
             )
 
         auth_info = await self._database.fetch_auth_resource(public_key=voter.get('public_key'))
