@@ -202,11 +202,6 @@ class RouteHandler(object):
         election_id = voting_option.get('election_id')
         election = await self._database.fetch_election_resource(election_id=election_id)
 
-        if election is None:
-            raise ApiNotFound(
-                'Election with the election id '
-                '{} was not found'.format(election_id))
-
         if election.get('status') == 0:
             raise ApiBadRequest(
                 'Election with the election id '
@@ -262,12 +257,12 @@ class RouteHandler(object):
                 'Vote with the vote id '
                 '{} was not found'.format(vote_id))
 
-        election = await self._database.fetch_election_resource(election_id=election_id)
+        if vote.get('voting_option_id') == body.get('voting_option_id'):
+            raise ApiBadRequest(
+                'Vote must be different.'
+            )
 
-        if election is None:
-            raise ApiNotFound(
-                'Election with the election id '
-                '{} was not found'.format(election_id))
+        election = await self._database.fetch_election_resource(election_id=election_id)
 
         if election is None:
             raise ApiNotFound(
@@ -772,34 +767,10 @@ class RouteHandler(object):
                 'Forbidden'
             )
 
-        voter_id = request.match_info.get('voterID', '')
+        voter_id = request.match_info.get('voterId', '')
         voters_list = await self._database.fetch_voters_resources(voter_id=voter_id)
 
         return json_response(voters_list)
-
-    async def get_voter(self, request):
-        private_key, public_key, user = await self._authorize(request)
-
-        if user.get('type') != 'SUPERADMIN':
-            raise ApiForbidden(
-                'Forbidden'
-            )
-
-        voter_id = request.match_info.get('voterID', '')
-
-        if voter_id == '':
-            raise ApiBadRequest(
-                'The voter ID is a required query string parameter'
-            )
-
-        voter = await self._database.fetch_voter_resource(voter_id=voter_id)
-
-        if voter is None:
-            raise ApiNotFound(
-                'No voter found'
-            )
-
-        return json_response(voter)
 
     async def get_vote(self, request):
         private_key, public_key, user = await self._authorize(request)

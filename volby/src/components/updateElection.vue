@@ -274,12 +274,12 @@
 <script>
 
 import { extend } from 'vee-validate';
-import { unique, nullBlankCheck } from 'vee-validate/dist/rules';
+import { unique, uniqueName, nullBlankCheck } from 'vee-validate/dist/rules';
 import { timestampToDateObject } from '../helpers.js'
 
 extend('unique', {
     validate(value, obj) {
-        if (obj.filter(o => o.id === value).length > 1) {
+        if (obj.filter(o => o.id=== value || o.voter_id=== value).length > 1) {
             return  `${value} is already taken.`
         }else{
             return true;
