@@ -785,7 +785,7 @@ class RouteHandler(object):
                 'Forbidden'
             )
 
-        voter_id = request.match_info.get('voterID', '')
+        voter_id = request.match_info.get('voterId', '')
 
         if voter_id == '':
             raise ApiBadRequest(

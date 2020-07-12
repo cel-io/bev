@@ -504,6 +504,11 @@ export default{
     mounted(){
         this.getElection()
 
+        if(this.election.results_permission == 'PUBLIC')
+        {
+            this.$emit('back','/public')
+        }
+
         this.fillData()
     }
 }
