@@ -314,8 +314,8 @@ export default{
                             this.num_total_votes = response.data.count
                             this.num_votes_missing = this.num_total_votes - this.num_votes_all
 
-                            this.percentage_n_vote = (this.num_votes_all * 100) / this.num_total_votes
-                            this.percentage_n_missing = (this.num_votes_missing * 100) / this.num_total_votes
+                            this.percentage_n_vote = Math.round((this.num_votes_all * 100) / this.num_total_votes)
+                            this.percentage_n_missing = Math.round((this.num_votes_missing * 100) / this.num_total_votes)
 
                             if(this.asAdmin){
                                 this.isLoading = false
