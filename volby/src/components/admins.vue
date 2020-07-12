@@ -143,7 +143,7 @@ export default {
             this.isNotFound = false
             this.isAlreadyAdmin = false
 
-            axios.put(`api/voters/${this.selected}/promote`,{
+            axios.patch(`api/voters/${this.selected}/type`,{
                 'type': 'ADMIN'
             })
             .then(response => {
@@ -190,7 +190,7 @@ export default {
                 confirmText: 'Demote',
                 type: 'is-danger',
                 onConfirm: () => {
-                        axios.put(`api/voters/${voter_id}/demote`,{
+                        axios.patch(`api/voters/${voter_id}/type`,{
                             'type': 'VOTER'
                         })
                         .then(response => {

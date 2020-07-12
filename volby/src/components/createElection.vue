@@ -183,7 +183,7 @@
 <script>
 
 import { extend } from 'vee-validate';
-import { unique, nullBlankCheck } from 'vee-validate/dist/rules';
+import { unique, uniqueName, nullBlankCheck } from 'vee-validate/dist/rules';
 
 extend('unique', {
     validate(value, obj) {
@@ -330,7 +330,7 @@ export default{
                             break
                         }
                     }
-                    
+
                     loadingSnackbar.close()
                     this.isLoading = false
                     return
@@ -374,7 +374,7 @@ export default{
 
         this.startDate.setDate(this.startDate.getDate() + 1)
         this.endDate.setDate(this.endDate.getDate() + 1)
-        this.endDate.setHours(this.endDate.getHours() + 3)       
+        this.endDate.setHours(this.endDate.getHours() + 3)
     }
 }
 </script>
