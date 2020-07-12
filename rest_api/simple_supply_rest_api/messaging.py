@@ -218,9 +218,12 @@ class Messenger(object):
 
         count_tries = 0
 
+        original_voter = await self._database.fetch_voter_resource(voter_id=voter_id)
+
         while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
             voter = await self._database.fetch_voter_resource(voter_id=voter_id)
-            if voter is not None and voter.get("created_at") == created_at:
+            if voter is not None and original_voter.get("end_block_num") == voter.get("end_block_num") \
+                    and original_voter.get("start_block_num") != voter.get("start_block_num"):
                 break
 
             LOGGER.debug("Invalid transaction. Retrying...")
@@ -276,9 +279,12 @@ class Messenger(object):
 
         count_tries = 0
 
+        original_vote = await self._database.fetch_vote_resource(vote_id=vote_id)
+
         while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
             vote = await self._database.fetch_vote_resource(vote_id=vote_id)
-            if vote is not None and vote.get('timestamp') == timestamp:
+            if vote is not None and original_vote.get("end_block_num") == vote.get("end_block_num") \
+                    and original_vote.get("start_block_num") != vote.get("start_block_num"):
                 break
 
             LOGGER.debug("Invalid transaction. Retrying...")
@@ -319,9 +325,12 @@ class Messenger(object):
 
         count_tries = 0
 
+        original_election = await self._database.fetch_election_resource(election_id=election_id)
+
         while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
             election = await self._database.fetch_election_resource(election_id=election_id)
-            if election is not None and election.get('timestamp') == timestamp:
+            if election is not None and original_election.get("end_block_num") == election.get("end_block_num") \
+                    and original_election.get("start_block_num") != election.get("start_block_num"):
                 break
 
             LOGGER.debug("Invalid transaction. Retrying...")
@@ -352,9 +361,12 @@ class Messenger(object):
 
         count_tries = 0
 
+        original_voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
+
         while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
             voting_option = await self._database.fetch_voting_option_resource(voting_option_id=voting_option_id)
-            if voting_option is not None and voting_option.get('timestamp') == timestamp:
+            if voting_option is not None and original_voting_option.get("end_block_num") == voting_option.get("end_block_num") \
+                    and original_voting_option.get("start_block_num") != voting_option.get("start_block_num"):
                 break
 
             LOGGER.debug("Invalid transaction. Retrying...")
@@ -383,11 +395,16 @@ class Messenger(object):
 
         count_tries = 0
 
+        original_poll_book_registration = await self._database.fetch_poll_book_registration(election_id=election_id,
+                                                                                   voter_id=voter_id)
+
         while await self._send_and_wait_for_commit(batch) is False and count_tries < MAX_TRIES:
             poll_book_registration = await self._database.fetch_poll_book_registration(election_id=election_id,
                                                                                        voter_id=voter_id)
 
-            if poll_book_registration is not None and poll_book_registration.get('timestamp') == timestamp:
+            if poll_book_registration is not None \
+                    and original_poll_book_registration.get("end_block_num") == poll_book_registration.get("end_block_num") \
+                    and original_poll_book_registration.get("start_block_num") != poll_book_registration.get("start_block_num"):
                 break
 
             LOGGER.debug("Invalid transaction. Retrying...")

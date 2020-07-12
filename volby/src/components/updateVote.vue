@@ -200,18 +200,21 @@ export default{
                     this.voting_options_array.push(blankOption)
                 })
                 .catch(error => {
-                    console.log(error.data)
+                    console.log(error)
                 })
                 .then(() => {
                     this.isLoading = false
                 })
             })
             .catch(error => {
-                console.log(error.data)
+                console.log(error)
             })
         })
         .catch(error => {
-            console.log(error.data)
+            console.log(error)
+            if(error.response.status == 404){
+                this.$router.push("*")
+            }
         })
     },
     created(){

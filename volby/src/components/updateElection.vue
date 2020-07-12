@@ -509,6 +509,9 @@ export default{
             })
             .catch(error => {
                 console.log(error)
+                if(error.response.status == 404){
+                    this.$router.push("*")
+                }
             })
             .then(() => {
                 this.isLoading = false
