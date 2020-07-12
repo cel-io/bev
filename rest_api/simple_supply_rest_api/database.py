@@ -62,7 +62,8 @@ class Database(object):
                     AND election_id=e.election_id LIMIT 1)
                     IS NOT NULL AS "voted"
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
-                AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
+                AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}' AND status='1' 
+                                    AND ({2}) >= start_block_num AND ({2}) < end_block_num)
                 AND start_timestamp <= {1}
                 AND end_timestamp >= {1}
                 AND e.status = '1'
@@ -81,7 +82,8 @@ class Database(object):
                     AND election_id=e.election_id LIMIT 1)
                     IS NOT NULL AS "voted"
                 FROM elections e JOIN voters v ON e.admin_id = v.voter_id
-                AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}')
+                AND election_id IN (SELECT election_id FROM poll_registrations WHERE voter_id='{0}' AND status='1' 
+                                    AND ({2}) >= start_block_num AND ({2}) < end_block_num)
                 AND end_timestamp < {1}
                 AND e.status = '1'
                 AND ({2}) >= e.start_block_num

@@ -551,7 +551,7 @@ class RouteHandler(object):
                                                                                   election_id=election_id)
 
             if poll_registration is None and election.get('admin_id') != user.get('voter_id'):
-                raise ApiBadRequest(
+                raise ApiForbidden(
                     'Voter is not registered in the poll book of the election with the id '
                     '{} .'.format(election_id))
 

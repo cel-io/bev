@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="section has-padding-top-10">
-            <div class="container">
+            <div class="container main">
                 <div class="columns is-centered is-full-height is-vcentered">
                     <div class="column is-half has-text-centered has-padding-top-0">
                         <img class="image is-256x256 is-horizontal-center" src="img/icon.png"/>

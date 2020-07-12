@@ -2,33 +2,6 @@ window._ = require('lodash');
 
 window.axios = require('axios');
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-window.axios.interceptors.response.use(function (response) {
-    return response;
-}, function (error) {
-    switch (error.response.status) {
-        case 401:
-            if(error.config.url != '/api/authentication'){
-                this.$store.commit('logout')
-                this.$router.push("/login")
-                this.$buefy.toast.open({
-                    duration: 3000,
-                    message: 'Your session expired.',
-                    type: 'is-warning'
-                })
-            }            
-            break
-        case 403:
-            this.$router.push("/start")
-            this.$buefy.toast.open({
-                duration: 3000,
-                message: "You don't have permission to make this action.",
-                type: 'is-warning'
-            })
-            break
-    }
-
-    return Promise.reject(error);
-});
 
 window.Vue = require('vue')
 import Vue from 'vue'
@@ -75,3 +48,31 @@ const app = new Vue({
         }
     }
 });
+
+window.axios.interceptors.response.use(function (response) {
+    return response;
+}, (error => {
+    switch (error.response.status) {
+        case 401:
+            if(error.config.url != '/api/authentication'){
+                app.$store.commit('logout')
+                app.$router.push("/login")
+                app.$buefy.toast.open({
+                    duration: 3000,
+                    message: 'Your session expired.',
+                    type: 'is-warning'
+                })
+            }            
+            break
+        case 403:
+            app.$router.push("/start")
+            app.$buefy.toast.open({
+                duration: 3000,
+                message: "You don't have permission to make this action.",
+                type: 'is-warning'
+            })
+            break
+    }
+
+    return Promise.reject(error);
+}))

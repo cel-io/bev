@@ -297,6 +297,30 @@ class Database(object):
                        WHERE end_block_num >= {}
                        """.format(block_num)
 
+        delete_voting_options = """
+                       DELETE FROM voting_options WHERE start_block_num >= {}
+                       """.format(block_num)
+        update_voting_options = """
+                       UPDATE voting_options SET end_block_num = null
+                       WHERE end_block_num >= {}
+                       """.format(block_num)
+
+        delete_poll_registrations = """
+                       DELETE FROM poll_registrations WHERE start_block_num >= {}
+                       """.format(block_num)
+        update_poll_registrations = """
+                       UPDATE poll_registrations SET end_block_num = null
+                       WHERE end_block_num >= {}
+                       """.format(block_num)
+
+        delete_votes = """
+                       DELETE FROM votes WHERE start_block_num >= {}
+                       """.format(block_num)
+        update_votes = """
+                       UPDATE votes SET end_block_num = null
+                       WHERE end_block_num >= {}
+                       """.format(block_num)
+
         delete_blocks = """
         DELETE FROM blocks WHERE block_num >= {}
         """.format(block_num)
@@ -304,9 +328,15 @@ class Database(object):
         with self._conn.cursor() as cursor:
             cursor.execute(delete_elections)
             cursor.execute(update_elections)
-            cursor.execute(delete_blocks)
-            cursor.execute(update_voters)
             cursor.execute(delete_voters)
+            cursor.execute(update_voters)
+            cursor.execute(delete_voting_options)
+            cursor.execute(update_voting_options)
+            cursor.execute(delete_poll_registrations)
+            cursor.execute(update_poll_registrations)
+            cursor.execute(delete_votes)
+            cursor.execute(update_votes)
+            cursor.execute(delete_blocks)
 
     def fetch_last_known_blocks(self, count):
         """Fetches the specified number of most recent blocks
@@ -446,11 +476,12 @@ class Database(object):
     def insert_poll_registration(self, poll_registration_dict):
         update_poll_registration = """
            UPDATE poll_registrations SET end_block_num = {}
-           WHERE end_block_num = {} AND voter_id = '{}'
+           WHERE end_block_num = {} AND voter_id = '{}' AND election_id = '{}'
            """.format(
             poll_registration_dict['start_block_num'],
             poll_registration_dict['end_block_num'],
-            poll_registration_dict['voter_id'],)
+            poll_registration_dict['voter_id'],
+            poll_registration_dict['election_id'])
 
         insert_poll_registration = """
            INSERT INTO poll_registrations (

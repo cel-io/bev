@@ -227,7 +227,7 @@ def _update_election(state, public_key, payload):
 
 def _update_voting_option(state, public_key, payload):
     if state.get_voter(public_key) is None:
-        raise InvalidTransaction('Agent with the public key {} does '
+        raise InvalidTransaction('Voter with the public key {} does '
                                  'not exist'.format(public_key))
 
     state.update_voting_option(
@@ -241,7 +241,7 @@ def _update_voting_option(state, public_key, payload):
 
 def _update_poll_registration(state, public_key, payload):
     if state.get_voter(public_key) is None:
-        raise InvalidTransaction('Agent with the public key {} does '
+        raise InvalidTransaction('Voter with the public key {} does '
                                  'not exist'.format(public_key))
 
     state.update_poll_registration(
