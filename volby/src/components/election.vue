@@ -258,6 +258,16 @@ export default{
             .then(response => {
                 this.election = response.data
 
+                if(this.election.start_timestamp > this.currentTimestamp && !this.asAdmin){
+                    this.$router.push("/elections")
+                    this.$buefy.toast.open({
+                        duration: 3000,
+                        message: "You don't have permission to access this page.",
+                        type: 'is-warning'
+                    })
+                    return
+                }
+
                 if(this.election.can_change_vote){
                     this.canUpdate = true
                 }else{
