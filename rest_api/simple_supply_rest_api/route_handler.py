@@ -410,8 +410,12 @@ class RouteHandler(object):
                 'The election ID is a required query string parameter'
             )
 
-        election = await self._database.fetch_election_with_can_vote_resource(voter_id=user.get('voter_id'),
-                                                                              election_id=election_id)
+        if 'asAdmin' in request.rel_url.query:
+            election = await self._database.fetch_election_with_can_vote_resource_admin(voter_id=user.get('voter_id'),
+                                                                                        election_id=election_id)
+        else:
+            election = await self._database.fetch_election_with_can_vote_resource(voter_id=user.get('voter_id'),
+                                                                                  election_id=election_id)
 
         if election is None:
             raise ApiNotFound(

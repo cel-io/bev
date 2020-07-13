@@ -287,6 +287,24 @@ class Database(object):
             await cursor.execute(fetch)
             return await cursor.fetchone()
 
+    async def fetch_election_with_can_vote_resource_admin(self, voter_id=None, election_id=None):
+        fetch = """
+                    SELECT e.*, v.name AS "admin_name", (SELECT voter_id FROM poll_registrations WHERE voter_id='{0}'
+                       AND election_id='{1}' 
+                       AND status='1' LIMIT 1) 
+                       IS NOT NULL AS "can_vote", (SELECT vote_id FROM votes WHERE voter_id='{0}'
+                        AND election_id='{1}' LIMIT 1)
+                        IS NOT NULL AS "voted"
+                    FROM elections e JOIN voters v ON e.admin_id = v.voter_id
+                    WHERE election_id='{1}'
+                    AND ({2}) >= e.start_block_num
+                    AND ({2}) < e.end_block_num;
+                    """.format(voter_id, election_id, LATEST_BLOCK_NUM)
+
+        async with self._conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            await cursor.execute(fetch)
+            return await cursor.fetchone()
+
     async def fetch_number_of_votes(self, election_id=None):
         fetch = """
                     SELECT * FROM count_votes
