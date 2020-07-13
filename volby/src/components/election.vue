@@ -347,7 +347,6 @@ export default{
                                     .catch(error => {
                                         console.log(error)
                                     })
-
                                 }
                             })
                             .catch(error => {
@@ -369,7 +368,7 @@ export default{
             .catch(error => {
                 console.log(error)
                 if(error.response.status == 404){
-                    this.$router.push("*")
+                    this.$router.push("/*")
                 }
             })
         },
