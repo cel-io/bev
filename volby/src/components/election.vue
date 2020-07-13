@@ -16,12 +16,14 @@
                         </div>
                         <template v-if="asAdmin">
                             <div class="column is-6 has-text-right" v-if="election.end_timestamp >= currentTimestamp && currentTimestamp >= election.start_timestamp">
+                                <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger" v-if="!election.status">Disabled</b-tag>
                                 <b-tooltip v-if="canUpdate" type="is-dark" label="Voters can change their vote multiple times after their initial choice">
                                     <b-tag class="has-margin-top-5 has-margin-right-5">Mutable Votes</b-tag>
                                 </b-tooltip>
                                 <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Live</b-tag>
                             </div>
                             <div class="column is-6 has-text-right" v-else-if="election.end_timestamp < currentTimestamp">
+                                <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger" v-if="!election.status">Disabled</b-tag>
                                 <b-tag class="has-margin-top-5 has-margin-right-5" type="is-danger">Terminated</b-tag>
                             </div>
                             <div class="column is-6 has-text-right" v-else-if="election.start_timestamp > currentTimestamp">
@@ -252,7 +254,7 @@ export default{
     },
     methods: {
         getElection(){
-            axios.get('api/elections/'+ this.electionId)
+            axios.get('api/elections/'+ this.electionId + (this.asAdmin ? '?asAdmin=1' : ''))
             .then(response => {
                 this.election = response.data
 
