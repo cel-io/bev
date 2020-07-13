@@ -1,7 +1,5 @@
 from simple_supply_addressing import addresser
 
-from simple_supply_protobuf import agent_pb2
-from simple_supply_protobuf import record_pb2
 from simple_supply_protobuf import election_pb2
 from simple_supply_protobuf import votingOption_pb2
 from simple_supply_protobuf import pollRegistration_pb2

@@ -29,15 +29,15 @@ RUN apt-get install -y --allow-unauthenticated -q \
     python3-sawtooth-sdk \
     python3-sawtooth-rest-api
 
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
-    && apt-get install -y nodejs npm
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+    && apt-get install -y nodejs make g++ gcc
 
 RUN pip3 install \
     aiohttp \
     aiopg \
     bcrypt \
     diskcache \
-    grpcio-tools \
+    grpcio-tools==1.28.1 \
     itsdangerous \
     nose2 \
     psycopg2-binary \
