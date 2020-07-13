@@ -462,7 +462,7 @@ export default{
             })
         },
         getElection(){
-            axios.get(`/api/elections/${this.electionId}/?asAdmin=1`)
+            axios.get(`/api/elections/${this.electionId}?asAdmin=1`)
             .then(response => {
                 this.election = response.data
 
